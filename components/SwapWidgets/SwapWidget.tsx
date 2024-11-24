@@ -1,54 +1,60 @@
 "use client";
 import { useSwapActions, useSwapState } from "@/state/swapStore";
-import React from "react";
+import React, { useEffect } from "react";
 import { Button } from "../ui/Button";
+import AmountInput from "./AmountInput";
+import { useTokenInitializer } from "@/hooks/useTokenInitializer";
 
 type Props = {};
 
 export const SwapWidget = (props: Props) => {
-  const { sellToken, buyToken, sellAmount, buyAmount } = useSwapState();
-  const { setBuyToken, setSellToken, setSellAmount, setBuyAmount } =
-    useSwapActions();
+  const {
+    sellToken,
+    buyToken,
+    tokens,
+    sellAmount,
+    currentBuyAsset,
+    buyAmount,
+    currentSellAsset,
+  } = useSwapState();
+  const {
+    setBuyToken,
+    setSellToken,
+    setSellAmount,
+    setBuyAmount,
+    setCurrentSellAsset,
+    setCurrentBuyAsset,
+  } = useSwapActions();
+  console.log({ currentBuyAsset });
 
   return (
-    <div className="bg-primary/20 border-secondary border-[2px]  rounded-xl">
-      <h2 className="text-xl font-bold text-white mb-4">Swap</h2>
-      <div className="mb-4">
-        <label className="text-sm text-gray-400">you are buying</label>
-        <select
-          className="w-full mt-2 p-3 bg-gray-700 rounded text-white"
-          value={buyToken}
-          onChange={(e) => setBuyToken(e.target.value)}
-        >
-          <option value="DAI">DAI</option>
-          <option value="USDC">USDC</option>
-        </select>
-        <input
-          type="number"
-          placeholder="Enter amount"
-          className="w-full mt-2 p-3 bg-gray-700 rounded text-white"
-          value={buyAmount}
-          onChange={(e) => setBuyAmount(e.target.value)}
+    <div className="bg-[#030D0A] p-4 col-span-2 max-w-[448px] w-full border-secondary border-[1px]  rounded-xl">
+      <h2 className="text-lg font-bold text-white bg-primary w-fit px-2 py-1 rounded-3xl mb-4">
+        Swap
+      </h2>
+      <div className="flex flex-col gap-3">
+        <AmountInput
+          title="You're Buying"
+          token={buyToken}
+          Amount={buyAmount}
+          currentTokenAsset={currentBuyAsset}
+          setCurrentTokenDetal={setCurrentBuyAsset}
+          setAmount={setBuyAmount}
+          setToken={setBuyToken}
+          walletBalanceAsset={500} // Replace with actual balance
+        />
+        <AmountInput
+          title="You're Selling"
+          setCurrentTokenDetal={setCurrentSellAsset}
+          token={sellToken}
+          currentTokenAsset={currentSellAsset}
+          Amount={sellAmount}
+          setAmount={setSellAmount}
+          setToken={setSellToken}
+          walletBalanceAsset={1000} // Replace with actual balance
         />
       </div>
-      <div className="mb-4">
-        <label className="text-sm text-gray-400">you are Selling</label>
-        <select
-          className="w-full mt-2 p-3 bg-gray-700 rounded text-white"
-          value={sellToken}
-          onChange={(e) => setSellToken(e.target.value)}
-        >
-          <option value="DAI">DAI</option>
-          <option value="USDC">USDC</option>
-        </select>
-        <input
-          type="number"
-          placeholder="Enter amount"
-          className="w-full mt-2 p-3 bg-gray-700 rounded text-white"
-          value={sellAmount}
-          onChange={(e) => setSellAmount(e.target.value)}
-        />
-      </div>
+
       <Button
         variant={"primary"}
         className="w-full mt-4 py-3  text-white font-bold rounded"
