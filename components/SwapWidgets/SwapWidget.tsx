@@ -25,7 +25,6 @@ export const SwapWidget = (props: Props) => {
     setCurrentSellAsset,
     setCurrentBuyAsset,
   } = useSwapActions();
-  console.log({ currentBuyAsset });
 
   return (
     <div className="bg-[#030D0A] p-4 col-span-2 max-w-[448px] w-full border-secondary border-[1px]  rounded-xl">
