@@ -11,7 +11,7 @@ export const MAINNET_EXCHANGE_PROXY =
   "0xdef1c0ded9bec7f1a1670819833240f027b25eff";
 
 export const MAX_ALLOWANCE =
-  115792089237316195423570985008687907853269984665640564039457584007913129639935n;
+  "115792089237316195423570985008687907853269984665640564039457584007913129639935n";
 
 interface Token {
   name: string;
@@ -21,6 +21,15 @@ interface Token {
   chainId: number;
   logoURI: string;
 }
+
+export const fallbackUrls: Record<number, string> = {
+  421614: "https://sepolia-rollup.arbitrum.io/rpc",
+  1: "https://eth-mainnet.public.blastapi.io", // Ethereum Mainnet
+  5: "https://eth-goerli.public.blastapi.io", // Goerli Testnet
+  137: "https://polygon-rpc.com", // Polygon
+  11155111: "https://ethereum-sepolia-rpc.publicnode.com",
+  // Add other chains as needed
+};
 
 export const MAINNET_TOKENS: Token[] = [
   {

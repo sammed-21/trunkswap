@@ -4,62 +4,101 @@ import React, { useEffect } from "react";
 import { Button } from "../ui/Button";
 import AmountInput from "./AmountInput";
 import { useTokenInitializer } from "@/hooks/useTokenInitializer";
+import { useAccount, useChainId, useWalletClient } from "wagmi";
+import { ConnectButton, useConnectModal } from "@rainbow-me/rainbowkit";
+import { FaGear } from "react-icons/fa6";
+import { SlippageModal } from "../Slippage/SlippageModal";
+import { useAccountState } from "@/state/accountStore";
 
 type Props = {};
 
 export const SwapWidget = (props: Props) => {
+  const { address } = useAccount();
+  const { openConnectModal, connectModalOpen } = useConnectModal();
+  const { signer } = useAccountState();
+
   const {
-    sellToken,
-    buyToken,
+    TokenA,
+    TokenB,
     tokens,
-    sellAmount,
+    TokenAAmount,
     currentBuyAsset,
-    buyAmount,
+    TokenBAmount,
     currentSellAsset,
+    tradeDirection,
   } = useSwapState();
   const {
-    setBuyToken,
-    setSellToken,
-    setSellAmount,
-    setBuyAmount,
+    setTokenB,
+    setTokenA,
+    setTokenAAmount,
+    setTokenBAmount,
     setCurrentSellAsset,
     setCurrentBuyAsset,
+    setTradeDirection,
   } = useSwapActions();
+  const handleToggleTradeDirection = () => {
+    // Toggle direction
+    const newDirection = tradeDirection === "sell" ? "buy" : "sell";
+    setTradeDirection(newDirection);
+
+    // Swap token names
+    setTokenA(TokenB);
+    setTokenB(TokenA);
+
+    // Swap full token details (if needed)
+    setCurrentSellAsset(currentBuyAsset);
+    setCurrentBuyAsset(currentSellAsset);
+  };
 
   return (
     <div className="bg-[#030D0A] p-4 col-span-2 max-w-[448px] w-full border-secondary border-[1px]  rounded-xl">
-      <h2 className="text-lg font-bold text-white bg-primary w-fit px-2 py-1 rounded-3xl mb-4">
-        Swap
-      </h2>
+      <div className="flex w-full justify-between ">
+        <h2 className="text-lg font-bold text-white bg-primary w-fit px-2 py-1 rounded-3xl mb-4">
+          Swap
+        </h2>
+        <div>
+          <SlippageModal />
+        </div>
+      </div>
       <div className="flex flex-col gap-3">
         <AmountInput
           title="You're Buying"
-          token={buyToken}
-          Amount={buyAmount}
+          token={TokenB}
+          Amount={TokenBAmount}
           currentTokenAsset={currentBuyAsset}
           setCurrentTokenDetal={setCurrentBuyAsset}
-          setAmount={setBuyAmount}
-          setToken={setBuyToken}
+          setAmount={setTokenBAmount}
+          setToken={setTokenB}
           walletBalanceAsset={500} // Replace with actual balance
         />
+        <button onClick={handleToggleTradeDirection}>🔁</button>
         <AmountInput
           title="You're Selling"
           setCurrentTokenDetal={setCurrentSellAsset}
-          token={sellToken}
+          token={TokenA}
           currentTokenAsset={currentSellAsset}
-          Amount={sellAmount}
-          setAmount={setSellAmount}
-          setToken={setSellToken}
+          Amount={TokenAAmount}
+          setAmount={setTokenAAmount}
+          setToken={setTokenA}
           walletBalanceAsset={1000} // Replace with actual balance
         />
       </div>
-
-      <Button
-        variant={"primary"}
-        className="w-full mt-4 py-3  text-white font-bold rounded"
-      >
-        Swap
-      </Button>
+      {!address ? (
+        <Button
+          onClick={openConnectModal}
+          variant={"primary"}
+          className="w-full mt-4 py-3  text-white font-bold rounded"
+        >
+          Connect
+        </Button>
+      ) : (
+        <Button
+          variant={"primary"}
+          className="w-full mt-4 py-3  text-white font-bold rounded"
+        >
+          Swap
+        </Button>
+      )}
     </div>
   );
 };

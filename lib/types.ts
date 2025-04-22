@@ -1,14 +1,16 @@
-import { Address, type Hex } from "viem";
+import { Address, PublicClient, WalletClient, type Hex } from "viem";
 import { EIP712TypedData } from "./signature";
+import { UsePublicClientReturnType, UseWalletClientReturnType } from "wagmi";
+import { Signer } from "ethers";
 
 // This interface is subject to change as the API V2 endpoints aren't finalized.
 export interface PriceResponse {
-  sellToken: string;
-  buyToken: string;
-  sellAmount: string;
-  buyAmount: string;
-  grossSellAmount: string;
-  grossBuyAmount: string;
+  TokenA: string;
+  TokenB: string;
+  TokenAAmount: string;
+  TokenBAmount: string;
+  grossTokenAAmount: string;
+  grossTokenBAmount: string;
   allowanceTarget: Address;
   route: [];
   fees: {
@@ -34,12 +36,12 @@ export interface PriceResponse {
 
 // This interface is subject to change as the API V2 endpoints aren't finalized.
 export interface QuoteResponse {
-  sellToken: Address;
-  buyToken: Address;
-  sellAmount: string;
-  buyAmount: string;
-  grossSellAmount: string;
-  grossBuyAmount: string;
+  TokenA: Address;
+  TokenB: Address;
+  TokenAAmount: string;
+  TokenBAmount: string;
+  grossTokenAAmount: string;
+  grossTokenBAmount: string;
   gasPrice: string;
   allowanceTarget: Address;
   route: [];
@@ -69,11 +71,11 @@ export interface QuoteResponse {
   };
   transaction: V2QuoteTransaction;
   tokenMetadata: {
-    buyToken: {
+    TokenB: {
       buyTaxBps: string | null;
       sellTaxBps: string | null;
     };
-    sellToken: {
+    TokenA: {
       buyTaxBps: string | null;
       sellTaxBps: string | null;
     };
@@ -89,12 +91,12 @@ export interface V2QuoteTransaction {
 }
 
 export interface SwapState {
-  buyToken: string;
-  sellToken: string;
-  buyAmount: string;
+  TokenB: string;
+  TokenA: string;
+  TokenBAmount: string;
   tradeDirection: "sell" | "buy";
   tokens: Token[];
-  sellAmount: string;
+  TokenAAmount: string;
   currentSellAsset: TokenDetail;
   currentBuyAsset: TokenDetail;
   selectorOpen: Boolean;
@@ -110,12 +112,12 @@ export interface Token {
 }
 export interface SwapActions {
   setTokens: (tokens: Token[]) => void;
-  setBuyToken: (token: string) => void;
-  setSellToken: (token: string) => void;
-  setBuyAmount: (amount: string) => void;
+  setTokenB: (token: string) => void;
+  setTokenA: (token: string) => void;
+  setTokenBAmount: (amount: string) => void;
   setSelectorOpen: (isOpen: Boolean) => void;
   setTradeDirection: (direction: "sell" | "buy") => void;
-  setSellAmount: (amount: string) => void;
+  setTokenAAmount: (amount: string) => void;
   setCurrentBuyAsset: (token: TokenDetail) => void;
   setCurrentSellAsset: (token: TokenDetail) => void;
   setSlippage: (slippage: number) => void;
@@ -128,4 +130,16 @@ export interface TokenDetail {
   logoURI: string;
   decimals: number;
   chainId: number;
+}
+
+export interface AccountInfo {
+  signer: UseWalletClientReturnType | undefined | null;
+  provider: any | undefined;
+  setSigner: (signer: any) => void;
+  setProvider: (provider: any) => void;
+  chainId: number | undefined | null;
+  viemClient: any;
+  setChainId: (chainId: undefined | number | null) => void;
+  setViemClient: (viewClient: any) => void;
+  // setSignerAndProvider: (signer: string, chainId: string | number) => void;
 }
