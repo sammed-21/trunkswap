@@ -13,11 +13,11 @@ import {
 const useSwapStore = create<SwapState & SwapActions>((set) => ({
   tokens: MAINNET_TOKENS,
   // Initial State
-  buyToken: "DAI",
-  sellToken: "WETH",
-  buyAmount: "",
+  TokenB: "DAI",
+  TokenA: "WETH",
+  TokenBAmount: "",
   tradeDirection: "sell",
-  sellAmount: "",
+  TokenAAmount: "",
   slippage: 0.5,
   currentSellAsset:
     MAINNET_TOKENS_BY_SYMBOL[DEFAULT_SELL_TOKEN(1)?.toLowerCase()],
@@ -26,18 +26,18 @@ const useSwapStore = create<SwapState & SwapActions>((set) => ({
   selectorOpen: false,
 
   // Actions
-  setBuyToken: (token) =>
+  setTokenB: (token) =>
     set((state) => ({
-      buyToken: token,
-      sellToken: state.sellToken === token ? "" : state.sellToken,
+      TokenB: token,
+      TokenA: state.TokenA === token ? "" : state.TokenA,
     })),
-  setSellToken: (token) =>
+  setTokenA: (token) =>
     set((state) => ({
-      sellToken: token,
-      buyToken: state.buyToken === token ? "" : state.buyToken,
+      TokenA: token,
+      TokenB: state.TokenB === token ? "" : state.TokenB,
     })),
-  setBuyAmount: (amount) => set(() => ({ buyAmount: amount })),
-  setSellAmount: (amount) => set(() => ({ sellAmount: amount })),
+  setTokenBAmount: (amount) => set(() => ({ TokenBAmount: amount })),
+  setTokenAAmount: (amount) => set(() => ({ TokenAAmount: amount })),
   setTradeDirection: (direction) => set(() => ({ tradeDirection: direction })),
   setSlippage: (slippage) => set(() => ({ slippage })),
   setTokens: (tokens: any) => set({ tokens }),
@@ -56,12 +56,12 @@ const useSwapStore = create<SwapState & SwapActions>((set) => ({
 export const useSwapState = () =>
   useSwapStore(
     useShallow((state: SwapState) => ({
-      buyToken: state.buyToken,
-      sellToken: state.sellToken,
+      TokenB: state.TokenB,
+      TokenA: state.TokenA,
       tokens: state.tokens,
-      buyAmount: state.buyAmount,
+      TokenBAmount: state.TokenBAmount,
       tradeDirection: state.tradeDirection, // Include tradeDirection
-      sellAmount: state.sellAmount,
+      TokenAAmount: state.TokenAAmount,
       slippage: state.slippage,
       selectorOpen: state.selectorOpen,
       currentSellAsset: state.currentSellAsset, // Include currentSellAsset
@@ -73,11 +73,11 @@ export const useSwapState = () =>
 export const useSwapActions = () =>
   useSwapStore(
     useShallow((state: SwapActions) => ({
-      setBuyToken: state.setBuyToken,
-      setSellToken: state.setSellToken,
+      setTokenB: state.setTokenB,
+      setTokenA: state.setTokenA,
       setTokens: state.setTokens,
-      setBuyAmount: state.setBuyAmount,
-      setSellAmount: state.setSellAmount,
+      setTokenBAmount: state.setTokenBAmount,
+      setTokenAAmount: state.setTokenAAmount,
       setTradeDirection: state.setTradeDirection, // Include setTradeDirection
       setSlippage: state.setSlippage,
       setSelectorOpen: state.setSelectorOpen,

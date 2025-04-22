@@ -1,13 +1,18 @@
-import { Navbar } from "@/components/Navbar/Navbar";
-import { PriceChart } from "@/components/PriceChart/PriceChart";
-import { SwapWidget } from "@/components/SwapWidgets/SwapWidget";
-import Image from "next/image";
+"use client";
+
+import { useGetSignerAndProvider } from "@/hooks/useGetSIgnerAndProvider";
+import { getNetwork } from "@/services/getNetworkNameUsingChainId";
+import { useAccountState } from "@/state/accountStore";
+import { useCall, useChainId } from "wagmi";
 
 export default function Home() {
+  const chainId = useChainId();
+  const provider = useAccountState();
+  console.log({ chainId, provider }, "this is the home ", getNetwork(chainId));
+
   return (
-    <div className="w-full h-full mx-auto py-10  gap-4 flex flex-col md:flex-row  items-start justify-center">
-      <PriceChart />
-      <SwapWidget />
+    <div className="w-full relative h-full mx-auto py-10  gap-4 flex flex-col md:flex-row  items-start justify-center">
+      Welcome to the 0xDex
     </div>
   );
 }

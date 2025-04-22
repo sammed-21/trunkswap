@@ -2,7 +2,9 @@ import type { Metadata } from "next";
 import localFont from "next/font/local";
 import "./globals.css";
 import { Navbar } from "@/components/Navbar/Navbar";
-
+import { Providers } from "@/components/provider/Providers";
+import "@rainbow-me/rainbowkit/styles.css";
+import InitalLoad from "@/components/InitalLoad";
 const geistSans = localFont({
   src: "./fonts/GeistVF.woff",
   variable: "--font-geist-sans",
@@ -25,14 +27,20 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en">
+    <html lang="en" className="">
       <body
-        className={`${geistSans.variable} ${geistMono.variable} max-w-[1440px] w-full relative h-full mx-auto antialiased`}
+        className={`${geistSans.variable} ${geistMono.variable}  w-full flex items-center justify-center relative h-full  antialiased`}
       >
-        <div className="absolute top-0 bottom-0 left-0 bg-[#0dbbac] rounded-full blur-[300px] w-[22rem] h-[32rem] -z-10"></div>
-        <Navbar />
-        {children}
-        <div className="absolute right-0 top-0  bg-[#0dbbac] rounded-full blur-[300px] w-[22rem] h-[32rem] -z-10"></div>
+        <div className="w-full max-w-[1440px] h-full relative">
+          <Providers>
+            <InitalLoad>
+              <div className="absolute top-0 bottom-0 left-0 bg-[#0d53bb] rounded-full blur-[300px] w-[22rem] h-[32rem] -z-10"></div>
+              <Navbar />
+              {children}
+              <div className="absolute right-0 top-0  bg-[#0d0dbb] rounded-full blur-[300px] w-[22rem] h-[32rem] -z-10"></div>
+            </InitalLoad>
+          </Providers>
+        </div>
       </body>
     </html>
   );
