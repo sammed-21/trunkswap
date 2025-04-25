@@ -141,5 +141,6 @@ export interface AccountInfo {
   viemClient: any;
   setChainId: (chainId: undefined | number | null) => void;
   setViemClient: (viewClient: any) => void;
+  resetAccountStore: () => void;
   // setSignerAndProvider: (signer: string, chainId: string | number) => void;
 }

@@ -1,14 +1,18 @@
 "use client";
 
 import { useGetSignerAndProvider } from "@/hooks/useGetSIgnerAndProvider";
-import { getNetwork } from "@/services/getNetworkNameUsingChainId";
+import { getNetworkNameUsingChainId } from "@/services/getNetworkNameUsingChainId";
 import { useAccountState } from "@/state/accountStore";
 import { useCall, useChainId } from "wagmi";
 
 export default function Home() {
   const chainId = useChainId();
   const provider = useAccountState();
-  console.log({ chainId, provider }, "this is the home ", getNetwork(chainId));
+  console.log(
+    { chainId, provider },
+    "this is the home ",
+    getNetworkNameUsingChainId(chainId)
+  );
 
   return (
     <div className="w-full relative h-full mx-auto py-10  gap-4 flex flex-col md:flex-row  items-start justify-center">

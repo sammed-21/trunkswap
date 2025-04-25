@@ -5,7 +5,6 @@ const obj: Record<number, string> = {
   11155111: "sepolia",
 };
 
-export const getNetwork = (chainId: number = 421614) => {
-  console.log(chainId);
+export const getNetworkNameUsingChainId = (chainId: number = 421614) => {
   return obj[chainId];
 };

@@ -1,4 +1,4 @@
-export const ERC20Abi = [
+export const  ERC20Abi = [
   {
     inputs: [],
     payable: false,

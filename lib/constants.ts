@@ -1,3 +1,7 @@
+import { FACTORY_ABI } from "@/abi/FACTORY_ABI";
+import { addressess } from "@/address";
+import { getNetworkNameUsingChainId } from "@/services/getNetworkNameUsingChainId";
+import { ethers } from "ethers";
 import { Address } from "viem";
 
 export const PERMIT2_ADDRESS = "0x000000000022D473030F116dDEE9F6B43aC78BA3";
@@ -30,6 +34,10 @@ export const fallbackUrls: Record<number, string> = {
   11155111: "https://ethereum-sepolia-rpc.publicnode.com",
   // Add other chains as needed
 };
+export const FactoryAddressChainId = 421614;
+export const FACTORY_ADDRESS = (chainId: any) =>
+  addressess[getNetworkNameUsingChainId(chainId | FactoryAddressChainId)]
+    .FACTORY_ADDRESS;
 
 export const MAINNET_TOKENS: Token[] = [
   {

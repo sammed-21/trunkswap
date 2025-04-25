@@ -1,102 +1,192 @@
 "use client";
 
-import { useAccount, useChainId, useWalletClient } from "wagmi";
-import { useAccountActions } from "@/state/accountStore";
-import { chainMap, config } from "@/wagmi/config";
+import { useAccount, useChainId, useSwitchChain, useWalletClient } from "wagmi";
+import { useAccountActions, useAccountState } from "@/state/accountStore";
+import { chainMaps, config } from "@/wagmi/config";
 import { createPublicClient, http } from "viem";
 import { JsonRpcProvider } from "ethers";
 import { useEffect } from "react";
 import { fallbackUrls } from "@/lib/constants";
 import { getWalletClient, watchAccount, watchChainId } from "@wagmi/core";
+import { usePoolActions } from "@/state/poolStore";
+import { addressess } from "@/address";
+import { getNetworkNameUsingChainId } from "./getNetworkNameUsingChainId";
+// Your fallback URLs and chain mapping
 
-export const WalletInit = () => {
-  const { address, isConnected } = useAccount();
+const chainMap = {
+  ...chainMaps,
+  421614: {
+    id: 421614,
+    name: "Arbitrum Sepolia",
+    network: "arbitrum-sepolia",
+    nativeCurrency: {
+      name: "Ether",
+      symbol: "ETH",
+      decimals: 18,
+    },
+    rpcUrls: {
+      default: { http: [fallbackUrls[421614]] },
+      public: { http: [fallbackUrls[421614]] },
+    },
+  },
+  // Add other chains as needed
+};
+
+// Factory address for fetching pool data
+type Props = { children: React.ReactNode };
+export const WalletInit = ({ children }: Props) => {
+  const { address, isConnected, isDisconnected } = useAccount();
   const chainId = useChainId();
-  const { data: walletClient } = useWalletClient(); // fix: it's an async hook that returns `data`
-  const { setProvider, setSigner, setChainId, setViemClient } =
-    useAccountActions();
+  const { data: walletClient } = useWalletClient();
 
-  useEffect(() => {
-    if (!chainId) return;
-    console.log("iside the chaindi of the walletinit");
-    const provider = getProvider(chainId);
-    console.log({ provider });
-    setProvider(provider);
+  const { isInitialized } = useAccountState();
+  const {
+    setProvider,
+    setSigner,
+    setChainId,
+    setViemClient,
+    resetAccountStore,
+    setInitialized,
+  } = useAccountActions();
 
-    if (isConnected && walletClient) {
-      const chain = chainMap[chainId];
+  const { fetchUserPositions, clearPoolStore } = usePoolActions();
+  let FACTORY_ADDRESS =
+    addressess[getNetworkNameUsingChainId(421614)].FACTORY_ADDRESS;
+  // Helper function to initialize provider
+  const initializeProvider = async (currentChainId: number) => {
+    try {
+      const chain = chainMaps[currentChainId] || chainMap[421614]; // Default to Arbitrum Sepolia
 
+      // Always create a provider regardless of wallet connection
+      const rpcUrl = fallbackUrls[currentChainId] || fallbackUrls[421614];
+      FACTORY_ADDRESS =
+        addressess[getNetworkNameUsingChainId(currentChainId)].FACTORY_ADDRESS;
+      const ethersProvider = new JsonRpcProvider(rpcUrl);
+
+      // Set up viem client
       const viemClient = createPublicClient({
         batch: { multicall: true },
         chain,
-        transport: http(),
+        transport: http(rpcUrl),
       });
 
-      setChainId(chainId);
-      setSigner(walletClient);
+      setProvider(ethersProvider);
+      setChainId(currentChainId);
       setViemClient(viemClient);
+      console.log({ ethersProvider });
+      // Set signer if wallet is connected
+      if (isConnected && walletClient) {
+        setSigner(walletClient);
+      }
+
+      // If user is connected, fetch their positions
+
+      setInitialized(true);
+      // if(ethersProvider){
+
+      //   fetchPoolData()
+      // }
+    } catch (error) {
+      console.error("Failed to initialize provider:", error);
+      // Set a fallback provider
+      const fallbackProvider = new JsonRpcProvider(fallbackUrls[421614]);
+      setProvider(fallbackProvider);
+      setChainId(421614);
     }
+  };
 
-    // Watch for account changes
+  // Initial setup
+  useEffect(() => {
+    // Initialize provider even if no wallet is connected
+    if (!isInitialized) {
+      initializeProvider(chainId || 421614);
+    }
+  }, [isInitialized, isConnected]);
+
+  // Handle disconnection
+  useEffect(() => {
+    if (isDisconnected) {
+      // Keep the provider but clear user-specific data
+      setSigner(null);
+      clearPoolStore();
+    }
+  }, [isDisconnected]);
+
+  // Handle chain changes
+  useEffect(() => {
+    if (!chainId) return;
+
+    console.log("Chain changed to:", chainId);
+
+    // Reset pool store when chain changes
+    resetAccountStore();
+    clearPoolStore();
+
+    // Initialize for the new chain
+    initializeProvider(chainId);
+  }, [chainId]);
+
+  // Watch for account changes
+  useEffect(() => {
+    console.log("hi iside watch");
+    if (!isConnected) return;
+
     const unwatchAccount = watchAccount(config, {
-      async onChange(account) {
-        if (!account.address) return;
-        if (!walletClient) return;
+      onChange(address) {
+        if (address) {
+          setSigner(null);
+          clearPoolStore();
+          return;
+        }
 
-        const chain = chainMap[chainId];
+        const currentChainId = chainId || 421614;
 
-        const viemClient = createPublicClient({
-          batch: { multicall: true },
-          chain,
-          transport: http(),
-        });
+        if (walletClient) {
+          setSigner(walletClient);
 
-        const rpcUrl = fallbackUrls[chainId] || viemClient.transport.url;
-        const ethersProvider = new JsonRpcProvider(rpcUrl);
+          // Fetch user positions when account changes
+          const provider = useAccountState().provider;
+          if (provider && address) {
+            fetchUserPositions(provider, address, FACTORY_ADDRESS);
+          }
+        }
+      },
+    });
+    const unwatchChainId = watchChainId(config, {
+      onChange(chainId) {
+        if (address) {
+          setSigner(null);
+          clearPoolStore();
+          return;
+        }
 
-        setProvider(ethersProvider);
-        setSigner(walletClient);
-        setChainId(chainId);
-        setViemClient(viemClient);
+        const currentChainId = chainId || 421614;
+
+        if (walletClient) {
+          setSigner(walletClient);
+
+          // Fetch user positions when account changes
+          const provider = useAccountState().provider;
+          if (provider && address) {
+            fetchUserPositions(provider, address, FACTORY_ADDRESS);
+          }
+        }
       },
     });
 
-    // Watch for chain changes
-    const unwatchChain = watchChainId(config, {
-      async onChange(chainId) {
-        const walletClient = await getWalletClient(config);
-        if (!walletClient) return;
-
-        const chain = chainMap[chainId];
-
-        const viemClient = createPublicClient({
-          batch: { multicall: true },
-          chain,
-          transport: http(),
-        });
-
-        const rpcUrl = fallbackUrls[chainId] || viemClient.transport.url;
-        const ethersProvider = new JsonRpcProvider(rpcUrl);
-
-        setProvider(ethersProvider);
-        setSigner(walletClient);
-        setChainId(chainId);
-        setViemClient(viemClient);
-      },
-    });
-
+    // Clean up
     return () => {
+      unwatchChainId();
       unwatchAccount();
-      unwatchChain();
     };
-  }, [chainId, isConnected, walletClient]);
+  }, [isConnected, walletClient, chainId]);
 
-  return null;
+  return <div>{children}</div>;
 };
 
-// Keep your helper as is
+// Helper function to get provider
 export const getProvider = (chainId: number = 421614) => {
-  const rpcUrl = fallbackUrls[chainId];
-  const ethersProvider = new JsonRpcProvider(rpcUrl);
-  return ethersProvider;
+  const rpcUrl = fallbackUrls[chainId] || fallbackUrls[421614];
+
+  return new JsonRpcProvider(rpcUrl);
 };
