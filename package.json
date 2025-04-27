@@ -2,6 +2,7 @@
   "name": "atmos-swap",
   "version": "0.1.0",
   "private": true,
+  "type": "module",
   "scripts": {
     "dev": "next dev",
     "build": "next build",
@@ -15,9 +16,6 @@
     "@radix-ui/react-tabs": "^1.1.4",
     "@rainbow-me/rainbowkit": "^2.2.4",
     "@tanstack/react-query": "^5.69.0",
-    "@uniswap/sdk-core": "^7.7.2",
-    "@uniswap/smart-order-router": "^4.20.11",
-    "@uniswap/v2-sdk": "/Users/sammedsbetadur/Desktop/worlds/UniswapV2/v2-sdk-00a1eca9456d37c3d467f56e57a0496d1bf28e40",
     "class-variance-authority": "^0.7.0",
     "ethers": "^6.13.5",
     "jsbi": "^4.3.2",

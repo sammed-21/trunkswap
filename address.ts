@@ -1,6 +1,3 @@
-import { FACTORY_ADDRESS } from "@uniswap/v2-sdk";
-import { Rocket } from "lucide-react";
-
 export const addressess: any = {
   sepolia: {
     STX_ADDRESS: "0x7Ae44D9950Db7b464b459b7BCF52616b3e91B1D6",

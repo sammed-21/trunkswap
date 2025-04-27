@@ -5,6 +5,7 @@ import { Navbar } from "@/components/Navbar/Navbar";
 import { Providers } from "@/components/provider/Providers";
 import "@rainbow-me/rainbowkit/styles.css";
 import InitalLoad from "@/components/InitalLoad";
+import { WalletInit } from "@/services/walletEvents";
 const geistSans = localFont({
   src: "./fonts/GeistVF.woff",
   variable: "--font-geist-sans",

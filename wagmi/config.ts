@@ -26,10 +26,9 @@ export const config = getDefaultConfig({
 //   transport: http(),
 // });
 
-export const chainMap: Record<number, any> = {
+export const chainMaps: Record<number, any> = {
   1: mainnet,
   42161: arbitrum,
-  421614: arbitrumSepolia,
   11155111: sepolia,
 };
 

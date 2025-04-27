@@ -4,7 +4,7 @@ import { addressess } from "@/address";
 import { Navbar } from "@/components/Navbar/Navbar";
 import { PriceChart } from "@/components/PriceChart/PriceChart";
 import { SwapWidget } from "@/components/SwapWidgets/SwapWidget";
-import { getNetwork } from "@/services/getNetworkNameUsingChainId";
+import { getNetworkNameUsingChainId } from "@/services/getNetworkNameUsingChainId";
 import { getProvider } from "@/services/walletEvents";
 import { useAccountState } from "@/state/accountStore";
 
@@ -29,15 +29,15 @@ export default function Home() {
 
   const { provider, viemClient } = useAccountState();
   console.log({ viemClient, provider, chainId });
-  console.log(chainId, getNetwork(chainId));
-  console.log(addressess[getNetwork(chainId)].STX_ADDRESS);
-  console.log(addressess[getNetwork(chainId)].RSTX_ADDRESS);
+  console.log(chainId, getNetworkNameUsingChainId(chainId));
+  console.log(addressess[getNetworkNameUsingChainId(chainId)].STX_ADDRESS);
+  console.log(addressess[getNetworkNameUsingChainId(chainId)].RSTX_ADDRESS);
   const stxcontract = {
-    address: addressess[getNetwork(chainId)].STX_ADDRESS,
+    address: addressess[getNetworkNameUsingChainId(chainId)].STX_ADDRESS,
     abi: ERC20Abi,
   } as const;
   const rstxcontract = {
-    address: addressess[getNetwork(chainId)].RSTX_ADDRESS,
+    address: addressess[getNetworkNameUsingChainId(chainId)].RSTX_ADDRESS,
     abi: ERC20Abi,
   } as const;
   const bala = useCallback(async () => {
