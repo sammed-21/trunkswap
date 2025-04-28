@@ -9,8 +9,6 @@ interface RowProps {
 }
 
 export const PoolRow = ({ pool }: RowProps) => {
-  console.log({ pool });
-
   return (
     <Link
       href={`/pool/${pool.pairAddress}`}

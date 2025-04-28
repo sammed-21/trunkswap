@@ -18,29 +18,23 @@ const InitialLoad = ({ children }: { children: React.ReactNode }) => {
   const { fetchTokenBalances, updateTokenBalances } = useSwapActions();
   const { provider } = useAccountState();
   let providerDefault = !provider ? getProvider() : provider;
-  console.log(providerDefault);
   useEffect(() => {
     const foolData = async () => {
-      console.log(providerDefault);
-      console.log(address, isConnected, "this is isndiel teh wallet init ");
       let position = await fetchPoolData(
         providerDefault,
         FACTORY_ADDRESS(chainId)
       );
-      console.log(position);
     };
     foolData();
   }, []);
   useEffect(() => {
     const foolData = async () => {
       if (address) {
-        console.log(address, isConnected, "this is isndiel teh wallet init ");
         let position = await fetchUserPositions(
           providerDefault!,
           address,
           FACTORY_ADDRESS(chainId)
         );
-        console.log(position);
         await fetchTokenBalances(address, provider);
       }
     };

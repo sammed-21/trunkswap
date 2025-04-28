@@ -175,7 +175,6 @@ export const MAINNET_TOKENS_BY_ADDRESS: Record<string, Token> = {
 };
 export const defaultChainId = 421614;
 export const DEFAULT_BUY_TOKEN = (chainId: number) => {
-  console.log(chainId);
   if (chainId == 1) {
     return "weth";
   } else if (chainId == 421614) {

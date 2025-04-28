@@ -70,19 +70,15 @@ export const WalletInit = ({ children }: Props) => {
         chain,
         transport: http(rpcUrl),
       });
-      console.log(chain, address);
       setProvider(ethersProvider);
       setChainId(currentChainId);
       setViemClient(viemClient);
       // Set signer if wallet is connected
-      console.log(isConnected);
       if (isConnected && window.ethereum) {
-        console.log(isConnected);
         const walletProvider = new ethers.BrowserProvider(window.ethereum);
 
         // Get the signer from the wallet provider
         walletSigner = await walletProvider.getSigner();
-        console.log({ walletSigner });
         // Store the signer in your state
         setSigner(walletSigner);
       }
@@ -124,8 +120,6 @@ export const WalletInit = ({ children }: Props) => {
   useEffect(() => {
     if (!chainId) return;
 
-    console.log("Chain changed to:", chainId);
-
     // Reset pool store when chain changes
     resetAccountStore();
     clearPoolStore();
@@ -136,7 +130,6 @@ export const WalletInit = ({ children }: Props) => {
 
   // Watch for account changes
   useEffect(() => {
-    console.log("hi iside watch");
     if (!isConnected) return;
 
     const unwatchAccount = watchAccount(config, {

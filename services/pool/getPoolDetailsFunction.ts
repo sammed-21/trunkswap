@@ -6,7 +6,6 @@ import { FACTORY_ABI } from "@/abi/FACTORY_ABI";
 import { ERC20_ABI } from "@/abi/ERC20ABI";
 export async function getAllPairs(factoryContract: Contract) {
   let allPairsLength = await factoryContract.allPairsLength();
-  console.log({ allPairsLength });
 
   const pairAddresses = [];
 
@@ -52,7 +51,6 @@ export async function getPairDetails(
   let reserve0 = formatUnits(reserves[0], token0Decimals).toString();
   let reserve1 = formatUnits(reserves[1], token1Decimals).toString();
 
-  console.log(reserve0, reserve1, "after format");
   return {
     pairAddress,
     token0: {

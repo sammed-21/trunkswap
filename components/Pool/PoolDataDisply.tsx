@@ -7,7 +7,6 @@ export const PoolPositionsList = () => {
   const { isConnected, address } = useAccount();
   const { userPositions, isLoading, error } = usePoolState();
   const { chainId } = useAccountState();
-  console.log(userPositions);
   // Loading state
   if (isLoading) {
     return (

@@ -73,7 +73,6 @@ export function useSwapTransactions() {
       } else {
         needsApproval = false;
       }
-      console.log({ needsApproval });
       setNeedsApproval(needsApproval);
 
       if (needsApproval) {
@@ -107,7 +106,6 @@ export function useSwapTransactions() {
       setTokenBAmount("");
       return;
     }
-    console.log("after the getout if statement");
     try {
       setQuoteLoading(true);
 
@@ -121,8 +119,6 @@ export function useSwapTransactions() {
         TokenAAmount,
         currentSellAsset.decimals
       );
-      const weth = await routerContract.WETH();
-      console.log(weth);
 
       // Get amount out
       const amountsOut = await routerContract.getAmountsOut(amountIn, [
@@ -168,7 +164,6 @@ export function useSwapTransactions() {
       //     address,
       //     deadlineTimestamp
       //   );
-      // console.log({ tx3 });
       // // estimate the gas
       // const estimateGas = await provider.estimateGas(tx3);
 
@@ -313,8 +308,6 @@ export function useSwapTransactions() {
   // Get quote when input changes
   useEffect(() => {
     if (currentSellAsset?.address && currentBuyAsset?.address && TokenAAmount) {
-      console.log(TokenAAmount, "inside the useeffect");
-
       const debounceTimer = setTimeout(() => {
         getQuote();
       }, 500); // Add debounce to avoid too many calls
@@ -324,9 +317,7 @@ export function useSwapTransactions() {
   }, [signer, currentSellAsset, currentBuyAsset, TokenAAmount, getQuote]);
   // Check approval when tokens or amounts change
   useEffect(() => {
-    console.log({ signer });
     if (signer && currentSellAsset?.address && TokenAAmount) {
-      console.log("inside the checkapprove otken");
       if (!needsApproval) {
         checkApproval();
       }

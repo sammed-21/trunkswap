@@ -99,7 +99,6 @@ export const usePoolStore = create<PoolState>((set, get) => ({
     })),
 
   setLoading: (loading: boolean) => {
-    console.log({ loading }, "inside the setloading function");
     set({ isLoading: loading });
   },
 
@@ -109,7 +108,6 @@ export const usePoolStore = create<PoolState>((set, get) => ({
 
   fetchPoolData: async (provider: ethers.Provider, factoryAddress: string) => {
     set({ isLoading: true, error: null });
-    console.log("after loading", get().isLoading);
     // Check for provider
     if (!provider) {
       set({ isLoading: false }); // Important: reset loading if no provider
@@ -129,7 +127,6 @@ export const usePoolStore = create<PoolState>((set, get) => ({
       const poolDetails = await poolData(factoryContract, provider);
 
       // Update state with results
-      console.log(typeof poolDetails);
       set({
         poolData: poolDetails,
         totalPool: totalPool.toString(),
@@ -202,7 +199,6 @@ export const usePoolStore = create<PoolState>((set, get) => ({
             ERC20_ABI,
             provider
           );
-          console.log("inside the fetch user position ");
           const token1Contract = new ethers.Contract(
             token1Address,
             ERC20_ABI,
@@ -242,7 +238,6 @@ export const usePoolStore = create<PoolState>((set, get) => ({
             token1Amount,
             token1Decimals
           );
-          console.log({ pairAddress });
           // Add position to the list
           positions.push({
             pairAddress,
@@ -254,7 +249,6 @@ export const usePoolStore = create<PoolState>((set, get) => ({
             token0Amount: formattedToken0Amount,
             token1Amount: formattedToken1Amount,
           });
-          console.log({ positions });
         } catch (error) {
           console.error(`Error fetching data for pair ${i}:`, error);
           // Continue with next pair instead of failing the entire process

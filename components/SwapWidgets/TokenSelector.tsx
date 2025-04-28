@@ -15,9 +15,7 @@ const TokenSelector: React.FC<TokenSelectorProps> = ({
 }) => {
   const { chainId } = useAccountState();
   const { tokens, currentSellAsset, currentBuyAsset } = useSwapState();
-  console.log({ tokens });
   const [searchQuery, setSearchQuery] = useState<string>("");
-  console.log(tokens[0].chainId, chainId, "this tow chdinaid");
   const isTokenDisabled = (token: Token) => {
     return (
       (currentSellAsset && token.symbol === currentSellAsset.symbol) ||
