@@ -91,6 +91,7 @@ export interface V2QuoteTransaction {
 }
 
 export interface SwapState {
+  isWalletConnected: any;
   TokenB: string;
   TokenA: string;
   TokenBAmount: string;
@@ -100,7 +101,21 @@ export interface SwapState {
   currentSellAsset: TokenDetail;
   currentBuyAsset: TokenDetail;
   selectorOpen: Boolean;
-  slippage: number;
+  slippage: number | string | any;
+  deadline: number;
+  tokenABalance: string;
+  tokenBBalance: string;
+  loadingBalances: boolean;
+  transactionButtonText: string;
+  isSwapping: boolean;
+  quoteLoading: boolean;
+  needsApproval: boolean;
+  isApproving: boolean;
+  minAmountOut: {
+    raw: bigint | null;
+    formatted: string | null;
+  };
+  quoteAmount: bigint | null | string;
 }
 export interface Token {
   name: string;
@@ -121,6 +136,20 @@ export interface SwapActions {
   setCurrentBuyAsset: (token: TokenDetail) => void;
   setCurrentSellAsset: (token: TokenDetail) => void;
   setSlippage: (slippage: number) => void;
+  setDeadline: (deadline: number) => void;
+  setTokenABalance: (tokenBalance: string) => void;
+  setTokenBBalance: (tokenBalance: string) => void;
+  setLoadingBalances: (isLoading: boolean) => void;
+  setWalletConnected: (isConnected: boolean) => void;
+  setIsSwapping: (isSwapping: boolean) => void;
+  setQuoteLoading: (quoteLoading: boolean) => void;
+  setNeedsApproval: (needsApproval: boolean) => void;
+  setIsApproving: (isApproving: boolean) => void;
+  setMinAmountOut: (minAmountOut: { raw: bigint; formatted: string }) => void;
+  fetchTokenBalances: (walletAddress: string, provider: any) => Promise<void>;
+  updateTokenBalances: () => Promise<void>;
+  setTransactionButtonText: (transactoinButtonText: string) => void;
+  setQuotedAmount: (quoteAmount: string) => void;
 }
 
 export interface TokenDetail {

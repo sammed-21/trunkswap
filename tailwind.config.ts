@@ -9,11 +9,13 @@ const config: Config = {
   theme: {
     extend: {
       colors: {
-        primary: "#0bd790",
-        secondary: "#0dbbac",
+        primary: "var(--primary)",
+        secondary: "var(--secondary)",
         accent: "#0ea7bf",
         textpriamry: "#6A717F",
         lightgray: "#202C2A",
+        border: "var(--secondary)",
+        headingbackground: "var(--headingBackground)",
       },
       backgroundImage: {
         gradient: "linear-gradient(90deg, #0bd790, #0ea7bf)",

@@ -11,9 +11,9 @@ export const PoolPositionsList = () => {
   // Loading state
   if (isLoading) {
     return (
-      <div className="p-6 border rounded-lg shadow-sm">
+      <div className="p-6 border rounded-none shadow-sm">
         <div className="flex flex-col items-center justify-center py-8">
-          <div className="w-12 h-12 border-t-4 border-blue-500 border-solid rounded-full animate-spin"></div>
+          <div className="w-12 h-12 border-t-4 border-blue-500 border-solid rounded-none animate-spin"></div>
           <p className="mt-4 text-gray-600">Loading your positions...</p>
         </div>
       </div>
@@ -23,7 +23,7 @@ export const PoolPositionsList = () => {
   // Error state
   if (error) {
     return (
-      <div className="p-6 border border-red-200 bg-red-50 rounded-lg">
+      <div className="p-6 border border-red-200 bg-red-50 rounded-none">
         <h3 className="text-lg font-medium text-red-800">
           Error loading positions
         </h3>
@@ -39,36 +39,36 @@ export const PoolPositionsList = () => {
   }
 
   // Not connected
-  if (!isConnected) {
-    return (
-      <div className="p-6 border rounded-lg">
-        <div className="flex flex-col items-center justify-center py-8">
-          <svg
-            className="w-16 h-16 text-gray-400"
-            fill="none"
-            viewBox="0 0 24 24"
-            stroke="currentColor"
-          >
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              strokeWidth={2}
-              d="M13 10V3L4 14h7v7l9-11h-7z"
-            />
-          </svg>
-          <h3 className="mt-4 text-lg font-medium">Connect your wallet</h3>
-          <p className="mt-2 text-sm text-gray-500">
-            Connect your wallet to view your liquidity positions
-          </p>
-        </div>
-      </div>
-    );
-  }
+  // if (!isConnected) {
+  //   return (
+  //     <div className="p-6 border rounded-none">
+  //       <div className="flex flex-col items-center justify-center py-8">
+  //         <svg
+  //           className="w-16 h-16 text-gray-400"
+  //           fill="none"
+  //           viewBox="0 0 24 24"
+  //           stroke="currentColor"
+  //         >
+  //           <path
+  //             strokeLinecap="round"
+  //             strokeLinejoin="round"
+  //             strokeWidth={2}
+  //             d="M13 10V3L4 14h7v7l9-11h-7z"
+  //           />
+  //         </svg>
+  //         <h3 className="mt-4 text-lg font-medium">Connect your wallet</h3>
+  //         <p className="mt-2 text-sm text-gray-500">
+  //           Connect your wallet to view your liquidity positions
+  //         </p>
+  //       </div>
+  //     </div>
+  //   );
+  // }
 
   // No positions
   if (userPositions.length === 0) {
     return (
-      <div className="p-6 border rounded-lg">
+      <div className="p-6 border rounded-none">
         <div className="flex flex-col items-center justify-center py-8">
           <svg
             className="w-16 h-16 text-gray-400"
@@ -111,7 +111,7 @@ export const PoolPositionsList = () => {
       {userPositions.map((position) => (
         <div
           key={position.pairAddress}
-          className="p-4 border rounded-lg hover:shadow-md transition-shadow"
+          className="p-4 border rounded-none hover:shadow-md transition-shadow"
         >
           <div className="flex justify-between items-center">
             <div>

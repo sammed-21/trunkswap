@@ -3,6 +3,8 @@ import { addressess } from "@/address";
 import { getNetworkNameUsingChainId } from "@/services/getNetworkNameUsingChainId";
 import { ethers } from "ethers";
 import { Address } from "viem";
+import STX_IMAGE from "@/public/tokens/stx.svg";
+import RSTX_IMAGE from "@/public/tokens/rstx.svg";
 
 export const PERMIT2_ADDRESS = "0x000000000022D473030F116dDEE9F6B43aC78BA3";
 
@@ -36,10 +38,28 @@ export const fallbackUrls: Record<number, string> = {
 };
 export const FactoryAddressChainId = 421614;
 export const FACTORY_ADDRESS = (chainId: any) =>
-  addressess[getNetworkNameUsingChainId(chainId | FactoryAddressChainId)]
+  addressess[getNetworkNameUsingChainId((chainId = FactoryAddressChainId))]
     .FACTORY_ADDRESS;
 
+export const DefaultSlippage = "5.5";
+
 export const MAINNET_TOKENS: Token[] = [
+  {
+    chainId: 421614,
+    name: "STX Coin",
+    symbol: "STX",
+    decimals: 18,
+    address: "0x7dE5CEdca10d8b851aD55Be6434c39a86674bb54",
+    logoURI: STX_IMAGE,
+  },
+  {
+    chainId: 421614,
+    name: "RSTX Coin",
+    symbol: "RSTX",
+    decimals: 18,
+    address: "0x2BCb93F7D8884410845fa1F8B8Df5df820673be3",
+    logoURI: RSTX_IMAGE,
+  },
   {
     chainId: 1,
     name: "Wrapped Ether",
@@ -79,42 +99,40 @@ export const MAINNET_TOKENS: Token[] = [
 ];
 
 export const MAINNET_TOKENS_BY_SYMBOL: Record<string, Token> = {
-  weth: {
-    chainId: 1,
-    name: "Wrapped Ether",
-    symbol: "WETH",
+  stx: {
+    chainId: 421614,
+    name: "STX Coin",
+    symbol: "STX",
     decimals: 18,
-    address: "0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2",
-    logoURI:
-      "https://raw.githubusercontent.com/maticnetwork/polygon-token-assets/main/assets/tokenAssets/weth.svg",
+    address: "0x7dE5CEdca10d8b851aD55Be6434c39a86674bb54",
+    logoURI: STX_IMAGE,
   },
-  usdc: {
-    chainId: 1,
-    name: "USD Coin",
-    symbol: "USDC",
-    decimals: 6,
-    address: "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48",
-    logoURI:
-      "https://raw.githubusercontent.com/maticnetwork/polygon-token-assets/main/assets/tokenAssets/usdc.svg",
-  },
-  dai: {
-    chainId: 1,
-    name: "Dai - PoS",
-    symbol: "DAI",
+  rstx: {
+    chainId: 421614,
+    name: "RSTX Coin",
+    symbol: "RSTX",
     decimals: 18,
-    address: "0x6b175474e89094c44da98b954eedeac495271d0f",
-    logoURI:
-      "https://raw.githubusercontent.com/maticnetwork/polygon-token-assets/main/assets/tokenAssets/dai.svg",
+    address: "0x2BCb93F7D8884410845fa1F8B8Df5df820673be3",
+    logoURI: RSTX_IMAGE,
   },
-  floki: {
-    chainId: 1,
-    name: "FLOKI",
-    symbol: "FLOKI",
-    decimals: 9,
-    address: "0xcf0c122c6b73ff809c693db761e7baebe62b6a2e",
-    logoURI:
-      "https://raw.githubusercontent.com/trustwallet/assets/c37119334a24f9933f373c6cc028a5bdbad2ecb4/blockchains/ethereum/assets/0xcf0C122c6b73ff809C693DB761e7BaeBe62b6a2E/logo.png",
-  },
+  // dai: {
+  //   chainId: 1,
+  //   name: "Dai - PoS",
+  //   symbol: "DAI",
+  //   decimals: 18,
+  //   address: "0x6b175474e89094c44da98b954eedeac495271d0f",
+  //   logoURI:
+  //     "https://raw.githubusercontent.com/maticnetwork/polygon-token-assets/main/assets/tokenAssets/dai.svg",
+  // },
+  // floki: {
+  //   chainId: 1,
+  //   name: "FLOKI",
+  //   symbol: "FLOKI",
+  //   decimals: 9,
+  //   address: "0xcf0c122c6b73ff809c693db761e7baebe62b6a2e",
+  //   logoURI:
+  //     "https://raw.githubusercontent.com/trustwallet/assets/c37119334a24f9933f373c6cc028a5bdbad2ecb4/blockchains/ethereum/assets/0xcf0C122c6b73ff809C693DB761e7BaeBe62b6a2E/logo.png",
+  // },
 };
 
 export const MAINNET_TOKENS_BY_ADDRESS: Record<string, Token> = {
@@ -155,18 +173,24 @@ export const MAINNET_TOKENS_BY_ADDRESS: Record<string, Token> = {
       "https://raw.githubusercontent.com/trustwallet/assets/c37119334a24f9933f373c6cc028a5bdbad2ecb4/blockchains/ethereum/assets/0xcf0C122c6b73ff809C693DB761e7BaeBe62b6a2E/logo.png",
   },
 };
-
+export const defaultChainId = 421614;
 export const DEFAULT_BUY_TOKEN = (chainId: number) => {
-  if (chainId === 1) {
+  console.log(chainId);
+  if (chainId == 1) {
+    return "weth";
+  } else if (chainId == 421614) {
+    return "rstx";
+  } else {
     return "weth";
   }
-  console.log({ chainId });
-  return "weth";
 };
 
 export const DEFAULT_SELL_TOKEN = (chainId: number) => {
   if (chainId == 1) {
-    return "dai";
+    return "weth";
+  } else if (chainId == 421614) {
+    return "stx";
+  } else {
+    return "weth";
   }
-  return "dai";
 };

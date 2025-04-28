@@ -4,9 +4,9 @@ import { useAccount, useChainId, useSwitchChain, useWalletClient } from "wagmi";
 import { useAccountActions, useAccountState } from "@/state/accountStore";
 import { chainMaps, config } from "@/wagmi/config";
 import { createPublicClient, http } from "viem";
-import { JsonRpcProvider } from "ethers";
+import { ethers, JsonRpcProvider } from "ethers";
 import { useEffect } from "react";
-import { fallbackUrls } from "@/lib/constants";
+import { defaultChainId, fallbackUrls } from "@/lib/constants";
 import { getWalletClient, watchAccount, watchChainId } from "@wagmi/core";
 import { usePoolActions } from "@/state/poolStore";
 import { addressess } from "@/address";
@@ -38,8 +38,9 @@ export const WalletInit = ({ children }: Props) => {
   const { address, isConnected, isDisconnected } = useAccount();
   const chainId = useChainId();
   const { data: walletClient } = useWalletClient();
+  let walletSigner: ethers.Signer | ethers.JsonRpcSigner | null;
 
-  const { isInitialized } = useAccountState();
+  const { isInitialized, provider } = useAccountState();
   const {
     setProvider,
     setSigner,
@@ -69,14 +70,21 @@ export const WalletInit = ({ children }: Props) => {
         chain,
         transport: http(rpcUrl),
       });
-
+      console.log(chain, address);
       setProvider(ethersProvider);
       setChainId(currentChainId);
       setViemClient(viemClient);
-      console.log({ ethersProvider });
       // Set signer if wallet is connected
-      if (isConnected && walletClient) {
-        setSigner(walletClient);
+      console.log(isConnected);
+      if (isConnected && window.ethereum) {
+        console.log(isConnected);
+        const walletProvider = new ethers.BrowserProvider(window.ethereum);
+
+        // Get the signer from the wallet provider
+        walletSigner = await walletProvider.getSigner();
+        console.log({ walletSigner });
+        // Store the signer in your state
+        setSigner(walletSigner);
       }
 
       // If user is connected, fetch their positions
@@ -98,8 +106,8 @@ export const WalletInit = ({ children }: Props) => {
   // Initial setup
   useEffect(() => {
     // Initialize provider even if no wallet is connected
-    if (!isInitialized) {
-      initializeProvider(chainId || 421614);
+    if (!isInitialized || !provider) {
+      initializeProvider(chainId || defaultChainId);
     }
   }, [isInitialized, isConnected]);
 
@@ -142,7 +150,7 @@ export const WalletInit = ({ children }: Props) => {
         const currentChainId = chainId || 421614;
 
         if (walletClient) {
-          setSigner(walletClient);
+          setSigner(walletSigner);
 
           // Fetch user positions when account changes
           const provider = useAccountState().provider;
@@ -162,8 +170,8 @@ export const WalletInit = ({ children }: Props) => {
 
         const currentChainId = chainId || 421614;
 
-        if (walletClient) {
-          setSigner(walletClient);
+        if (walletSigner) {
+          setSigner(walletSigner);
 
           // Fetch user positions when account changes
           const provider = useAccountState().provider;
