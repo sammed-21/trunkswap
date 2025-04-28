@@ -1,8 +1,9 @@
 import { create } from "zustand";
 import { useShallow } from "zustand/react/shallow";
-import { ethers } from "ethers";
+import { ethers, Signer } from "ethers";
 import { createPublicClient, http } from "viem";
 import { getProvider } from "@/services/walletEvents";
+import { defaultChainId } from "@/lib/constants";
 
 interface AccountInfo {
   signer: any;
@@ -11,7 +12,7 @@ interface AccountInfo {
   viemClient: any;
   isInitialized: boolean; // Add this to track initialization state
 
-  setSigner: (signer: any) => void;
+  setSigner: (signer: Signer | null) => void;
   setProvider: (provider: any) => void;
   setChainId: (chainId: any) => void;
   setViemClient: (viemClient: any) => void;
@@ -23,7 +24,7 @@ interface AccountInfo {
 const defaultAccountState = {
   signer: null,
   provider: null,
-  chainId: null,
+  chainId: defaultChainId,
   viemClient: null,
   isInitialized: false,
 };
@@ -31,7 +32,7 @@ const defaultAccountState = {
 export const useAccountStore = create<AccountInfo>((set) => ({
   ...defaultAccountState,
 
-  setSigner: (signer: any) => set(() => ({ signer })),
+  setSigner: (signer: Signer | null) => set(() => ({ signer })),
   setProvider: (provider: any) => set(() => ({ provider })),
   setChainId: (chainId: any) => set(() => ({ chainId })),
   setViemClient: (viemClient: any) => set(() => ({ viemClient })),

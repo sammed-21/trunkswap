@@ -1,9 +1,9 @@
-import { ERC20Abi } from "@/abi/ERC20ABI";
 import { PAIR_ABI } from "@/abi/PAIR_ABI";
 import { addressess } from "@/address";
-import { Contract, ethers } from "ethers";
+import { Contract, ethers, formatUnits } from "ethers";
 import { getNetworkNameUsingChainId } from "../getNetworkNameUsingChainId";
 import { FACTORY_ABI } from "@/abi/FACTORY_ABI";
+import { ERC20_ABI } from "@/abi/ERC20ABI";
 export async function getAllPairs(factoryContract: Contract) {
   let allPairsLength = await factoryContract.allPairsLength();
   console.log({ allPairsLength });
@@ -27,19 +27,32 @@ export async function getPairDetails(
   // address?: string | undefined
 ) {
   const pairContract = new ethers.Contract(pairAddress, PAIR_ABI, provider);
-
   const token0Address = await pairContract.token0();
   const token1Address = await pairContract.token1();
   const reserves = await pairContract.getReserves();
   const totalSupply = await pairContract.totalSupply();
   // const balance = await pairContract.balanceOf(address);
 
-  const token0Contract = new ethers.Contract(token0Address, ERC20Abi, provider);
-  const token1Contract = new ethers.Contract(token1Address, ERC20Abi, provider);
+  const token0Contract = new ethers.Contract(
+    token0Address,
+    ERC20_ABI,
+    provider
+  );
+  const token1Contract = new ethers.Contract(
+    token1Address,
+    ERC20_ABI,
+    provider
+  );
 
   const token0Symbol = await token0Contract.symbol();
+  const token0Decimals = await token0Contract.decimals();
   const token1Symbol = await token1Contract.symbol();
+  const token1Decimals = await token1Contract.decimals();
 
+  let reserve0 = formatUnits(reserves[0], token0Decimals).toString();
+  let reserve1 = formatUnits(reserves[1], token1Decimals).toString();
+
+  console.log(reserve0, reserve1, "after format");
   return {
     pairAddress,
     token0: {
@@ -50,7 +63,10 @@ export async function getPairDetails(
       address: token1Address,
       symbol: token1Symbol,
     },
+    reserve0,
+    reserve1,
     reserves,
+
     totalSupply,
     // balance,
   };

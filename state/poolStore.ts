@@ -1,11 +1,13 @@
 import { create } from "zustand";
 import { useShallow } from "zustand/react/shallow";
 import { ethers, JsonRpcProvider } from "ethers";
-import { ERC20Abi } from "@/abi/ERC20ABI";
 import { FACTORY_ABI } from "@/abi/FACTORY_ABI";
 import { PAIR_ABI } from "@/abi/PAIR_ABI";
 import { poolData } from "@/services/pool/getPoolDetailsFunction";
-import { useAccountState } from "./accountStore";
+import { ERC20_ABI } from "@/abi/ERC20ABI";
+
+// correct the path if needed
+// <-- Direct call outside React component
 
 // Types for pool data
 interface PoolPosition {
@@ -28,6 +30,8 @@ export type PoolDetails = {
     address: string;
     symbol: string;
   };
+  reserve0: any;
+  reserve1: any;
   reserves: readonly [bigint, bigint, bigint]; // reserve0, reserve1, blockTimestampLast
   totalSupply: bigint;
 };
@@ -39,6 +43,7 @@ interface PoolState {
   error: string | null;
   lastUpdated: number;
   poolData: PoolDetails[];
+  totalPool: number | string;
 
   // Actions
   setUserPositions: (positions: PoolPosition[]) => void;
@@ -62,9 +67,10 @@ interface PoolState {
 const defaultPoolState = {
   userPositions: [],
   poolData: [],
-  isLoading: false,
+  isLoading: true,
   error: null,
   lastUpdated: 0,
+  totalPool: 0,
 };
 
 export const usePoolStore = create<PoolState>((set, get) => ({
@@ -92,31 +98,53 @@ export const usePoolStore = create<PoolState>((set, get) => ({
       lastUpdated: Date.now(),
     })),
 
-  setLoading: (loading) => set({ isLoading: loading }),
+  setLoading: (loading: boolean) => {
+    console.log({ loading }, "inside the setloading function");
+    set({ isLoading: loading });
+  },
 
   setError: (error) => set({ error }),
 
   clearPoolStore: () => set(defaultPoolState),
+
   fetchPoolData: async (provider: ethers.Provider, factoryAddress: string) => {
+    set({ isLoading: true, error: null });
+    console.log("after loading", get().isLoading);
+    // Check for provider
+    if (!provider) {
+      set({ isLoading: false }); // Important: reset loading if no provider
+      return;
+    }
     try {
-      set({ isLoading: true, error: null });
-      console.log({ provider }, "this is inside the store");
-      if (!provider) return;
+      // Start loading
+
+      // Create contract and fetch data
       const factoryContract = new ethers.Contract(
         factoryAddress,
         FACTORY_ABI,
         provider
       );
-      const weth = await factoryContract.allPairsLength();
-      console.log({ weth });
-      let poolDetails = await poolData(factoryContract, provider);
-      console.log({ poolDetails });
-      set({ poolData: poolDetails });
-    } catch (error) {
+
+      const totalPool = await factoryContract.allPairsLength();
+      const poolDetails = await poolData(factoryContract, provider);
+
+      // Update state with results
+      console.log(typeof poolDetails);
+      set({
+        poolData: poolDetails,
+        totalPool: totalPool.toString(),
+      });
+    } catch (error: any) {
       console.log(error);
+      // Important: Reset loading state in case of error
+      set({
+        isLoading: false,
+        error: error.message || "Failed to fetch pool data",
+      });
+    } finally {
+      set({ isLoading: false });
     }
   },
-
   fetchUserPositions: async (
     provider: ethers.Provider | JsonRpcProvider | undefined,
     account: string,
@@ -171,13 +199,13 @@ export const usePoolStore = create<PoolState>((set, get) => ({
           // Create token contracts
           const token0Contract = new ethers.Contract(
             token0Address,
-            ERC20Abi,
+            ERC20_ABI,
             provider
           );
           console.log("inside the fetch user position ");
           const token1Contract = new ethers.Contract(
             token1Address,
-            ERC20Abi,
+            ERC20_ABI,
             provider
           );
 
@@ -258,6 +286,7 @@ export const usePoolState = () =>
       error: state.error,
       lastUpdated: state.lastUpdated,
       poolData: state.poolData,
+      totalPool: state.totalPool,
     }))
   );
 

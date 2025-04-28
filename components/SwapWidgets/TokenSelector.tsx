@@ -1,6 +1,8 @@
 import React, { useEffect, useState } from "react";
 import { Token } from "@/lib/types";
 import { useSwapState } from "@/state/swapStore";
+import { useAccountState } from "@/state/accountStore";
+import Image from "next/image";
 
 interface TokenSelectorProps {
   onSelect: (token: Token) => void;
@@ -11,9 +13,11 @@ const TokenSelector: React.FC<TokenSelectorProps> = ({
   onSelect,
   closeModal,
 }) => {
+  const { chainId } = useAccountState();
   const { tokens, currentSellAsset, currentBuyAsset } = useSwapState();
+  console.log({ tokens });
   const [searchQuery, setSearchQuery] = useState<string>("");
-
+  console.log(tokens[0].chainId, chainId, "this tow chdinaid");
   const isTokenDisabled = (token: Token) => {
     return (
       (currentSellAsset && token.symbol === currentSellAsset.symbol) ||
@@ -30,8 +34,9 @@ const TokenSelector: React.FC<TokenSelectorProps> = ({
   // Filter tokens based on the search query (case-insensitive match)
   const filteredTokens = tokens.filter(
     (token) =>
-      token.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      token.symbol.toLowerCase().includes(searchQuery.toLowerCase())
+      token.chainId === chainId &&
+      (token.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        token.symbol.toLowerCase().includes(searchQuery.toLowerCase()))
   );
 
   useEffect(() => {
@@ -56,14 +61,14 @@ const TokenSelector: React.FC<TokenSelectorProps> = ({
       onClick={handleOverlayClick} // Handle click on the overlay
     >
       <div
-        className="absolute right-0 top-0 bg-[#030D0A] max-w-[448px] w-full h-full shadow-lg p-4"
+        className="absolute right-0 top-0 bg-primary max-w-[448px] w-full h-full shadow-lg p-4"
         onClick={(e) => e.stopPropagation()} // Prevent click propagation to the overlay
       >
         <div className="border-b-[1px] mb-5 -mx-3 py-3 px-3 border-secondary flex justify-between items-center">
           <span>Select a Token</span>
           <button
             onClick={closeModal}
-            className="text-white bg-lightgray  rounded-lg p-2"
+            className="text-white bg-border  rounded-none p-2"
           >
             ESC
           </button>
@@ -75,7 +80,7 @@ const TokenSelector: React.FC<TokenSelectorProps> = ({
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             placeholder="Search tokens..."
-            className="w-full p-2 bg-[#212C2B] text-white rounded-lg"
+            className="w-full p-2 bg-secondary text-white rounded-none"
           />
         </div>
         <div className="space-y-4">
@@ -86,15 +91,15 @@ const TokenSelector: React.FC<TokenSelectorProps> = ({
               return (
                 <div
                   key={token.address}
-                  className={`flex justify-between items-center p-4 border-none rounded-lg ${
+                  className={`flex justify-between items-center p-4 border-none rounded-none ${
                     disabled
-                      ? "bg-[#212C2B] cursor-not-allowed"
-                      : "cursor-pointer hover:bg-[#0F1D1A]"
+                      ? "bg-secondary cursor-not-allowed"
+                      : "cursor-pointer hover:bg-primary"
                   }`}
                   onClick={() => !disabled && onSelect(token)} // Allow selection only if not disabled
                 >
                   <div className="flex items-center">
-                    <img
+                    <Image
                       src={token.logoURI}
                       alt={token.name}
                       className="w-6 h-6 mr-2"

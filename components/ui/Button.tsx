@@ -6,20 +6,23 @@ import { Loader2 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 const buttonVariants = cva(
-  "inline-flex items-center justify-center rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50",
+  "inline-flex items-center justify-center rounded-none text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50",
   {
     variants: {
       variant: {
-        primary: "hover:bg-primary-500 text-white bg-primary rounded-full",
+        primary:
+          "hover:bg-secondary border-border border-[1px] text-white bg-primary rounded-none",
+        white:
+          "bg-white text-black border-textprimary font-semibold text-xl w-fit",
         Blue: "text-primary-light-blue bg-primary",
         Pink: "bg-primary-pink text-primary-light-pink",
         Primary: "bg-primary text-primary",
         default:
-          "bg-primary hover:bg-primary-500 rounded-full text-primary-foreground",
+          "bg-primary hover:bg-primary-500 rounded-none text-primary-foreground",
       },
       size: {
         default: "h-10 px-4 py-2",
-        sm: "h-9 rounded-lg px-3",
+        sm: "h-9 rounded-none px-3",
       },
     },
     defaultVariants: {
