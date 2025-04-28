@@ -10,6 +10,7 @@ import {
   MAINNET_TOKENS_BY_SYMBOL,
 } from "@/lib/constants";
 import { fetchTokenBalance } from "@/services/getTokenBalance";
+import { useAccountState } from "./accountStore";
 
 // Unified Zustand Store
 const useSwapStore = create<SwapState & SwapActions>((set, get) => ({
@@ -67,7 +68,7 @@ const useSwapStore = create<SwapState & SwapActions>((set, get) => ({
     set(() => ({
       currentBuyAsset: asset,
     })),
-  setWalletConnected: (isConnected: boolean) =>
+  setIsWalletConnected: (isConnected: boolean) =>
     set(() => ({
       isWalletConnected: isConnected,
     })),
@@ -138,17 +139,12 @@ const useSwapStore = create<SwapState & SwapActions>((set, get) => ({
   },
 
   // Function to update balances when tokens change
-  updateTokenBalances: async () => {
-    const { isWalletConnected, fetchTokenBalances } = get();
-
+  updateTokenBalances: async (address: string, provider: any) => {
+    const { fetchTokenBalances } = get();
     // Only fetch balances if wallet is connected
-    if (isWalletConnected) {
-      // Get current wallet address and provider from your wallet connection logic
-      const walletAddress = window.ethereum?.selectedAddress;
-      const provider = window.ethereum;
-
-      if (walletAddress && provider) {
-        await fetchTokenBalances(walletAddress, provider);
+    if (address) {
+      if (address && provider) {
+        await fetchTokenBalances(address, provider);
       }
     }
   },
@@ -199,7 +195,7 @@ export const useSwapActions = () =>
       setSelectorOpen: state.setSelectorOpen,
       setCurrentSellAsset: state.setCurrentSellAsset,
       setCurrentBuyAsset: state.setCurrentBuyAsset,
-      setWalletConnected: state.setWalletConnected,
+      setIsWalletConnected: state.setIsWalletConnected,
       fetchTokenBalances: state.fetchTokenBalances,
       updateTokenBalances: state.updateTokenBalances,
       setDeadline: state.setDeadline,

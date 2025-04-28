@@ -5,6 +5,7 @@ import { defaultChainId } from "@/lib/constants";
 
 interface AccountInfo {
   signer: any;
+  address: string | null;
   provider: ethers.Provider | null;
   chainId: number | null;
   viemClient: any;
@@ -15,12 +16,14 @@ interface AccountInfo {
   setChainId: (chainId: any) => void;
   setViemClient: (viemClient: any) => void;
   setInitialized: (initialized: boolean) => void;
+  setAddress: (address: string) => void;
   resetAccountStore: () => void;
 }
 
 // Default state object
 const defaultAccountState = {
   signer: null,
+  address: null,
   provider: null,
   chainId: defaultChainId,
   viemClient: null,
@@ -36,6 +39,7 @@ export const useAccountStore = create<AccountInfo>((set) => ({
   setViemClient: (viemClient: any) => set(() => ({ viemClient })),
   setInitialized: (initialized: boolean) =>
     set(() => ({ isInitialized: initialized })),
+  setAddress: (address: string) => set(() => ({ address })),
   resetAccountStore: () => set(() => ({ ...defaultAccountState })),
 }));
 
@@ -47,6 +51,7 @@ export const useAccountState = () =>
       provider: state.provider,
       chainId: state.chainId,
       viemClient: state.viemClient,
+      address: state.address,
       isInitialized: state.isInitialized,
     }))
   );
@@ -60,6 +65,7 @@ export const useAccountActions = () =>
       setProvider: state.setProvider,
       setViemClient: state.setViemClient,
       setInitialized: state.setInitialized,
+      setAddress: state.setAddress,
       resetAccountStore: state.resetAccountStore,
     }))
   );

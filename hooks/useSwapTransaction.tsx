@@ -234,6 +234,7 @@ export function useSwapTransactions() {
 
   // Execute swap
   const executeSwap = useCallback(async () => {
+    console.log(signer);
     if (
       !signer ||
       !TokenAAmount ||
@@ -277,7 +278,7 @@ export function useSwapTransactions() {
       // Reset fields after successful swap
       setTokenBAmount("");
       setTransactionButtonText("Swap");
-      updateTokenBalances();
+      updateTokenBalances(String(address), provider);
     } catch (error) {
       console.error("Error executing swap:", error);
       setTransactionButtonText("Swap");

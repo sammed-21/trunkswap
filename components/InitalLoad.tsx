@@ -12,6 +12,7 @@ import { useAccount, useChainId } from "wagmi";
 
 const InitialLoad = ({ children }: { children: React.ReactNode }) => {
   const { address, isConnected } = useAccount();
+
   const chainId = useChainId();
   const { fetchUserPositions, fetchPoolData } = usePoolActions();
   const { currentSellAsset, currentBuyAsset } = useSwapState();
@@ -43,7 +44,7 @@ const InitialLoad = ({ children }: { children: React.ReactNode }) => {
   }, [address, chainId]);
   useEffect(() => {
     if (isConnected) {
-      updateTokenBalances();
+      updateTokenBalances(String(address), provider);
     }
   }, [isConnected, currentSellAsset, currentBuyAsset]);
 
