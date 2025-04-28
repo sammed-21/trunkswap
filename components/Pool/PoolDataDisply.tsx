@@ -1,10 +1,8 @@
 import { useAccountState } from "@/state/accountStore";
 import { usePoolState } from "@/state/poolStore";
 import React from "react";
-import { useAccount } from "wagmi";
 
 export const PoolPositionsList = () => {
-  const { isConnected, address } = useAccount();
   const { userPositions, isLoading, error } = usePoolState();
   const { chainId } = useAccountState();
   // Loading state

@@ -2,11 +2,11 @@
 "use client";
 
 import { FACTORY_ADDRESS } from "@/lib/constants";
-import { getProvider, WalletInit } from "@/services/walletEvents";
-import { useAccountActions, useAccountState } from "@/state/accountStore";
+import { getProvider } from "@/services/walletEvents";
+import { useAccountState } from "@/state/accountStore";
 import { usePoolActions } from "@/state/poolStore";
 import { useSwapActions, useSwapState } from "@/state/swapStore";
-import { useState, useEffect } from "react";
+import { useEffect } from "react";
 import { useAccount, useChainId } from "wagmi";
 // import { WalletInit } from "@/services/WalletInit"; // changed from useWalletInit
 

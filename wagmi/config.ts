@@ -1,13 +1,5 @@
 import { getDefaultConfig } from "@rainbow-me/rainbowkit";
-import { createPublicClient, http } from "viem";
-import {
-  arbitrum,
-  arbitrumSepolia,
-  mainnet,
-  sepolia,
-  berachainBepolia,
-  monadTestnet,
-} from "viem/chains";
+import { arbitrum, arbitrumSepolia, mainnet, sepolia } from "viem/chains";
 
 export const config = getDefaultConfig({
   appName: "TrunkSwap",

@@ -1,7 +1,7 @@
 "use client";
 import { create } from "zustand";
 import { useShallow } from "zustand/shallow";
-import { SwapActions, SwapState, Token, TokenDetail } from "@/lib/types";
+import { SwapActions, SwapState, TokenDetail } from "@/lib/types";
 import {
   DEFAULT_BUY_TOKEN,
   DEFAULT_SELL_TOKEN,
@@ -9,7 +9,6 @@ import {
   MAINNET_TOKENS,
   MAINNET_TOKENS_BY_SYMBOL,
 } from "@/lib/constants";
-import { useAccountState } from "./accountStore";
 import { fetchTokenBalance } from "@/services/getTokenBalance";
 
 // Unified Zustand Store

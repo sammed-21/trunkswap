@@ -4,8 +4,6 @@ import React, { useState } from "react";
 import { PoolRow, PoolRowHeading } from "./PoolRow";
 import { Button } from "../ui/Button";
 
-type Props = {};
-
 export const PoolList = () => {
   const { poolData, isLoading } = usePoolState();
   const [searchQuery, setSearchQuery] = useState<string>("");

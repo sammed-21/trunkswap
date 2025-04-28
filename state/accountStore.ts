@@ -1,8 +1,6 @@
 import { create } from "zustand";
 import { useShallow } from "zustand/react/shallow";
 import { ethers, Signer } from "ethers";
-import { createPublicClient, http } from "viem";
-import { getProvider } from "@/services/walletEvents";
 import { defaultChainId } from "@/lib/constants";
 
 interface AccountInfo {

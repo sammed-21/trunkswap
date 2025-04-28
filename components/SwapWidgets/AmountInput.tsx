@@ -1,9 +1,7 @@
 import React, { useState } from "react";
 import TokenSelector from "./TokenSelector"; // Import the TokenSelector component
-import walletBalance from "@/public/walletBalance.svg";
 import dropdown from "@/public/dropdown.svg";
 import Image from "next/image";
-import { useSwapActions, useSwapState } from "@/state/swapStore";
 import { TokenDetail } from "@/lib/types";
 import { useAccount } from "wagmi";
 import { Skeleton } from "../ui/skeleton";

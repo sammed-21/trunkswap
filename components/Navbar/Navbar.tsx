@@ -1,10 +1,9 @@
 "use client";
-import React, { useEffect } from "react";
+import React from "react";
 import { ConnectWallet } from "../ConnetWalletButton/ConnectWallet";
 import Link from "next/link";
 import logo from "@/public/logo/logo2.png";
 import Image from "next/image";
-import { useAccount, useChainId } from "wagmi";
 
 export const Navbar = () => {
   return (

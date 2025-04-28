@@ -1,19 +1,15 @@
 "use client";
 import { useSwapActions, useSwapState } from "@/state/swapStore";
-import React, { useEffect, useState } from "react";
+import React, { useState } from "react";
 import { Button } from "../ui/Button";
 import AmountInput from "./AmountInput";
-import { useTokenInitializer } from "@/hooks/useTokenInitializer";
 import { useAccount } from "wagmi";
-import { ConnectButton, useConnectModal } from "@rainbow-me/rainbowkit";
-import { FaGear } from "react-icons/fa6";
+import { useConnectModal } from "@rainbow-me/rainbowkit";
 import { SlippageModal } from "../Slippage/SlippageModal";
 import { useAccountState } from "@/state/accountStore";
 import rotateImage from "@/public/rotateToken.svg";
 import Image from "next/image";
 import { useSwapTransactions } from "@/hooks/useSwapTransaction";
-import { QuoteDetails } from "./QuoteDetails";
-import { getProvider } from "@/services/walletEvents";
 
 type Props = {};
 

@@ -1,13 +1,13 @@
 "use client";
 
-import { useAccount, useChainId, useSwitchChain, useWalletClient } from "wagmi";
+import { useAccount, useChainId, useWalletClient } from "wagmi";
 import { useAccountActions, useAccountState } from "@/state/accountStore";
 import { chainMaps, config } from "@/wagmi/config";
 import { createPublicClient, http } from "viem";
 import { ethers, JsonRpcProvider } from "ethers";
 import { useEffect } from "react";
 import { defaultChainId, fallbackUrls } from "@/lib/constants";
-import { getWalletClient, watchAccount, watchChainId } from "@wagmi/core";
+import { watchAccount, watchChainId } from "@wagmi/core";
 import { usePoolActions } from "@/state/poolStore";
 import { addressess } from "@/address";
 import { getNetworkNameUsingChainId } from "./getNetworkNameUsingChainId";

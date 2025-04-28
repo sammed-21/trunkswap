@@ -1,5 +1,4 @@
 import { usePoolState } from "@/state/poolStore";
-import { formatEther } from "ethers";
 import React from "react";
 import { Skeleton } from "../ui/skeleton";
 

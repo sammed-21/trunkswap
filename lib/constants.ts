@@ -1,7 +1,5 @@
-import { FACTORY_ABI } from "@/abi/FACTORY_ABI";
 import { addressess } from "@/address";
 import { getNetworkNameUsingChainId } from "@/services/getNetworkNameUsingChainId";
-import { ethers } from "ethers";
 import { Address } from "viem";
 import STX_IMAGE from "@/public/tokens/stx.svg";
 import RSTX_IMAGE from "@/public/tokens/rstx.svg";

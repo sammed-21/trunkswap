@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useSwapActions, useSwapState } from "@/state/swapStore";
 import { DefaultSlippage } from "@/lib/constants";
 import { ToolTipComponent } from "../Common/ToolTipComponent";
