@@ -140,14 +140,14 @@ export interface SwapActions {
   setTokenABalance: (tokenBalance: string) => void;
   setTokenBBalance: (tokenBalance: string) => void;
   setLoadingBalances: (isLoading: boolean) => void;
-  setWalletConnected: (isConnected: boolean) => void;
+  setIsWalletConnected: (isConnected: boolean) => void;
   setIsSwapping: (isSwapping: boolean) => void;
   setQuoteLoading: (quoteLoading: boolean) => void;
   setNeedsApproval: (needsApproval: boolean) => void;
   setIsApproving: (isApproving: boolean) => void;
   setMinAmountOut: (minAmountOut: { raw: bigint; formatted: string }) => void;
   fetchTokenBalances: (walletAddress: string, provider: any) => Promise<void>;
-  updateTokenBalances: () => Promise<void>;
+  updateTokenBalances: (address: string, provider: any) => Promise<void>;
   setTransactionButtonText: (transactoinButtonText: string) => void;
   setQuotedAmount: (quoteAmount: string) => void;
 }

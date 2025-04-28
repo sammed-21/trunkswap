@@ -26,7 +26,7 @@ export const SwapWidget = (props: Props) => {
   const { openConnectModal } = useConnectModal();
   const { signer } = useAccountState();
   const [isRotated, setIsRotated] = useState<boolean>(false);
-
+  console.log(address, isConnected);
   const {
     TokenA,
     TokenB,

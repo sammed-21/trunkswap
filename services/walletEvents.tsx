@@ -5,7 +5,7 @@ import { useAccountActions, useAccountState } from "@/state/accountStore";
 import { chainMaps, config } from "@/wagmi/config";
 import { createPublicClient, http } from "viem";
 import { ethers, JsonRpcProvider } from "ethers";
-import { useEffect } from "react";
+import { useCallback, useEffect } from "react";
 import { defaultChainId, fallbackUrls } from "@/lib/constants";
 import { watchAccount, watchChainId } from "@wagmi/core";
 import { usePoolActions } from "@/state/poolStore";
@@ -36,10 +36,21 @@ const chainMap = {
 type Props = { children: React.ReactNode };
 export const WalletInit = ({ children }: Props) => {
   const { address, isConnected, isDisconnected } = useAccount();
+
   const chainId = useChainId();
   const { data: walletClient } = useWalletClient();
   let walletSigner: ethers.Signer | ethers.JsonRpcSigner | null;
+  const getSigners = useCallback(async () => {
+    if (isConnected && window.ethereum) {
+      const walletProvider = new ethers.BrowserProvider(window.ethereum);
 
+      // Get the signer from the wallet provider
+      walletSigner = await walletProvider.getSigner();
+      // Store the signer in your state
+      console.log(walletSigner);
+      setSigner(walletSigner);
+    }
+  }, [isConnected]);
   const { isInitialized, provider } = useAccountState();
   const {
     setProvider,
@@ -47,6 +58,7 @@ export const WalletInit = ({ children }: Props) => {
     setChainId,
     setViemClient,
     resetAccountStore,
+    setAddress,
     setInitialized,
   } = useAccountActions();
 
@@ -56,6 +68,7 @@ export const WalletInit = ({ children }: Props) => {
   // Helper function to initialize provider
   const initializeProvider = async (currentChainId: number) => {
     try {
+      console.log(address, "inside the walletINit");
       const chain = chainMaps[currentChainId] || chainMap[421614]; // Default to Arbitrum Sepolia
 
       // Always create a provider regardless of wallet connection
@@ -72,16 +85,10 @@ export const WalletInit = ({ children }: Props) => {
       });
       setProvider(ethersProvider);
       setChainId(currentChainId);
+      setAddress(address!?.toString());
       setViemClient(viemClient);
+      console.log(isConnected);
       // Set signer if wallet is connected
-      if (isConnected && window.ethereum) {
-        const walletProvider = new ethers.BrowserProvider(window.ethereum);
-
-        // Get the signer from the wallet provider
-        walletSigner = await walletProvider.getSigner();
-        // Store the signer in your state
-        setSigner(walletSigner);
-      }
 
       // If user is connected, fetch their positions
 
@@ -104,6 +111,9 @@ export const WalletInit = ({ children }: Props) => {
     // Initialize provider even if no wallet is connected
     if (!isInitialized || !provider) {
       initializeProvider(chainId || defaultChainId);
+    }
+    if (isConnected) {
+      getSigners();
     }
   }, [isInitialized, isConnected]);
 

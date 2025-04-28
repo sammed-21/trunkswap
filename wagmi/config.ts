@@ -8,16 +8,6 @@ export const config = getDefaultConfig({
   ssr: true, // If your dApp uses server side rendering (SSR)
 });
 
-// export const arbitrumSepoliapublicClient = createPublicClient({
-//   chain: arbitrumSepolia,
-//   transport: http(),
-// });
-
-// export const sepoliaClient = createPublicClient({
-//   chain: sepolia,
-//   transport: http(),
-// });
-
 export const chainMaps: Record<number, any> = {
   1: mainnet,
   42161: arbitrum,
