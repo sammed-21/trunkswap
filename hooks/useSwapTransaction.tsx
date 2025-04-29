@@ -1,4 +1,4 @@
-import { ethers, formatEther } from "ethers";
+import { ethers, formatEther, formatUnits } from "ethers";
 import { useEffect, useState, useCallback } from "react";
 import { useSwapState, useSwapActions } from "@/state/swapStore";
 import { useAccountState } from "@/state/accountStore";
@@ -8,12 +8,15 @@ import { addressess } from "@/address";
 import { getNetworkNameUsingChainId } from "@/services/getNetworkNameUsingChainId";
 import { useAccount } from "wagmi";
 import { deadlineFormatted } from "@/lib/utils";
+import { getGasEstimation } from "@/services/getEstimatedGas";
+import { getRouterContract } from "@/services/getContracts";
+import { defaultChainId } from "@/lib/constants";
 
 // Replace with your actual router address
-const ROUTER_ADDRESS = "0x7a250d5630B4cF539739dF2C5dAcb4c659F2488D";
 
 export function useSwapTransactions() {
-  const { chainId, address } = useAccount();
+  // const { address } = useAccount();
+
   const {
     currentSellAsset,
     currentBuyAsset,
@@ -25,9 +28,8 @@ export function useSwapTransactions() {
     isSwapping,
     isApproving,
     minAmountOut,
+    quoteAmount,
   } = useSwapState();
-  const ROUTER_ADDRESS =
-    addressess[getNetworkNameUsingChainId(chainId)].ROUTER_ADDRESS;
   const {
     setNeedsApproval,
     setQuoteLoading,
@@ -37,11 +39,15 @@ export function useSwapTransactions() {
     setIsSwapping,
     setTransactionButtonText,
     updateTokenBalances,
+    setEstimatedFees,
+    setQuoteAmount,
+    setPriceImpact,
+    setFee,
   } = useSwapActions();
 
-  const { signer, provider } = useAccountState();
-  const [quotedAmount, setQuotedAmount] = useState<string | null>(null);
-
+  const { signer, provider, chainId, address } = useAccountState();
+  const ROUTER_ADDRESS =
+    addressess[getNetworkNameUsingChainId(chainId)].ROUTER_ADDRESS;
   // Check if token is approved
   const checkApproval = useCallback(async () => {
     if (!signer || !currentSellAsset?.address) {
@@ -92,7 +98,56 @@ export function useSwapTransactions() {
     setNeedsApproval,
     setTransactionButtonText,
   ]);
+  const getV2PriceImpact = async (amountOut: bigint, amountIn: bigint) => {
+    let routerContract = getRouterContract(chainId, provider);
+    const pairAddress = await routerContract
+      .factory()
+      .then((factoryAddress) => {
+        const factoryContract = new ethers.Contract(
+          factoryAddress,
+          [
+            "function getPair(address tokenA, address tokenB) external view returns (address pair)",
+          ],
+          provider
+        );
+        return factoryContract.getPair(
+          currentSellAsset.address,
+          currentBuyAsset.address
+        );
+      });
+    // Get reserves from pair contract
+    const pairContract = new ethers.Contract(
+      pairAddress,
+      [
+        "function getReserves() external view returns (uint112 reserve0, uint112 reserve1, uint32 blockTimestampLast)",
+        "function token0() external view returns (address)",
+        "function token1() external view returns (address)",
+      ],
+      provider
+    );
+    const [reserve0, reserve1] = await pairContract.getReserves();
+    const token0 = await pairContract.token0();
 
+    // Determine which token is which in the reserves
+    let reserveIn, reserveOut;
+    if (token0.toLowerCase() === currentSellAsset.address.toLowerCase()) {
+      reserveIn = reserve0;
+      reserveOut = reserve1;
+    } else {
+      reserveIn = reserve1;
+      reserveOut = reserve0;
+    }
+
+    // Calculate price impact using the Uniswap formula:
+    // 1 - (amountOut * reserveIn) / (amountIn * reserveOut)
+    const numerator = amountOut * reserveIn;
+    const denominator = amountIn * reserveOut;
+    const priceImpactBps =
+      (1 - Number(numerator) / Number(denominator)) * 10000;
+    const formattedPriceImpact = (priceImpactBps / 100).toFixed(2) + "%";
+
+    return formattedPriceImpact;
+  };
   // Get quote for token swap
   const getQuote = useCallback(async () => {
     if (
@@ -102,25 +157,21 @@ export function useSwapTransactions() {
       !currentBuyAsset?.address ||
       parseFloat(TokenAAmount) === 0
     ) {
-      setQuotedAmount(null);
+      setQuoteAmount(null);
       setTokenBAmount("");
       return;
     }
     try {
       setQuoteLoading(true);
-
-      const routerContract = new ethers.Contract(
-        ROUTER_ADDRESS,
-        ROUTER_ABI,
-        provider
-      );
+      const routerContract = getRouterContract(chainId, provider);
 
       const amountIn = ethers.parseUnits(
         TokenAAmount,
         currentSellAsset.decimals
       );
-
-      // Get amount out
+      const feePercentage = 0.003; // 0.3%
+      const feeAmountInTokenA = parseFloat(TokenAAmount) * feePercentage;
+      setFee(feeAmountInTokenA.toString());
       const amountsOut = await routerContract.getAmountsOut(amountIn, [
         currentSellAsset.address,
         currentBuyAsset.address,
@@ -132,9 +183,8 @@ export function useSwapTransactions() {
         currentBuyAsset.decimals
       );
 
-      setQuotedAmount(formattedAmountOut);
+      setQuoteAmount(formattedAmountOut);
       setTokenBAmount(formattedAmountOut);
-
       // Calculate minimum amount out with slippage
       const slippageMultiplier = (100 - slippage) / 100;
       const slippageBasisPoints = Math.floor(slippageMultiplier * 10000);
@@ -146,42 +196,41 @@ export function useSwapTransactions() {
         formatted: ethers.formatUnits(minAmountOut, currentBuyAsset.decimals),
       });
 
-      // let deadlineTimestamp = deadlineFormatted();
-      // let tokenAAddress = currentSellAsset.address;
-      // let tokenBaddress = currentBuyAsset.address;
-      // debugger;
-      // const routeContract = new ethers.Contract(
-      //   ROUTER_ADDRESS,
-      //   ROUTER_ABI,
-      //   signer
-      // );
+      const priceImpact = await getV2PriceImpact(amountOut, amountIn);
+      setPriceImpact(priceImpact);
 
-      // const tx3 =
-      //   await routeContract.swapExactTokensForTokens.populateTransaction(
-      //     amountIn,
-      //     minAmountOut, // Min amount out with slippage
-      //     [currentSellAsset.address, currentBuyAsset.address],
-      //     address,
-      //     deadlineTimestamp
-      //   );
-      // // estimate the gas
-      // const estimateGas = await provider.estimateGas(tx3);
+      let deadlineTimestamp = deadlineFormatted(deadline);
 
-      // const gasPrice = await provider.getFeeData(); // returns BigInt in wei
+      const routeContract = new ethers.Contract(
+        ROUTER_ADDRESS,
+        ROUTER_ABI,
+        provider
+      );
 
-      // console.log(gasPrice, "gas price");
-      // console.log(estimateGas, "estimated gas");
+      const recipient = address ?? "0x000000000000000000000000000000000000dEaD";
 
-      // // If you want estimated fee in wei:
-      // const estimatedFee = gasPrice.gasPrice
-      //   ? estimateGas * gasPrice.gasPrice
-      //   : 0;
+      const tx3 =
+        await routeContract.swapExactTokensForTokens.populateTransaction(
+          amountIn,
+          minAmountOut, // Min amount out with slippage
+          [currentSellAsset.address, currentBuyAsset.address],
+          recipient,
+          deadlineTimestamp
+        );
+      const { estimatedFee, formatedEstimatedFee } = await getGasEstimation(
+        tx3,
+        provider
+      );
 
-      // console.log("Gas estimate (ETH):", ethers.formatEther(estimatedFee));
+      setEstimatedFees({
+        estimatedFees: estimatedFee,
+        formatedEstimatedFee,
+      });
     } catch (error) {
       console.error("Error getting quote:", error);
-      setQuotedAmount(null);
+      setQuoteAmount(null);
       setTokenBAmount("");
+      // setEstimatedFee(null)
     } finally {
       setQuoteLoading(false);
     }
@@ -234,13 +283,12 @@ export function useSwapTransactions() {
 
   // Execute swap
   const executeSwap = useCallback(async () => {
-    console.log(signer);
     if (
       !signer ||
       !TokenAAmount ||
       !currentSellAsset?.address ||
       !currentBuyAsset?.address ||
-      !quotedAmount ||
+      !quoteAmount ||
       !minAmountOut
     )
       return;
@@ -290,7 +338,7 @@ export function useSwapTransactions() {
     TokenAAmount,
     currentSellAsset,
     currentBuyAsset,
-    quotedAmount,
+    quoteAmount,
     deadline,
     setIsSwapping,
     setTokenBAmount,
@@ -329,7 +377,7 @@ export function useSwapTransactions() {
     needsApproval,
     isApproving,
     isSwapping,
-    quotedAmount,
+    quoteAmount,
     handleTransaction,
     checkApproval,
     getQuote,

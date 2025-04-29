@@ -10,7 +10,6 @@ import {
   MAINNET_TOKENS_BY_SYMBOL,
 } from "@/lib/constants";
 import { fetchTokenBalance } from "@/services/getTokenBalance";
-import { useAccountState } from "./accountStore";
 
 // Unified Zustand Store
 const useSwapStore = create<SwapState & SwapActions>((set, get) => ({
@@ -42,6 +41,12 @@ const useSwapStore = create<SwapState & SwapActions>((set, get) => ({
     formatted: null,
   },
   quoteAmount: null,
+  estimatedFees: {
+    estimatedFee: null,
+    formatedEstimatedFee: null,
+  },
+  priceImpact: null,
+  fee: null,
   // Actions
   setTokenB: (token) =>
     set((state) => ({
@@ -89,11 +94,14 @@ const useSwapStore = create<SwapState & SwapActions>((set, get) => ({
   setIsSwapping: (isSwapping: boolean) => set({ isSwapping }),
 
   setQuoteLoading: (quoteLoading: boolean) => set({ quoteLoading }),
-  setQuotedAmount: (quoteAmount: any) => set({ quoteAmount }),
+  setQuoteAmount: (quoteAmount: any) => set({ quoteAmount }),
+  setFee: (fee: string | null) => set({ fee }),
+  setPriceImpact: (priceImpact: string | null) => set({ priceImpact }),
 
   setNeedsApproval: (needsApproval: boolean) => set({ needsApproval }),
   setIsApproving: (isApproving: boolean) => set({ isApproving }),
   setMinAmountOut: (minAmountOut: any) => set({ minAmountOut }),
+  setEstimatedFees: (estimatedFee: any) => set({ estimatedFees: estimatedFee }),
   // Function to fetch token balances when wallet connects
   fetchTokenBalances: async (walletAddress: string, provider: any) => {
     const { currentSellAsset, currentBuyAsset } = get();
@@ -178,6 +186,9 @@ export const useSwapState = () =>
       isApproving: state.isApproving,
       minAmountOut: state.minAmountOut,
       quoteAmount: state.quoteAmount,
+      estimateFees: state.estimatedFees,
+      fee: state.fee,
+      priceImpact: state.priceImpact,
     }))
   );
 
@@ -207,6 +218,9 @@ export const useSwapActions = () =>
       setNeedsApproval: state.setNeedsApproval,
       setIsApproving: state.setIsApproving,
       setMinAmountOut: state.setMinAmountOut,
-      setQuotedAmount: state.setQuotedAmount,
+      setQuoteAmount: state.setQuoteAmount,
+      setEstimatedFees: state.setEstimatedFees,
+      setPriceImpact: state.setPriceImpact,
+      setFee: state.setFee,
     }))
   );

@@ -12,6 +12,7 @@
   --textprimary: #6a717f;
   --lightgray: #202c2a;
   --headingbackground: var(--border);
+  --subTitle: #959eb1;
 }
 
 @media (prefers-color-scheme: dark) {
@@ -25,6 +26,7 @@
     --accent: #0ea7bf;
     --textprimary: #6a717f;
     --lightgray: #202c2a;
+    --subTitle: #959eb1;
   }
 }
 

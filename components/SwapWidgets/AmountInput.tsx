@@ -58,9 +58,9 @@ const AmountInput: React.FC<AmountInputProps> = ({
           {address && (
             <>
               {loadingBalances ? (
-                <>
+                <div className="mb-1">
                   <Skeleton className="w-[100px] h-[20px] rounded-none" />{" "}
-                </>
+                </div>
               ) : (
                 <span
                   onClick={() => setAmount(walletBalanceAsset)}
