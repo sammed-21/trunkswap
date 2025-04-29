@@ -47,7 +47,6 @@ export const WalletInit = ({ children }: Props) => {
       // Get the signer from the wallet provider
       walletSigner = await walletProvider.getSigner();
       // Store the signer in your state
-      console.log(walletSigner);
       setSigner(walletSigner);
     }
   }, [isConnected]);
@@ -68,7 +67,6 @@ export const WalletInit = ({ children }: Props) => {
   // Helper function to initialize provider
   const initializeProvider = async (currentChainId: number) => {
     try {
-      console.log(address, "inside the walletINit");
       const chain = chainMaps[currentChainId] || chainMap[421614]; // Default to Arbitrum Sepolia
 
       // Always create a provider regardless of wallet connection
@@ -87,7 +85,6 @@ export const WalletInit = ({ children }: Props) => {
       setChainId(currentChainId);
       setAddress(address!?.toString());
       setViemClient(viemClient);
-      console.log(isConnected);
       // Set signer if wallet is connected
 
       // If user is connected, fetch their positions

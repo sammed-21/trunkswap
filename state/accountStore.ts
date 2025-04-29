@@ -7,7 +7,7 @@ interface AccountInfo {
   signer: any;
   address: string | null;
   provider: ethers.Provider | null;
-  chainId: number | null;
+  chainId: number;
   viemClient: any;
   isInitialized: boolean; // Add this to track initialization state
 

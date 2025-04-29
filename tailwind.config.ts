@@ -12,7 +12,7 @@ const config: Config = {
         primary: "var(--primary)",
         secondary: "var(--secondary)",
         accent: "#0ea7bf",
-        textpriamry: "#6A717F",
+        textpriamry: "var(--subTitle)",
         lightgray: "#202C2A",
         border: "var(--secondary)",
         headingbackground: "var(--headingBackground)",

@@ -116,6 +116,12 @@ export interface SwapState {
     formatted: string | null;
   };
   quoteAmount: bigint | null | string;
+  estimatedFees: {
+    estimatedFee: any | null;
+    formatedEstimatedFee: any | null;
+  };
+  fee: string | null;
+  priceImpact: string | null;
 }
 export interface Token {
   name: string;
@@ -149,7 +155,13 @@ export interface SwapActions {
   fetchTokenBalances: (walletAddress: string, provider: any) => Promise<void>;
   updateTokenBalances: (address: string, provider: any) => Promise<void>;
   setTransactionButtonText: (transactoinButtonText: string) => void;
-  setQuotedAmount: (quoteAmount: string) => void;
+  setQuoteAmount: (quoteAmount: string | null) => void;
+  setEstimatedFees: (estimatedFees: {
+    estimatedFees: any;
+    formatedEstimatedFee: any;
+  }) => void;
+  setFee: (fee: string | null) => void;
+  setPriceImpact: (priceImpact: string | null) => void;
 }
 
 export interface TokenDetail {

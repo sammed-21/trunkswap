@@ -10,6 +10,7 @@ import { useAccountState } from "@/state/accountStore";
 import rotateImage from "@/public/rotateToken.svg";
 import Image from "next/image";
 import { useSwapTransactions } from "@/hooks/useSwapTransaction";
+import { QuoteDetails } from "./QuoteDetails";
 
 type Props = {};
 
@@ -21,12 +22,13 @@ export const SwapWidget = (props: Props) => {
     handleTransaction,
     quoteLoading,
   } = useSwapTransactions();
+
   const { provider } = useAccountState();
-  const { address, isConnected } = useAccount();
+  const { isConnected } = useAccount();
   const { openConnectModal } = useConnectModal();
-  const { signer } = useAccountState();
+
   const [isRotated, setIsRotated] = useState<boolean>(false);
-  console.log(address, isConnected);
+  console.log({ provider });
   const {
     TokenA,
     TokenB,
@@ -42,6 +44,9 @@ export const SwapWidget = (props: Props) => {
     transactionButtonText,
     quoteAmount,
     minAmountOut,
+    estimateFees,
+    fee,
+    priceImpact,
   } = useSwapState();
   const {
     setTokenB,
@@ -101,100 +106,107 @@ export const SwapWidget = (props: Props) => {
   };
 
   const buttonProps = getButtonProps();
+  console.log(priceImpact, fee);
+
   return (
-    <div className="bg-primary p-4 col-span-2 max-w-[448px] w-full border-border border-[1px]  ">
-      <div className="flex w-full justify-between ">
-        <h2 className="text-lg font-bold text-white bg-primary w-fit px-2 py-1 rounded-none mb-4">
-          Swap
-        </h2>
-        <div>
-          <SlippageModal />
+    <div className=" flex flex-col  gap-3 items-center justify-center p-10  w-full">
+      <div className="bg-primary p-4 col-span-2 max-w-[448px] w-full border-border border-[1px]  ">
+        <div className="flex w-full justify-between ">
+          <h2 className="text-lg font-bold text-white bg-primary w-fit px-2 py-1 rounded-none mb-4">
+            Swap
+          </h2>
+          <div>
+            <SlippageModal />
+          </div>
         </div>
-      </div>
-      <div className="flex w-full flex-col relative">
-        <AmountInput
-          title="You're Selling"
-          // setCurrentTokenDetal={setCurrentSellAsset}
-          // token={TokenB}
-          // currentTokenAsset={currentSellAsset}
-          // Amount={TokenBAmount}
-          // setAmount={setTokenAAmount}
-          // setToken={setTokenB}
-          loadingBalances={loadingBalances}
-          walletBalanceAsset={tokenABalance} // Replace with actual balance
-          setCurrentTokenDetal={setCurrentSellAsset}
-          token={TokenA}
-          currentTokenAsset={currentSellAsset}
-          Amount={TokenAAmount}
-          setAmount={setTokenAAmount}
-          setToken={setTokenA}
-        />
-        <div
-          onClick={handleToggleTradeDirection}
-          className="absolute top-1/2 bg-primary border-border left-[45%] bg- -translate-y-1/2   z-10 bg- p-2 border"
-        >
-          <Image
-            src={rotateImage}
-            width={25}
-            height={25}
-            alt="rotate"
-            className={`invert  transition-transform duration-300  ${
-              isRotated ? "rotate-180" : "rotate-0"
-            }`}
+        <div className="flex w-full flex-col relative">
+          <AmountInput
+            title="You're Selling"
+            // setCurrentTokenDetal={setCurrentSellAsset}
+            // token={TokenB}
+            // currentTokenAsset={currentSellAsset}
+            // Amount={TokenBAmount}
+            // setAmount={setTokenAAmount}
+            // setToken={setTokenB}
+            loadingBalances={loadingBalances}
+            walletBalanceAsset={tokenABalance} // Replace with actual balance
+            setCurrentTokenDetal={setCurrentSellAsset}
+            token={TokenA}
+            currentTokenAsset={currentSellAsset}
+            Amount={TokenAAmount}
+            setAmount={setTokenAAmount}
+            setToken={setTokenA}
+          />
+          <div
+            onClick={handleToggleTradeDirection}
+            className="absolute top-1/2 bg-primary border-border left-[45%] bg- -translate-y-1/2   z-10 bg- p-2 border"
+          >
+            <Image
+              src={rotateImage}
+              width={25}
+              height={25}
+              alt="rotate"
+              className={`invert  transition-transform duration-300  ${
+                isRotated ? "rotate-180" : "rotate-0"
+              }`}
+            />
+          </div>
+
+          <AmountInput
+            title="You're Buying"
+            // token={TokenA}
+            // Amount={TokenAAmount}
+            // currentTokenAsset={currentSellAsset}
+            loadingBalances={loadingBalances}
+            // setCurrentTokenDetal={setCurrentSellAsset}
+            setAmount={setTokenBAmount}
+            setToken={setTokenB}
+            walletBalanceAsset={tokenBBalance} // Replace with actual balance
+            token={TokenB}
+            Amount={TokenBAmount}
+            currentTokenAsset={currentBuyAsset}
+            setCurrentTokenDetal={setCurrentBuyAsset}
+            isLoading={quoteLoading}
+            readOnly={true}
+            // setAmount={setTokenBAmount}
+            // setToken={setTokenB}
           />
         </div>
-
-        <AmountInput
-          title="You're Buying"
-          // token={TokenA}
-          // Amount={TokenAAmount}
-          // currentTokenAsset={currentSellAsset}
-          loadingBalances={loadingBalances}
-          // setCurrentTokenDetal={setCurrentSellAsset}
-          setAmount={setTokenBAmount}
-          setToken={setTokenB}
-          walletBalanceAsset={tokenBBalance} // Replace with actual balance
-          token={TokenB}
-          Amount={TokenBAmount}
-          currentTokenAsset={currentBuyAsset}
-          setCurrentTokenDetal={setCurrentBuyAsset}
-          isLoading={quoteLoading}
-          readOnly={true}
-          // setAmount={setTokenBAmount}
-          // setToken={setTokenB}
-        />
+        {isConnected ? (
+          <Button
+            onClick={handleTransaction}
+            variant={"primary"}
+            className="w-full mt-4 py-3  text-white font-bold rounded"
+          >
+            {buttonProps.text}
+          </Button>
+        ) : (
+          <Button
+            variant={"primary"}
+            className="w-full mt-4 py-3  text-white font-bold rounded"
+            onClick={openConnectModal}
+          >
+            Connect
+          </Button>
+        )}
       </div>
-      {isConnected ? (
-        <Button
-          onClick={handleTransaction}
-          variant={"primary"}
-          className="w-full mt-4 py-3  text-white font-bold rounded"
-        >
-          {buttonProps.text}
-        </Button>
-      ) : (
-        <Button
-          variant={"primary"}
-          className="w-full mt-4 py-3  text-white font-bold rounded"
-          onClick={openConnectModal}
-        >
-          Connect
-        </Button>
+
+      {minAmountOut && quoteAmount && (
+        <>
+          <QuoteDetails
+            maxReceived={TokenBAmount}
+            isLoading={quoteLoading}
+            minReceived={minAmountOut.formatted}
+            fee={fee}
+            networkFee={estimateFees.estimatedFee}
+            networkFeeUsd={estimateFees.formatedEstimatedFee}
+            routingSource="trunkswap"
+            buySymbol={currentBuyAsset?.symbol || ""}
+            sellSymbol={currentSellAsset?.symbol || ""}
+            priceImpact={priceImpact}
+          />
+        </>
       )}
-      {/* <div>
-      {quoteAmount && minAmountOut && (
-  <QuoteDetails
-    maxReceived={quoteAmount}
-    minReceived={minAmountOut.formatted}
-    fee={feeAmount}
-    networkFee={networkFee}
-    networkFeeUsd={networkFeeUsd}
-    routingSource="uniswapv2"
-    buySymbol={currentBuyAsset?.symbol || ""}
-    sellSymbol={currentSellAsset?.symbol || ""}
-  />
-)}
-      </div> */}
     </div>
   );
 };
