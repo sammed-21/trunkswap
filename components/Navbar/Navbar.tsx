@@ -2,27 +2,31 @@
 import React from "react";
 import { ConnectWallet } from "../ConnetWalletButton/ConnectWallet";
 import Link from "next/link";
-import logo from "@/public/logo/logo2.png";
+import logo from "@/public/logo/logo21.png";
 import Image from "next/image";
+import { ModeToggle } from "../Common/ModeToggle";
 
 export const Navbar = () => {
   return (
     <nav className="h-20 border-[1px] bg-primary backdrop-filter backdrop-blur-lg bg-opacity-30 border-border mt-5 px-4  rounded-none  justify-between flex items-center  w-full font-semibold ">
       <div className="flex gap-10 items-center justify-start">
-        <Link href="/">
+        <Link href="/" className="flex gap-1 items-center justify-center">
           <Image
             src={logo}
-            width={90}
-            height={50}
+            width={30}
+            height={30}
             className=" object-cover w-fit "
             alt="logo"
           />
+          <h1>TrunkSwap</h1>
         </Link>
         <Link href="/swap">swap</Link>
         <Link href="/pool">pool</Link>
       </div>
-
-      <ConnectWallet />
+      <div className="flex gap-2 items-center justify-end">
+        {/* <ModeToggle /> */}
+        <ConnectWallet />
+      </div>
     </nav>
   );
 };

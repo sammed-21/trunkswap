@@ -50,7 +50,7 @@ const InitialLoad = ({ children }: { children: React.ReactNode }) => {
 
   return (
     <>
-      <div>{children}</div>
+      <div className="">{children}</div>
     </>
   );
 };
