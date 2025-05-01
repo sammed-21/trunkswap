@@ -32,7 +32,8 @@ export const QuoteDetails: React.FC<QuoteDetailsProps> = ({
 }) => {
   if (isLoading) {
     return (
-      <div className="p-4   rounded-lg shadow-sm  border-border h-fit max-w-[448px] w-full    space-y-2">
+      <div className="px-4 shadow-sm transaction duration-500 translate-y-0 h-fit max-w-[448px] w-full space-y-2">
+        <h2 className="text-lg text-title font-semibold">Swap Details</h2>
         <div className="flex justify-between text-sm">
           <span className="text-subtitle">Price Impact</span>
 
@@ -85,7 +86,7 @@ export const QuoteDetails: React.FC<QuoteDetailsProps> = ({
     );
   }
   return (
-    <div className="p-4 border rounded-lg shadow-sm border-border h-fit max-w-[448px] w-full space-y-2">
+    <div className="px-4 shadow-sm transaction duration-500 translate-y-0 h-fit max-w-[448px] w-full space-y-2">
       <h2 className="text-lg text-title font-semibold">Swap Details</h2>
       <div className="flex justify-between text-sm">
         <span className="text-subtitle">Price Impact</span>

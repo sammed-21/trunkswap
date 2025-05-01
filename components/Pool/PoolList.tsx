@@ -3,6 +3,7 @@ import { usePoolState } from "@/state/poolStore";
 import React, { useState } from "react";
 import { PoolRow, PoolRowHeading } from "./PoolRow";
 import { Button } from "../ui/Button";
+import { IoMdAdd } from "react-icons/io";
 
 export const PoolList = () => {
   const { poolData, isLoading } = usePoolState();
@@ -36,11 +37,15 @@ export const PoolList = () => {
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               placeholder="Search Pair"
-              className="w-full  max-w-[500px] p-2  bg-secondary text-white rounded-none"
+              className="w-full  max-w-[500px] p-2  bg-forground border-border border-[1px] text-white rounded-none"
             />
             <div>
-              <Button className=" " size={"sm"} variant={"white"}>
-                Create Pair
+              <Button
+                className="text-lg font-medium"
+                size={"sm"}
+                variant={"white"}
+              >
+                <IoMdAdd /> Create Pair
               </Button>
             </div>
           </div>

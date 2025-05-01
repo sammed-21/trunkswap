@@ -8,7 +8,7 @@ import { ModeToggle } from "../Common/ModeToggle";
 
 export const Navbar = () => {
   return (
-    <nav className="h-20 border-[1px] text-title  bg-primary-dark backdrop-filter backdrop-blur-lg bg-opacity-30 border-border mt-5 px-4  rounded-none  justify-between flex items-center  w-full font-semibold ">
+    <nav className="h-20 border-[1px] text-title bg-background  backdrop-filter backdrop-blur-lg bg-opacity-30 border-border px-4  rounded-none  justify-between flex items-center  w-full font-semibold ">
       <div className="flex gap-10 items-center justify-start">
         <Link
           href="/"
@@ -23,8 +23,8 @@ export const Navbar = () => {
           />
           <h1>TrunkSwap</h1>
         </Link>
-        <Link href="/swap">swap</Link>
-        <Link href="/pool">pool</Link>
+        <Link href="/swap">Swap</Link>
+        <Link href="/pool">Pool</Link>
       </div>
       <div className="flex gap-2 items-center justify-end">
         <ModeToggle />

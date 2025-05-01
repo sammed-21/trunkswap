@@ -2,6 +2,7 @@
 "use client";
 import { formatDigits } from "@/lib/utils";
 import { PoolDetails } from "@/state/poolStore";
+import Image from "next/image";
 import Link from "next/link";
 
 interface RowProps {
@@ -12,10 +13,10 @@ export const PoolRow = ({ pool }: RowProps) => {
   return (
     <Link
       href={`/pool/${pool.pairAddress}`}
-      className="grid grid-cols-5 w-full items-center justify-between px-4 bg-primary border-[1px] border-border  py-3 hover:bg-zinc-100 dark:hover:bg-zinc-800 transition p-4"
+      className="grid grid-cols-5 w-full items-center justify-between px-4 bg-forground  border-[1px] border-border  py-3 hover:bg-zinc-100 dark:hover:bg-zinc-800 transition p-4"
     >
       <div className="flex   col-span-2 items-center gap-2">
-        <span className="font-semibold text-2xl">
+        <span className="font-medium text-xl">
           {pool.token0.symbol} / {pool.token1.symbol}
         </span>
         {/* <span className="text-xs text-zinc-500">
@@ -40,7 +41,7 @@ export const PoolRow = ({ pool }: RowProps) => {
 
 export const PoolRowHeading = () => {
   return (
-    <div className="grid grid-cols-5 w-full items-center  justify-between px-4 border-[1px] border-border  py-6 bg-primary hover:bg-secondary dark:hover:bg-secondary transition p-4">
+    <div className="grid grid-cols-5 w-full items-center  justify-between px-4 border-[1px] border-border  py-6 bg-forground hover:bg-secondary dark:hover:bg-secondary transition p-4">
       <div className="flex col-span-2 items-center   gap-2">
         <span className="font-medium columns-1 ">Pool</span>
       </div>

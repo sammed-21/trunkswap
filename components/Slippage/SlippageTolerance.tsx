@@ -32,18 +32,21 @@ export const SlippageTolerance = (props: Props) => {
         <TabsList className="flex border-[1px] border-border p-1 w-ful h-full flex-row gap-1">
           <div className="flex justify-start gap-1 w-full ">
             <h1 className="text-base font-semibold px-2">Max slippage</h1>
-            <ToolTipComponent content="Your transaction will revert if the prices change more then the slippage percentage" />
+            <ToolTipComponent
+              subTitle="Max slippage"
+              content="Your transaction will revert if the price changes more than the slippage percentage."
+            />
           </div>
           <TabsTrigger
             value={DefaultSlippage}
-            className="data-[state=active]:bg-secondary text-lg h-10 w-20 border-[1px] border-border data-[state=active]:text-white"
+            className="data-[state=active]:bg-primary text-lg h-10 w-20 border-[1px] border-border data-[state=active]:text-white"
           >
             Auto
           </TabsTrigger>
 
           <TabsTrigger
             value="1"
-            className="data-[state=active]:bg-secondary text-lg h-10 border-[1px] border-border data-[state=active]:text-white"
+            className="data-[state=active]:bg-primary-dark text-lg h-10 border-[1px] border-border data-[state=active]:text-white"
           >
             <span>Custom</span>
             <input

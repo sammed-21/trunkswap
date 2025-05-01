@@ -48,11 +48,7 @@ const InitialLoad = ({ children }: { children: React.ReactNode }) => {
     }
   }, [isConnected, currentSellAsset, currentBuyAsset]);
 
-  return (
-    <>
-      <div className="">{children}</div>
-    </>
-  );
+  return <div className="w-full h-full relative">{children}</div>;
 };
 
 export default InitialLoad;

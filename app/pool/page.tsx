@@ -11,7 +11,7 @@ export default function Pool() {
         <PoolPositionsList />
       </div> */}
 
-      <div className="w-full">
+      <div className="w-full max-w-[1440px] flex flex-col justify-center mx-auto">
         <PoolList />
       </div>
     </div>
