@@ -28,7 +28,6 @@ export const SwapWidget = (props: Props) => {
   const { openConnectModal } = useConnectModal();
 
   const [isRotated, setIsRotated] = useState<boolean>(false);
-  console.log({ provider });
   const {
     TokenA,
     TokenB,
@@ -106,11 +105,10 @@ export const SwapWidget = (props: Props) => {
   };
 
   const buttonProps = getButtonProps();
-  console.log(priceImpact, fee);
 
   return (
     <div className=" flex flex-col  gap-3 items-center justify-center p-10  w-full">
-      <div className="bg-primary p-4 col-span-2 max-w-[448px] w-full border-border border-[1px]  ">
+      <div className="bg-forground p-4 col-span-2 max-w-[448px] w-full border-border border-[1px]  ">
         <div className="flex w-full justify-between ">
           <h2 className="text-lg font-bold text-white bg-primary w-fit px-2 py-1 rounded-none mb-4">
             Swap
@@ -139,14 +137,14 @@ export const SwapWidget = (props: Props) => {
           />
           <div
             onClick={handleToggleTradeDirection}
-            className="absolute top-1/2 bg-primary border-border left-[45%] bg- -translate-y-1/2   z-10 bg- p-2 border"
+            className="absolute top-1/2 bg- border-border left-[45%] bg-primary -translate-y-1/2   z-10 bg- p-2 border"
           >
             <Image
               src={rotateImage}
               width={25}
               height={25}
               alt="rotate"
-              className={`invert  transition-transform duration-300  ${
+              className={` dark:invert  transition-transform duration-300  ${
                 isRotated ? "rotate-180" : "rotate-0"
               }`}
             />
@@ -176,14 +174,14 @@ export const SwapWidget = (props: Props) => {
           <Button
             onClick={handleTransaction}
             variant={"primary"}
-            className="w-full mt-4 py-3  text-white font-bold rounded"
+            className="w-full mt-4 py-3  text-title font-bold rounded"
           >
             {buttonProps.text}
           </Button>
         ) : (
           <Button
             variant={"primary"}
-            className="w-full mt-4 py-3  text-white font-bold rounded"
+            className="w-full mt-4 py-3  text-title font-bold rounded"
             onClick={openConnectModal}
           >
             Connect

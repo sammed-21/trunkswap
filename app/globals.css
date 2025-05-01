@@ -3,39 +3,51 @@
 @tailwind utilities;
 
 :root {
-  --background: #ffffff;
-  --foreground: #080808;
-  --border: #2b2b2b;
-  --primary: #ffffff;
-  --secondary: #f7f7f8;
-  --accent: #0ea7bf;
-  --textprimary: #6a717f;
-  --lightgray: #202c2a;
-  --headingbackground: var(--border);
-  --subTitle: #959eb1;
+  --background: #f9fafa; /* Subtle light ivory */
+  --foreground: #ffffff; /* Cards and surfaces */
+  --border: #dcdfe3; /* Soft border gray */
+
+  --primary: #12abfc; /* Your brand blue */
+  --primary-dark: #0984e3; /* For hover or depth */
+  --secondary: #cbd6e2; /* Muted secondary blue-gray */
+  --accent: #c4a669; /* Gold sand accent */
+
+  --textprimary: #1e1e1e; /* Deep gray/black */
+  --subtitle: #6c727f; /* Soft readable gray */
+  --lightgray: #f1f3f5; /* Light UI background gray */
+
+  --headingbackground: #eef1f4; /* For header sections */
+  --title: #121212; /* Headings */
 }
 
 .dark {
-  --background: #0e0e0e;
-  --foreground: #ededed;
-  --border: #202c2a;
-  --headingbackground: #030d0a;
-  --primary: #1b2d51;
-  --secondary: #47506d;
-  --accent: #0ea7bf;
-  --textprimary: #6a717f;
-  --lightgray: #202c2a;
-  --subTitle: #959eb1;
+  --background: #111214; /* Rich dark gray */
+  --foreground: #1a1c1f; /* Card/Panel dark surfaces */
+  --border: #2b2d31; /* Visible but soft borders */
+
+  --primary: #12abfc; /* Keep logo blue consistent */
+  --primary-dark: #0a8cd9; /* Hover or pressed state */
+  --secondary: #404856; /* Subtle background elements */
+  --accent: #c4a669; /* Gold pop on dark bg */
+
+  --textprimary: #e2e4e8; /* Light gray for body text */
+  --subtitle: #a4a6ab; /* Dimmed gray for secondary text */
+  --lightgray: #2b2e33; /* Dark neutral for UIs */
+
+  --headingbackground: #1c1e22; /* Navigation/header background */
+  --title: #ffffff; /* Pure white for titles */
 }
+
 :focus {
   outline: none !important;
   box-shadow: none !important;
 }
 body {
-  color: var(--foreground);
+  color: var(--textprimary);
   background: var(--background);
-  font-family: Arial, Helvetica, sans-serif;
-  border: var(--border);
+  font-family: "Inter", "Segoe UI", sans-serif;
+  -webkit-font-smoothing: antialiased;
+  line-height: 1.6;
 }
 
 @layer utilities {

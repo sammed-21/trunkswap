@@ -34,7 +34,7 @@ export const QuoteDetails: React.FC<QuoteDetailsProps> = ({
     return (
       <div className="p-4   rounded-lg shadow-sm  border-border h-fit max-w-[448px] w-full    space-y-2">
         <div className="flex justify-between text-sm">
-          <span className="text-textpriamry">Price Impact</span>
+          <span className="text-subtitle">Price Impact</span>
 
           <span>
             {" "}
@@ -42,7 +42,7 @@ export const QuoteDetails: React.FC<QuoteDetailsProps> = ({
           </span>
         </div>
         <div className="flex justify-between text-sm">
-          <span className="text-textpriamry">Max. Received</span>
+          <span className="text-subtitle">Max. Received</span>
 
           <span>
             {" "}
@@ -50,7 +50,7 @@ export const QuoteDetails: React.FC<QuoteDetailsProps> = ({
           </span>
         </div>
         <div className="flex justify-between text-sm">
-          <span className="text-textpriamry">Min. Received</span>
+          <span className="text-subtitle">Min. Received</span>
 
           <span>
             {" "}
@@ -58,7 +58,7 @@ export const QuoteDetails: React.FC<QuoteDetailsProps> = ({
           </span>
         </div>
         <div className="flex justify-between text-sm">
-          <span className="text-textpriamry">Fee (0.30%)</span>
+          <span className="text-subtitle">Fee (0.30%)</span>
 
           <span>
             {" "}
@@ -66,7 +66,7 @@ export const QuoteDetails: React.FC<QuoteDetailsProps> = ({
           </span>
         </div>
         <div className="flex justify-between text-sm">
-          <span className="text-textpriamry">Network Fee</span>
+          <span className="text-subtitle">Network Fee</span>
 
           <span>
             {" "}
@@ -74,7 +74,7 @@ export const QuoteDetails: React.FC<QuoteDetailsProps> = ({
           </span>
         </div>
         <div className="flex justify-between text-sm">
-          <span className="text-textpriamry">Routing Source</span>
+          <span className="text-subtitle">Routing Source</span>
 
           <span>
             {" "}
@@ -86,9 +86,9 @@ export const QuoteDetails: React.FC<QuoteDetailsProps> = ({
   }
   return (
     <div className="p-4 border rounded-lg shadow-sm border-border h-fit max-w-[448px] w-full space-y-2">
-      <h2 className="text-lg font-semibold">Swap Details</h2>
+      <h2 className="text-lg text-title font-semibold">Swap Details</h2>
       <div className="flex justify-between text-sm">
-        <span>Price Impact</span>
+        <span className="text-subtitle">Price Impact</span>
         <span
           className={`${
             Number(priceImpact?.replace("%", "")) > 1
@@ -100,31 +100,33 @@ export const QuoteDetails: React.FC<QuoteDetailsProps> = ({
         </span>
       </div>
       <div className="flex justify-between text-sm">
-        <span>Max. Received</span>
-        <span>
-          {maxReceived} {buySymbol}
+        <span className="text-subtitle">Max. Received</span>
+        <span className="text-title">
+          {formatDigits(maxReceived)} {buySymbol}
         </span>
       </div>
       <div className="flex justify-between text-sm">
-        <span>Min. Received</span>
-        <span>
-          {minReceived} {buySymbol}
+        <span className="text-subtitle">Min. Received</span>
+        <span className="text-title">
+          {formatDigits(minReceived)} {buySymbol}
         </span>
       </div>
       <div className="flex justify-between text-sm">
-        <span>Fee (0.30%)</span>
-        <span>
-          {Number(fee).toFixed(6)} {sellSymbol}
+        <span className="text-subtitle">Fee (0.30%)</span>
+        <span className="text-title">
+          {formatDigits(Number(fee))} {sellSymbol}
           {/* {feeUSD && ` (≈ $${feeUSD})`} */}
         </span>
       </div>
       <div className="flex justify-between text-sm">
-        <span>Network Fee</span>
-        <span>{networkFeeUsd && `≈ ${networkFeeUsd} ETH`}</span>
+        <span className="text-subtitle">Network Fee</span>
+        <span className="text-title">
+          {networkFeeUsd && `≈ ${networkFeeUsd} ETH`}
+        </span>
       </div>
       <div className="flex justify-between text-sm">
-        <span>Routing Source</span>
-        <span>{routingSource}</span>
+        <span className="text-subtitle">Routing Source</span>
+        <span className="text-title">{routingSource}</span>
       </div>
     </div>
   );

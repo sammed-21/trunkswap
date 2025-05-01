@@ -63,10 +63,10 @@ const TokenSelector: React.FC<TokenSelectorProps> = ({
         onClick={(e) => e.stopPropagation()} // Prevent click propagation to the overlay
       >
         <div className="border-b-[1px] mb-5 -mx-3 py-3 px-3 border-secondary flex justify-between items-center">
-          <span>Select a Token</span>
+          <span className="text-title font-medium text-xl">Select Token</span>
           <button
             onClick={closeModal}
-            className="text-white bg-border  rounded-none p-2"
+            className="text-title bg-secondary  rounded-none p-2"
           >
             ESC
           </button>
@@ -78,7 +78,7 @@ const TokenSelector: React.FC<TokenSelectorProps> = ({
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             placeholder="Search tokens..."
-            className="w-full p-2 bg-secondary text-white rounded-none"
+            className="w-full p-2 bg-secondary text-title rounded-none"
           />
         </div>
         <div className="space-y-4">
@@ -96,7 +96,7 @@ const TokenSelector: React.FC<TokenSelectorProps> = ({
                   }`}
                   onClick={() => !disabled && onSelect(token)} // Allow selection only if not disabled
                 >
-                  <div className="flex items-center">
+                  <div className="flex text-title items-center">
                     <Image
                       src={token.logoURI}
                       alt={token.name}
@@ -106,12 +106,12 @@ const TokenSelector: React.FC<TokenSelectorProps> = ({
                       {token.name} ({token.symbol})
                     </span>
                   </div>
-                  {disabled && <span className="text-gray-500">Selected</span>}
+                  {disabled && <span className="text-subtitle">Selected</span>}
                 </div>
               );
             })
           ) : (
-            <div className="text-gray-500">No tokens found</div>
+            <div className="text-subtitle">No tokens found</div>
           )}
         </div>
       </div>

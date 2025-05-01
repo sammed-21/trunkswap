@@ -33,7 +33,7 @@ export default function RootLayout({
   return (
     <html lang="en" className="">
       <body
-        className={`${geistSans.variable} ${geistMono.variable} dark w-full flex items-center justify-center relative h-full  antialiased`}
+        className={`${geistSans.variable} ${geistMono.variable}  w-full flex items-center justify-center relative h-full  antialiased`}
       >
         <ThemeProvider
           attribute="class"
@@ -44,10 +44,10 @@ export default function RootLayout({
           <div className="w-full px-2 max-w-[1440px] h-full relative">
             <Providers>
               <InitalLoad>
-                <div className="absolute top-0 bottom-0 left-0 bg-[#0d53bb] light:bg-[#0d53bb]/20 rounded-none blur-[300px] w-[22rem] h-[32rem] -z-10"></div>
+                {/* <div className="absolute top-0 bottom-0 left-0 bg-[#0d53bb] light:bg-[#0d53bb]/20 rounded-none blur-[300px] w-[22rem] h-[32rem] -z-10"></div> */}
                 <Navbar />
                 {children}
-                <div className="absolute right-0 top-0  bg-[#0d0dbb] light:bg-[#0d0dbb]/20 rounded-none blur-[300px] w-[22rem] h-[32rem] -z-10"></div>
+                {/* <div className="absolute right-0 top-0  bg-[#0d0dbb] light:bg-[#0d0dbb]/20 rounded-none blur-[300px] w-[22rem] h-[32rem] -z-10"></div> */}
                 <NextTopLoader
                   color="#2299DD"
                   initialPosition={0.08}

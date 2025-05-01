@@ -51,7 +51,7 @@ const AmountInput: React.FC<AmountInputProps> = ({
     <div className="p-4 bg-secondary border-primary border-[1px]  shadow-md w-full max-w-md relative">
       <div className="mb-4">
         <div className="flex justify-between items-center">
-          <label className="block text-sm font-medium text-textpriamry">
+          <label className="block text-sm font-medium text-subtitle">
             {title}
           </label>
 
@@ -79,7 +79,7 @@ const AmountInput: React.FC<AmountInputProps> = ({
           ) : (
             <input
               type="text"
-              className="w-full placeholder:text-textprimary pl-3  py-2 bg-transparent focus:none border-none text-2xl rounded-none"
+              className="w-full placeholder:text-textprimary pl-3  py-2 bg-transparent text-title focus:none border-none text-2xl rounded-none"
               placeholder="0.00"
               value={Amount}
               readOnly={readOnly}
