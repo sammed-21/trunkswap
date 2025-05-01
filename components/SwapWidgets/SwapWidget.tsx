@@ -107,10 +107,10 @@ export const SwapWidget = (props: Props) => {
   const buttonProps = getButtonProps();
 
   return (
-    <div className=" flex flex-col  gap-3 items-center justify-center p-10  w-full">
-      <div className="bg-forground p-4 col-span-2 max-w-[448px] w-full border-border border-[1px]  ">
-        <div className="flex w-full justify-between ">
-          <h2 className="text-lg font-bold text-white bg-primary w-fit px-2 py-1 rounded-none mb-4">
+    <div className=" flex flex-col  gap-3 items-center justify-center p-3  w-full">
+      <div className="  p-4 col-span-2 max-w-[448px] w-full  ">
+        <div className="flex w-full mb-2 items-center justify-between ">
+          <h2 className="text-lg font-bold text-white bg-primary w-fit px-2 py-1 rounded-none ">
             Swap
           </h2>
           <div>
@@ -174,14 +174,14 @@ export const SwapWidget = (props: Props) => {
           <Button
             onClick={handleTransaction}
             variant={"primary"}
-            className="w-full mt-4 py-3  text-title font-bold rounded"
+            className="w-full mt-4 py-3  text-title font-bold  "
           >
             {buttonProps.text}
           </Button>
         ) : (
           <Button
             variant={"primary"}
-            className="w-full mt-4 py-3  text-title font-bold rounded"
+            className="w-full mt-4 py-3  text-title font-bold  "
             onClick={openConnectModal}
           >
             Connect
@@ -189,7 +189,7 @@ export const SwapWidget = (props: Props) => {
         )}
       </div>
 
-      {minAmountOut && quoteAmount && (
+      {quoteAmount && (
         <>
           <QuoteDetails
             maxReceived={TokenBAmount}

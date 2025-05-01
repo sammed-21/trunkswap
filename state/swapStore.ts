@@ -105,6 +105,33 @@ const useSwapStore = create<SwapState & SwapActions>((set, get) => ({
   setIsApproving: (isApproving: boolean) => set({ isApproving }),
   setMinAmountOut: (minAmountOut: any) => set({ minAmountOut }),
   setEstimatedFees: (estimatedFee: any) => set({ estimatedFees: estimatedFee }),
+
+  resetSwapState: () =>
+    set({
+      TokenB: "DAI",
+      TokenA: "WETH",
+      TokenBAmount: "",
+      TokenAAmount: "",
+      tradeDirection: "sell",
+      selectorOpen: false,
+      transactionButtonText: "Swap",
+      isSwapping: false,
+      quoteLoading: false,
+      needsApproval: false,
+      isApproving: false,
+      minAmountOut: {
+        raw: null,
+        formatted: null,
+      },
+      quoteAmount: null,
+      estimatedFees: {
+        estimatedFee: null,
+        formatedEstimatedFee: null,
+      },
+      priceImpact: null,
+      fee: null,
+      // Don't reset tokens, balances, slippage, etc.
+    }),
   // Function to fetch token balances when wallet connects
   fetchTokenBalances: async (walletAddress: string, provider: any) => {
     const { currentSellAsset, currentBuyAsset } = get();
@@ -225,5 +252,6 @@ export const useSwapActions = () =>
       setEstimatedFees: state.setEstimatedFees,
       setPriceImpact: state.setPriceImpact,
       setFee: state.setFee,
+      resetSwapState: state.resetSwapState,
     }))
   );

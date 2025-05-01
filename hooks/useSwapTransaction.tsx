@@ -43,6 +43,7 @@ export function useSwapTransactions() {
     setQuoteAmount,
     setPriceImpact,
     setFee,
+    resetSwapState,
   } = useSwapActions();
 
   const { signer, provider, chainId, address } = useAccountState();
@@ -285,6 +286,7 @@ export function useSwapTransactions() {
   const executeSwap = useCallback(async () => {
     if (
       !signer ||
+      !address ||
       !TokenAAmount ||
       !currentSellAsset?.address ||
       !currentBuyAsset?.address ||
@@ -322,11 +324,11 @@ export function useSwapTransactions() {
       );
 
       await tx.wait();
-
       // Reset fields after successful swap
       setTokenBAmount("");
       setTransactionButtonText("Swap");
-      updateTokenBalances(String(address), provider);
+      await updateTokenBalances(address!, provider);
+      resetSwapState();
     } catch (error) {
       console.error("Error executing swap:", error);
       setTransactionButtonText("Swap");

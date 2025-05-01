@@ -5,8 +5,9 @@ import { Skeleton } from "../ui/skeleton";
 export const PoolListHead = () => {
   const { totalPool, isLoading } = usePoolState();
   return (
-    <div className="h-[250px] flex bg-primary  justify-center   items-center w-full border-border">
-      <div className="max-w-[80%] flex justify-between w-full items-center">
+    <div className="h-[250px]  flex bg-forground  justify-start   items-center w-full border-border">
+      <div className="max-w-[30%] w-full container"></div>
+      <div className="w-[68%] relative flex justify-between  p-5 items-start">
         <div className="">
           <h1 className="text-4xl">Provide Liquidity</h1>
           <p>Provide Liqudity to the pools and earn fee as a reward</p>
@@ -15,11 +16,17 @@ export const PoolListHead = () => {
         {isLoading ? (
           <Skeleton className="w-[100px] h-[20px] rounded-none" />
         ) : (
-          <div className="flex flex-col items-start justify-start text-start">
-            <span className="text-textpriamry text-xl font-semibold">
-              Pools
+          <div className="grid grid-cols-2 gap-5 p-5">
+            <span className="flex col-span-1 flex-col items-start justify-start text-start">
+              <span className="text-subtitle text-base font-semibold">
+                Pools
+              </span>
+              <span className="text-white text-3xl font-bols">{totalPool}</span>
             </span>
-            <span className="text-white text-2xl font-bols">{totalPool}</span>
+            <span className="flex col-span-1 flex-col items-start justify-start text-start">
+              <span className="text-subtitle text-base font-semibold">TVL</span>
+              <span className="text-white text-3xl font-bols">{"-"}</span>
+            </span>
           </div>
         )}
       </div>

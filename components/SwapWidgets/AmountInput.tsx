@@ -48,7 +48,7 @@ const AmountInput: React.FC<AmountInputProps> = ({
   };
 
   return (
-    <div className="p-4 bg-secondary border-primary border-[1px]  shadow-md w-full max-w-md relative">
+    <div className="p-4 bg-forground border-primary border-[1px]  shadow-md w-full max-w-md relative">
       <div className="mb-4">
         <div className="flex justify-between items-center">
           <label className="block text-sm font-medium text-subtitle">
@@ -59,7 +59,7 @@ const AmountInput: React.FC<AmountInputProps> = ({
             <>
               {loadingBalances ? (
                 <div className="mb-1">
-                  <Skeleton className="w-[100px] h-[20px] rounded-none" />{" "}
+                  <Skeleton className="w-[100px] h-[22px] rounded-none" />{" "}
                 </div>
               ) : (
                 <span
@@ -88,7 +88,7 @@ const AmountInput: React.FC<AmountInputProps> = ({
           )}
           <div className="w-full flex justify-end">
             <button
-              className="px-3 justify-between gap-1  w-fit relative flex py-2 bg-primary text-white items-center rounded"
+              className="px-3 justify-between gap-1  w-fit relative flex py-2 bg-primary text-white items-center "
               onClick={() => setSelectorOpen(true)}
             >
               <Image

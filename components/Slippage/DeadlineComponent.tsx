@@ -18,7 +18,11 @@ export const DeadlineComponent = (props: Props) => {
     <div className="flex px-1 border-[1px] border-border text-base w-full">
       <div className="flex justify-start py-2 gap-1 w-full ">
         <h1 className="text-base font-semibold px-2">Swap deadline</h1>
-        <ToolTipComponent content="Your transaction will revert if the prices change more then the slippage percentage" />
+        {/* <ToolTipComponent content="Your transaction will revert if the prices change more then the slippage percentage" /> */}
+        <ToolTipComponent
+          subTitle="deadline"
+          content="Your transaction will revert if it is pending for more than this period of time. (Maximum: 3 days)."
+        />
       </div>
       <div className="flex w-fit border-[1px] my-1  items-center justify-center border-border px-1 gap-2">
         <input

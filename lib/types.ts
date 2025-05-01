@@ -162,6 +162,7 @@ export interface SwapActions {
   }) => void;
   setFee: (fee: string | null) => void;
   setPriceImpact: (priceImpact: string | null) => void;
+  resetSwapState: () => void;
 }
 
 export interface TokenDetail {

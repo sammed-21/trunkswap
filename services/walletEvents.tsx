@@ -36,7 +36,6 @@ const chainMap = {
 type Props = { children: React.ReactNode };
 export const WalletInit = ({ children }: Props) => {
   const { address, isConnected, isDisconnected } = useAccount();
-
   const chainId = useChainId();
   const { data: walletClient } = useWalletClient();
   let walletSigner: ethers.Signer | ethers.JsonRpcSigner | null;
@@ -83,7 +82,7 @@ export const WalletInit = ({ children }: Props) => {
       });
       setProvider(ethersProvider);
       setChainId(currentChainId);
-      setAddress(address!?.toString());
+
       setViemClient(viemClient);
       // Set signer if wallet is connected
 
@@ -110,6 +109,7 @@ export const WalletInit = ({ children }: Props) => {
       initializeProvider(chainId || defaultChainId);
     }
     if (isConnected) {
+      setAddress(address!?.toString());
       getSigners();
     }
   }, [isInitialized, isConnected]);
