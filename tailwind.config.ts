@@ -10,11 +10,16 @@ const config: Config = {
     extend: {
       colors: {
         primary: "var(--primary)",
+        "primary-dark": "var(--primary-dark)",
         secondary: "var(--secondary)",
-        accent: "#0ea7bf",
-        textpriamry: "var(--subTitle)",
+        accent: "var(--accent)",
+        title: "var(--title)",
+        subtitle: "var(--subtitle)",
+        textpriamry: "var(--textprimary)",
+        background: "var(--background)",
+        forground: "var(--foreground)",
         lightgray: "#202C2A",
-        border: "var(--secondary)",
+        border: "var(--border)",
         headingbackground: "var(--headingBackground)",
       },
       backgroundImage: {

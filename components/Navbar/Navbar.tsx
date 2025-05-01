@@ -8,9 +8,12 @@ import { ModeToggle } from "../Common/ModeToggle";
 
 export const Navbar = () => {
   return (
-    <nav className="h-20 border-[1px] bg-primary backdrop-filter backdrop-blur-lg bg-opacity-30 border-border mt-5 px-4  rounded-none  justify-between flex items-center  w-full font-semibold ">
+    <nav className="h-20 border-[1px] text-title  bg-primary-dark backdrop-filter backdrop-blur-lg bg-opacity-30 border-border mt-5 px-4  rounded-none  justify-between flex items-center  w-full font-semibold ">
       <div className="flex gap-10 items-center justify-start">
-        <Link href="/" className="flex gap-1 items-center justify-center">
+        <Link
+          href="/"
+          className="flex gap-1 text-title items-center justify-center"
+        >
           <Image
             src={logo}
             width={30}
@@ -24,7 +27,7 @@ export const Navbar = () => {
         <Link href="/pool">pool</Link>
       </div>
       <div className="flex gap-2 items-center justify-end">
-        {/* <ModeToggle /> */}
+        <ModeToggle />
         <ConnectWallet />
       </div>
     </nav>

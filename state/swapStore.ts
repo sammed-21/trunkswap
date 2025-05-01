@@ -10,6 +10,7 @@ import {
   MAINNET_TOKENS_BY_SYMBOL,
 } from "@/lib/constants";
 import { fetchTokenBalance } from "@/services/getTokenBalance";
+import { formatDigits } from "@/lib/utils";
 
 // Unified Zustand Store
 const useSwapStore = create<SwapState & SwapActions>((set, get) => ({
@@ -58,8 +59,10 @@ const useSwapStore = create<SwapState & SwapActions>((set, get) => ({
       TokenA: token,
       TokenB: state.TokenB === token ? "" : state.TokenB,
     })),
-  setTokenBAmount: (amount) => set(() => ({ TokenBAmount: amount })),
-  setTokenAAmount: (amount) => set(() => ({ TokenAAmount: amount })),
+  setTokenBAmount: (amount) =>
+    set(() => ({ TokenBAmount: formatDigits(amount) })),
+  setTokenAAmount: (amount) =>
+    set(() => ({ TokenAAmount: formatDigits(amount) })),
   setTradeDirection: (direction) => set(() => ({ tradeDirection: direction })),
   setSlippage: (slippage) => set(() => ({ slippage })),
   setTokens: (tokens: any) => set({ tokens }),
