@@ -4,7 +4,7 @@ import { arbitrum, arbitrumSepolia, mainnet, sepolia } from "viem/chains";
 export const config = getDefaultConfig({
   appName: "TrunkSwap",
   projectId: process.env.NEXT_PUBLIC_WALLET_CONNECT_PROJECT_ID!,
-  chains: [arbitrumSepolia, sepolia],
+  chains: [arbitrumSepolia],
   ssr: true, // If your dApp uses server side rendering (SSR)
 });
 
