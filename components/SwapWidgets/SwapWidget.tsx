@@ -45,6 +45,7 @@ export const SwapWidget = (props: Props) => {
     minAmountOut,
     estimateFees,
     fee,
+    slippage,
     priceImpact,
   } = useSwapState();
   const {
@@ -195,6 +196,7 @@ export const SwapWidget = (props: Props) => {
             maxReceived={TokenBAmount}
             isLoading={quoteLoading}
             minReceived={minAmountOut.formatted}
+            slippage={slippage}
             fee={fee}
             networkFee={estimateFees.estimatedFee}
             networkFeeUsd={estimateFees.formatedEstimatedFee}

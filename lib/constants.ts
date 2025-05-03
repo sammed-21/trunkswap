@@ -58,24 +58,24 @@ export const MAINNET_TOKENS: Token[] = [
     address: "0x2BCb93F7D8884410845fa1F8B8Df5df820673be3",
     logoURI: RSTX_IMAGE,
   },
-  {
-    chainId: 1,
-    name: "Wrapped Ether",
-    symbol: "WETH",
-    decimals: 18,
-    address: "0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2",
-    logoURI:
-      "https://raw.githubusercontent.com/maticnetwork/polygon-token-assets/main/assets/tokenAssets/weth.svg",
-  },
-  {
-    chainId: 1,
-    name: "USD Coin",
-    symbol: "USDC",
-    decimals: 6,
-    address: "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48",
-    logoURI:
-      "https://raw.githubusercontent.com/maticnetwork/polygon-token-assets/main/assets/tokenAssets/usdc.svg",
-  },
+  // {
+  //   chainId: 421614,
+  //   name: "Wrapped Ether",
+  //   symbol: "WETH",
+  //   decimals: 18,
+  //   address: "0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2",
+  //   logoURI:
+  //     "https://raw.githubusercontent.com/maticnetwork/polygon-token-assets/main/assets/tokenAssets/weth.svg",
+  // },
+  // {
+  //   chainId: 421614,
+  //   name: "USD Coin",
+  //   symbol: "USDC",
+  //   decimals: 18,
+  //   address: "0xDbc8c016287437ce2cF69fF64c245A4D74599A40",
+  //   logoURI:
+  //     "https://raw.githubusercontent.com/maticnetwork/polygon-token-assets/main/assets/tokenAssets/usdc.svg",
+  // },
   {
     chainId: 1,
     name: "Dai - PoS",
@@ -113,6 +113,7 @@ export const MAINNET_TOKENS_BY_SYMBOL: Record<string, Token> = {
     address: "0x2BCb93F7D8884410845fa1F8B8Df5df820673be3",
     logoURI: RSTX_IMAGE,
   },
+
   // dai: {
   //   chainId: 1,
   //   name: "Dai - PoS",
