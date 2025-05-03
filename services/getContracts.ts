@@ -5,6 +5,7 @@ import { getNetworkNameUsingChainId } from "./getNetworkNameUsingChainId";
 import { ROUTER_ABI } from "@/abi/ROUTER_ABI";
 import { FACTORY_ABI } from "@/abi/FACTORY_ABI";
 import { ERC20_ABI } from "@/abi/ERC20ABI";
+import { FAUCET_ABI } from "@/abi/FAUCET_ABI";
 
 export const getRouterContract = (chainId: number, provider: any) => {
   const contractAddress =
@@ -18,6 +19,13 @@ export const getFactoryContract = (chainId: number, provider: any) => {
     addressess[getNetworkNameUsingChainId(chainId)].FACTORY_ADDRESS;
 
   return new ethers.Contract(contractAddress, FACTORY_ABI, provider);
+};
+
+export const getFaucetContract = (
+  contractAddress: string,
+  signer: ethers.Signer
+) => {
+  return new ethers.Contract(contractAddress, FAUCET_ABI, signer);
 };
 
 export const getErc20Contract = (address: string, provider: any) => {

@@ -25,6 +25,7 @@ export const Navbar = () => {
         </Link>
         <Link href="/swap">Swap</Link>
         <Link href="/pool">Pool</Link>
+        <Link href="/Faucet">Faucet</Link>
       </div>
       <div className="flex gap-2 items-center justify-end">
         <ModeToggle />
