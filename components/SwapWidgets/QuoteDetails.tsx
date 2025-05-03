@@ -11,6 +11,7 @@ interface QuoteDetailsProps {
   fee: string | null;
   networkFee: string;
   networkFeeUsd?: string;
+  slippage: any;
   priceImpact?: string | null;
   routingSource: string;
   buySymbol: string;
@@ -22,6 +23,7 @@ export const QuoteDetails: React.FC<QuoteDetailsProps> = ({
   maxReceived,
   minReceived,
   fee,
+  slippage,
   networkFee,
   networkFeeUsd,
   priceImpact, // default
@@ -36,6 +38,14 @@ export const QuoteDetails: React.FC<QuoteDetailsProps> = ({
         <h2 className="text-lg text-title font-semibold">Swap Details</h2>
         <div className="flex justify-between text-sm">
           <span className="text-subtitle">Price Impact</span>
+
+          <span>
+            {" "}
+            <Skeleton className="w-[100px] h-[20px] rounded-none" />
+          </span>
+        </div>
+        <div className="flex justify-between text-sm">
+          <span className="text-subtitle">Slippage</span>
 
           <span>
             {" "}
@@ -99,6 +109,10 @@ export const QuoteDetails: React.FC<QuoteDetailsProps> = ({
         >
           {priceImpact || "-"}
         </span>
+      </div>
+      <div className="flex justify-between text-sm">
+        <span className="text-subtitle">Slippage</span>
+        <span className="text-title"> {slippage}</span>
       </div>
       <div className="flex justify-between text-sm">
         <span className="text-subtitle">Max. Received</span>

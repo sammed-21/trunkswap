@@ -12,19 +12,17 @@ import { useSwapState } from "@/state/swapStore";
 type Props = {};
 
 export const SlippageModal = (props: Props) => {
-  const { slippage } = useSwapState();
   return (
     <div>
       <DropdownMenu>
         <DropdownMenuTrigger>
-          <div className="flex items-center gap-2 border-[1px] border-border p-2">
+          <div className="flex items-center gap-2  p-2">
             <FaGear />
-            <p>{slippage}</p>
           </div>
         </DropdownMenuTrigger>
-        <DropdownMenuContent className="min-w-[400px] w-fit h-fit relative min-h-[150px] ">
-          <h1 className="text-xl font-semibold">Swap Settings </h1>
-          <div className="p-2 flex flex-col gap-1 w-full rounded-none ">
+        <DropdownMenuContent className="max-w-[400px] flex flex-col gap-3 p-4 w-full h-fit relative  ">
+          <h1 className="text-textpriamry text-xs">Transaction Settings</h1>
+          <div className=" flex flex-col gap-1 w-full rounded-none ">
             <SlippageTolerance />
             <DeadlineComponent />
           </div>
