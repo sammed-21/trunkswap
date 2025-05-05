@@ -1,7 +1,7 @@
 "use client";
 import { create } from "zustand";
 import { useShallow } from "zustand/shallow";
-import { SwapActions, SwapState, TokenDetail } from "@/lib/types";
+import { Prices, SwapActions, SwapState, TokenDetail } from "@/lib/types";
 import {
   DEFAULT_BUY_TOKEN,
   DEFAULT_SELL_TOKEN,
@@ -11,13 +11,20 @@ import {
 } from "@/lib/constants";
 import { fetchTokenBalance } from "@/services/getTokenBalance";
 import { formatDigits } from "@/lib/utils";
+import {
+  getTokenUSDPrice,
+  getUSDValue,
+  getUSDValueSync,
+  updatePrices,
+} from "@/services/priceFeed";
 
 // Unified Zustand Store
 const useSwapStore = create<SwapState & SwapActions>((set, get) => ({
   tokens: MAINNET_TOKENS,
   // Initial State
-  TokenB: "DAI",
-  TokenA: "WETH",
+  TokenB: DEFAULT_BUY_TOKEN(defaultChainId)?.toUpperCase(),
+  TokenA: DEFAULT_SELL_TOKEN(defaultChainId)?.toUpperCase(),
+
   TokenBAmount: "",
   tradeDirection: "sell",
   TokenAAmount: "",
@@ -48,21 +55,139 @@ const useSwapStore = create<SwapState & SwapActions>((set, get) => ({
   },
   priceImpact: null,
   fee: null,
+  TokenAUsdValue: null,
+  TokenBUsdValue: null,
+  TokenAUsdPrice: null,
+  TokenBUsdPrice: null,
+  prices: {},
   // Actions
   setTokenB: (token) =>
     set((state) => ({
       TokenB: token,
       TokenA: state.TokenA === token ? "" : state.TokenA,
+      TokenBUsdPrice: null,
+      TokenBUsdValue: null,
     })),
   setTokenA: (token) =>
     set((state) => ({
       TokenA: token,
       TokenB: state.TokenB === token ? "" : state.TokenB,
+      TokenAUsdPrice: null,
+      TokenAUsdValue: null,
     })),
-  setTokenBAmount: (amount) =>
-    set(() => ({ TokenBAmount: formatDigits(amount) })),
-  setTokenAAmount: (amount) =>
-    set(() => ({ TokenAAmount: formatDigits(amount) })),
+  // setTokenBAmount: (amount) =>
+  //   set(() => ({
+  //     TokenBAmount: formatDigits(amount),
+  //   })),
+  // setTokenBAmount: (amount) => {
+  //   set(() => {
+  //     // Calculate USD value
+  //     const token = get().TokenA;
+  //     const usdValue = amount ? getUSDValue(amount, token) : null;
+
+  //     return {
+  //       TokenBAmount: amount,
+  //       TokenBUsdValue: usdValue,
+  //     };
+  //   });
+  // },
+  setPrices: (prices: Prices) => set({ prices }),
+
+  // setTokenAAmount: (amount) => {
+  //   set(() => {
+  //     // Calculate USD value
+  //     const token = get().TokenA;
+  //     const usdValue = amount ? getUSDValue(amount, token) : null;
+
+  //     return {
+  //       TokenAAmount: amount,
+  //       TokenAUsdValue: usdValue,
+  //     };
+  //   });
+  // },
+  setTokenBAmount: (amount) => {
+    // Immediate update with sync method
+
+    const state = get();
+    const token = state.TokenB;
+    const usdValue = amount ? getUSDValueSync(amount, token) : null;
+
+    // Update state with current value
+    set({
+      TokenBAmount: amount,
+      TokenBUsdValue: usdValue,
+    });
+
+    // Then do an async update to get the most accurate value
+    (async () => {
+      if (amount) {
+        try {
+          // Get updated USD value with fresh price data
+          const freshUsdValue = await getUSDValue(amount, token, true);
+
+          // Only update if the value is different
+          if (freshUsdValue !== usdValue) {
+            set({ TokenBUsdValue: freshUsdValue });
+          }
+        } catch (error) {
+          console.error("Error updating TokenB USD value:", error);
+        }
+      }
+    })();
+
+    // Also update quote if needed
+    if (state.tradeDirection === "sell") {
+      // Here you'd typically call your quote service
+      // updateQuote(state.TokenB, state.TokenA, state.TokenBAmount);
+    }
+  },
+
+  setTokenAAmount: (amount) => {
+    // Immediate update with sync method
+    const state = get();
+    const token = state.TokenA;
+    const usdValue = amount ? getUSDValueSync(amount, token) : null;
+
+    // Update state with current value
+    set({
+      TokenAAmount: amount,
+      TokenAUsdValue: usdValue,
+    });
+
+    // Then do an async update to get the most accurate value
+    (async () => {
+      if (amount) {
+        try {
+          // Get updated USD value with fresh price data
+          const freshUsdValue = await getUSDValue(amount, token, true);
+
+          // Only update if the value is different
+          if (freshUsdValue !== usdValue) {
+            set({ TokenAUsdValue: freshUsdValue });
+          }
+        } catch (error) {
+          console.error("Error updating TokenA USD value:", error);
+        }
+      }
+    })();
+
+    // Also update quote if needed
+    if (state.tradeDirection === "buy") {
+      // Here you'd typically call your quote service
+      // updateQuote(state.TokenA, state.TokenB, state.TokenAAmount);
+    }
+  },
+
+  setTokenBUsdValue: (usdValue: number | null | undefined) =>
+    set({
+      TokenBUsdValue: usdValue,
+    }),
+  setTokenAUsdValue: (usdValue: number | null | undefined) =>
+    set({
+      TokenAUsdValue: usdValue,
+    }),
+  // setTokenAAmount: (amount) =>
+  //   set(() => ({ TokenAAmount: formatDigits(amount) })),
   setTradeDirection: (direction) => set(() => ({ tradeDirection: direction })),
   setSlippage: (slippage) => set(() => ({ slippage })),
   setTokens: (tokens: any) => set({ tokens }),
@@ -105,11 +230,21 @@ const useSwapStore = create<SwapState & SwapActions>((set, get) => ({
   setIsApproving: (isApproving: boolean) => set({ isApproving }),
   setMinAmountOut: (minAmountOut: any) => set({ minAmountOut }),
   setEstimatedFees: (estimatedFee: any) => set({ estimatedFees: estimatedFee }),
-
+  // updateUsdValues: () => {
+  //   const state = get();
+  //   set({
+  //     TokenAUsdValue: state.TokenAAmount
+  //       ? getUSDValue(state.TokenAAmount, state.TokenA)
+  //       : null,
+  //     TokenBUsdValue: state.TokenBAmount
+  //       ? getUSDValue(state.TokenBAmount, state.TokenB)
+  //       : null,
+  //   });
+  // },
   resetSwapState: () =>
     set({
-      TokenB: "DAI",
-      TokenA: "WETH",
+      TokenB: DEFAULT_SELL_TOKEN(defaultChainId)?.toUpperCase(),
+      TokenA: DEFAULT_SELL_TOKEN(defaultChainId)?.toUpperCase(),
       TokenBAmount: "",
       TokenAAmount: "",
       tradeDirection: "sell",
@@ -186,6 +321,49 @@ const useSwapStore = create<SwapState & SwapActions>((set, get) => ({
       }
     }
   },
+
+  updateUsdValues: async () => {
+    const state = get();
+
+    // Force update the prices first
+    await updatePrices();
+
+    // Calculate and update TokenA USD value if there's an amount
+    if (state.TokenA && state.TokenAAmount) {
+      const tokenAUsdValue = await getUSDValue(
+        state.TokenAAmount,
+        state.TokenA
+      );
+      set({ TokenAUsdValue: tokenAUsdValue });
+    }
+
+    // Calculate and update TokenB USD value if there's an amount
+    if (state.TokenB && state.TokenBAmount) {
+      const tokenBUsdValue = await getUSDValue(
+        state.TokenBAmount,
+        state.TokenB
+      );
+      set({ TokenBUsdValue: tokenBUsdValue });
+    }
+
+    // Also update token prices
+    const tokenAPrice = state.TokenA ? getTokenUSDPrice(state.TokenA) : null;
+    const tokenBPrice = state.TokenB ? getTokenUSDPrice(state.TokenB) : null;
+
+    set({
+      TokenAUsdPrice: tokenAPrice,
+      TokenBUsdPrice: tokenBPrice,
+    });
+  },
+
+  setTokenAUsdPrice: (tokenPriceUsd: number) =>
+    set({
+      TokenAUsdPrice: tokenPriceUsd,
+    }),
+  setTokenBUsdPrice: (tokenPriceUsd: number) =>
+    set({
+      TokenBUsdPrice: tokenPriceUsd,
+    }),
 }));
 
 // Helper function to fetch token balance
@@ -219,6 +397,11 @@ export const useSwapState = () =>
       estimateFees: state.estimatedFees,
       fee: state.fee,
       priceImpact: state.priceImpact,
+      TokenAUsdValue: state.TokenAUsdValue,
+      TokenBUsdValue: state.TokenBUsdValue,
+      TokenAUsdPrice: state.TokenAUsdPrice,
+      TokenBUsdPrice: state.TokenBUsdPrice,
+      prices: state.prices,
     }))
   );
 
@@ -252,6 +435,12 @@ export const useSwapActions = () =>
       setEstimatedFees: state.setEstimatedFees,
       setPriceImpact: state.setPriceImpact,
       setFee: state.setFee,
+      updateUsdValues: state.updateUsdValues,
       resetSwapState: state.resetSwapState,
+      setTokenBUsdValue: state.setTokenBUsdValue,
+      setTokenAUsdValue: state.setTokenAUsdValue,
+      setTokenAUsdPrice: state.setTokenAUsdPrice,
+      setTokenBUsdPrice: state.setTokenBUsdPrice,
+      setPrices: state.setPrices,
     }))
   );

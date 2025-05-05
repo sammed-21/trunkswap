@@ -59,7 +59,7 @@ const TokenSelector: React.FC<TokenSelectorProps> = ({
       onClick={handleOverlayClick} // Handle click on the overlay
     >
       <div
-        className="absolute right-0 top-0 bg-primary max-w-[448px] w-full h-full shadow-lg p-4"
+        className="absolute right-0 top-0 bg-forground max-w-[448px] w-full h-full shadow-lg p-4"
         onClick={(e) => e.stopPropagation()} // Prevent click propagation to the overlay
       >
         <div className="border-b-[1px] mb-5 -mx-3 py-3 px-3 border-secondary flex justify-between items-center">
@@ -81,7 +81,7 @@ const TokenSelector: React.FC<TokenSelectorProps> = ({
             className="w-full p-2 bg-secondary text-title rounded-none"
           />
         </div>
-        <div className="space-y-4">
+        <div className="space-y-4 z-50">
           {filteredTokens.length > 0 ? (
             filteredTokens.map((token) => {
               const disabled = isTokenDisabled(token);
@@ -91,8 +91,8 @@ const TokenSelector: React.FC<TokenSelectorProps> = ({
                   key={token.address}
                   className={`flex justify-between items-center p-4 border-none rounded-none ${
                     disabled
-                      ? "bg-secondary cursor-not-allowed"
-                      : "cursor-pointer hover:bg-primary"
+                      ? "bg-primary cursor-not-allowed"
+                      : "cursor-pointer hover:bg-primary-dark"
                   }`}
                   onClick={() => !disabled && onSelect(token)} // Allow selection only if not disabled
                 >
@@ -100,6 +100,8 @@ const TokenSelector: React.FC<TokenSelectorProps> = ({
                     <Image
                       src={token.logoURI}
                       alt={token.name}
+                      width={20}
+                      height={20}
                       className="w-6 h-6 mr-2"
                     />
                     <span>
