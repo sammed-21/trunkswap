@@ -11,6 +11,7 @@ import rotateImage from "@/public/rotateToken.svg";
 import Image from "next/image";
 import { useSwapTransactions } from "@/hooks/useSwapTransaction";
 import { QuoteDetails } from "./QuoteDetails";
+import TokenConversion from "@/services/TokenConversion";
 
 type Props = {};
 
@@ -205,6 +206,7 @@ export const SwapWidget = (props: Props) => {
           </Button>
         )}
       </div>
+      <TokenConversion prices={prices} from={TokenA} to={TokenB} />
 
       {quoteAmount && (
         <>

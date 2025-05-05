@@ -1,36 +1,81 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# TrunkSwap
 
-## Getting Started
+TrunkSwap is a decentralized exchange (DEX) that allows users to swap tokens, add liquidity, and remove liquidity in a seamless and user-friendly manner.
 
-First, run the development server:
+## 🌐 Website
+
+https://trunkswap.vercel.app/swap
+
+## 🚀 Features
+
+- Swap tokens with real-time pricing
+- Add liquidity to earn LP rewards
+- Remove liquidity with detailed breakdowns
+- Dynamic price updates every 10 seconds
+- Responsive, intuitive UI
+
+## 📦 Technologies Used
+
+- **Next.js** for frontend
+- **Ethers.js** for blockchain interactions
+- **Smart Contracts** for liquidity pool management
+- **Chainlink Price Feeds** for accurate pricing
+
+## 💧 Add Liquidity
+
+### UI
+
+- Select two tokens
+- Input token amounts
+- View pool share and price impact
+- Confirm and send transaction
+
+### Smart Contract Flow
+
+1. Approve tokens
+2. Call `addLiquidity(tokenA, tokenB, amountA, amountB)`
+3. Receive LP tokens
+
+---
+
+## 🧹 Remove Liquidity
+
+### UI
+
+- Select token pair
+- Input LP amount to remove
+- Show estimated return in tokens
+- Confirm and receive tokens
+
+### Smart Contract Flow
+
+1. Approve LP tokens
+2. Call `removeLiquidity(tokenA, tokenB, lpAmount)`
+3. Receive original tokens proportionally
+
+---
+
+## 🛠️ Installation
 
 ```bash
+git clone https://github.com/sammed-21/trunkswap.git
+cd trunkswap
+npm install
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+## 🤝 Contributing
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+Pull requests are welcome! For major changes, open an issue first to discuss what you would like to change.
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+---
 
-## Learn More
+## 📄 License
 
-To learn more about Next.js, take a look at the following resources:
+MIT
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+---
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+## 📬 Contact
 
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+- Twitter: [@0xSam_21](https://twitter.com/0xSam_21)
