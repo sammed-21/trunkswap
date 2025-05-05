@@ -53,3 +53,17 @@ export function formatBalance(balance: string, decimals: number): string {
   const num = parseFloat(formatted);
   return num.toFixed(4);
 }
+
+export function convertTokenAmount(
+  amount: number,
+  fromSymbol: string,
+  toSymbol: string,
+  prices: Record<string, number>
+): number {
+  const fromPrice = prices[`${fromSymbol}_USD`];
+  const toPrice = prices[`${toSymbol}_USD`];
+  if (!fromPrice || !toPrice)
+    throw new Error("Invalid token symbols or prices missing");
+
+  return (amount * fromPrice) / toPrice;
+}

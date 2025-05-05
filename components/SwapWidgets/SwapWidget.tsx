@@ -47,6 +47,11 @@ export const SwapWidget = (props: Props) => {
     fee,
     slippage,
     priceImpact,
+    TokenAUsdValue,
+    TokenBUsdValue,
+    TokenAUsdPrice,
+    TokenBUsdPrice,
+    prices,
   } = useSwapState();
   const {
     setTokenB,
@@ -58,6 +63,11 @@ export const SwapWidget = (props: Props) => {
     setTradeDirection,
     setTokenABalance,
     setTokenBBalance,
+    setTokenBUsdValue,
+
+    setTokenAUsdValue,
+    setTokenAUsdPrice,
+    setTokenBUsdPrice,
   } = useSwapActions();
   const handleToggleTradeDirection = () => {
     // Toggle direction
@@ -70,6 +80,10 @@ export const SwapWidget = (props: Props) => {
     setTokenA(TokenB);
     setTokenB(TokenA);
 
+    setTokenBUsdValue(TokenAUsdValue); // need to add this in the to updatet he amount and fetch the usd amount instanntyl
+    setTokenAUsdValue(TokenBUsdValue); // need to add this in the to updatet he amount and fetch the usd amount instanntyl
+    // setTokenAUsdPrice(TokenBUsdPrice);
+    // setTokenBUsdPrice(TokenAUsdPrice);
     // Swap full token details (if needed)
     setCurrentSellAsset(currentBuyAsset);
     setCurrentBuyAsset(currentSellAsset);
@@ -133,12 +147,13 @@ export const SwapWidget = (props: Props) => {
             token={TokenA}
             currentTokenAsset={currentSellAsset}
             Amount={TokenAAmount}
+            tokenUsdValue={TokenAUsdValue}
             setAmount={setTokenAAmount}
             setToken={setTokenA}
           />
           <div
             onClick={handleToggleTradeDirection}
-            className="absolute top-1/2 bg- border-border left-[45%] bg-primary -translate-y-1/2   z-10 bg- p-2 border"
+            className="absolute top-1/2 bg- border-border left-[45%] bg-primary -translate-y-1/2  z-[1] bg- p-2 border"
           >
             <Image
               src={rotateImage}
@@ -164,6 +179,7 @@ export const SwapWidget = (props: Props) => {
             token={TokenB}
             Amount={TokenBAmount}
             currentTokenAsset={currentBuyAsset}
+            tokenUsdValue={TokenBUsdValue}
             setCurrentTokenDetal={setCurrentBuyAsset}
             isLoading={quoteLoading}
             readOnly={true}

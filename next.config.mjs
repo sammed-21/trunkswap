@@ -1,7 +1,18 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   images: {
-    domains: ["*"], // Allow images from GitHub raw content
+    remotePatterns: [
+      {
+        protocol: "https",
+        hostname: "cryptologos.cc",
+        pathname: "/logos/**",
+      },
+      {
+        protocol: "https",
+        hostname: "raw.githubusercontent.com/",
+        pathname: "/logos/**",
+      },
+    ],
   },
 };
 

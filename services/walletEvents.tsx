@@ -11,6 +11,7 @@ import { watchAccount, watchChainId } from "@wagmi/core";
 import { usePoolActions } from "@/state/poolStore";
 import { addressess } from "@/address";
 import { getNetworkNameUsingChainId } from "./getNetworkNameUsingChainId";
+import { usePriceFeed } from "@/hooks/usePriceFeed";
 // Your fallback URLs and chain mapping
 
 const chainMap = {
@@ -105,8 +106,11 @@ export const WalletInit = ({ children }: Props) => {
   // Initial setup
   useEffect(() => {
     // Initialize provider even if no wallet is connected
+    const initialProvider = async () => {
+      await initializeProvider(chainId || defaultChainId);
+    };
     if (!isInitialized || !provider) {
-      initializeProvider(chainId || defaultChainId);
+      initialProvider();
     }
     if (isConnected) {
       setAddress(address!?.toString());

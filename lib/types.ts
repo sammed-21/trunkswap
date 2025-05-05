@@ -89,6 +89,7 @@ export interface V2QuoteTransaction {
   to: Address;
   value: string;
 }
+export type Prices = { [symbol: string]: number };
 
 export interface SwapState {
   isWalletConnected: any;
@@ -122,6 +123,11 @@ export interface SwapState {
   };
   fee: string | null;
   priceImpact: string | null;
+  TokenAUsdValue: number | null;
+  TokenBUsdValue: number | null;
+  TokenAUsdPrice: null | number;
+  TokenBUsdPrice: null | number;
+  prices: Prices | null;
 }
 export interface Token {
   name: string;
@@ -162,7 +168,13 @@ export interface SwapActions {
   }) => void;
   setFee: (fee: string | null) => void;
   setPriceImpact: (priceImpact: string | null) => void;
+  updateUsdValues: () => void;
   resetSwapState: () => void;
+  setTokenBUsdValue: (amount: number | null | undefined) => void;
+  setTokenAUsdValue: (amount: number | null | undefined) => void;
+  setTokenAUsdPrice: (tokenUsdPrice: number | any) => void;
+  setTokenBUsdPrice: (tokenUsdPrice: number | any) => void;
+  setPrices: (prices: Prices) => void;
 }
 
 export interface TokenDetail {

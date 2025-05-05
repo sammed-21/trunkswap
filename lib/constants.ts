@@ -3,6 +3,9 @@ import { getNetworkNameUsingChainId } from "@/services/getNetworkNameUsingChainI
 import { Address } from "viem";
 import STX_IMAGE from "@/public/tokens/stx.svg";
 import RSTX_IMAGE from "@/public/tokens/rstx.svg";
+import USDC from "@/public/tokens/usdc.svg";
+import USDT from "@/public/tokens/usdt.svg";
+import WETH from "@/public/tokens/weth.svg";
 
 export const PERMIT2_ADDRESS = "0x000000000022D473030F116dDEE9F6B43aC78BA3";
 
@@ -58,41 +61,21 @@ export const MAINNET_TOKENS: Token[] = [
     address: "0x2BCb93F7D8884410845fa1F8B8Df5df820673be3",
     logoURI: RSTX_IMAGE,
   },
-  // {
-  //   chainId: 421614,
-  //   name: "Wrapped Ether",
-  //   symbol: "WETH",
-  //   decimals: 18,
-  //   address: "0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2",
-  //   logoURI:
-  //     "https://raw.githubusercontent.com/maticnetwork/polygon-token-assets/main/assets/tokenAssets/weth.svg",
-  // },
-  // {
-  //   chainId: 421614,
-  //   name: "USD Coin",
-  //   symbol: "USDC",
-  //   decimals: 18,
-  //   address: "0xDbc8c016287437ce2cF69fF64c245A4D74599A40",
-  //   logoURI:
-  //     "https://raw.githubusercontent.com/maticnetwork/polygon-token-assets/main/assets/tokenAssets/usdc.svg",
-  // },
   {
-    chainId: 1,
-    name: "Dai - PoS",
-    symbol: "DAI",
-    decimals: 18,
-    address: "0x6b175474e89094c44da98b954eedeac495271d0f",
-    logoURI:
-      "https://raw.githubusercontent.com/maticnetwork/polygon-token-assets/main/assets/tokenAssets/dai.svg",
+    chainId: 421614,
+    name: "USDT Coin",
+    symbol: "USDC",
+    decimals: 6,
+    address: "0x75faf114eafb1BDbe2F0316DF893fd58CE46AA4d",
+    logoURI: USDC,
   },
   {
-    chainId: 1,
-    name: "FLOKI",
-    symbol: "FLOKI",
-    decimals: 9,
-    address: "0xcf0c122c6b73ff809c693db761e7baebe62b6a2e",
-    logoURI:
-      "https://raw.githubusercontent.com/trustwallet/assets/c37119334a24f9933f373c6cc028a5bdbad2ecb4/blockchains/ethereum/assets/0xcf0C122c6b73ff809C693DB761e7BaeBe62b6a2E/logo.png",
+    chainId: 421614,
+    name: "ETH (wrapper)",
+    symbol: "WETH",
+    decimals: 18,
+    address: "0x980B62Da83eFf3D4576C647993b0c1D7faf17c73",
+    logoURI: WETH,
   },
 ];
 
@@ -113,25 +96,22 @@ export const MAINNET_TOKENS_BY_SYMBOL: Record<string, Token> = {
     address: "0x2BCb93F7D8884410845fa1F8B8Df5df820673be3",
     logoURI: RSTX_IMAGE,
   },
-
-  // dai: {
-  //   chainId: 1,
-  //   name: "Dai - PoS",
-  //   symbol: "DAI",
-  //   decimals: 18,
-  //   address: "0x6b175474e89094c44da98b954eedeac495271d0f",
-  //   logoURI:
-  //     "https://raw.githubusercontent.com/maticnetwork/polygon-token-assets/main/assets/tokenAssets/dai.svg",
-  // },
-  // floki: {
-  //   chainId: 1,
-  //   name: "FLOKI",
-  //   symbol: "FLOKI",
-  //   decimals: 9,
-  //   address: "0xcf0c122c6b73ff809c693db761e7baebe62b6a2e",
-  //   logoURI:
-  //     "https://raw.githubusercontent.com/trustwallet/assets/c37119334a24f9933f373c6cc028a5bdbad2ecb4/blockchains/ethereum/assets/0xcf0C122c6b73ff809C693DB761e7BaeBe62b6a2E/logo.png",
-  // },
+  usdc: {
+    chainId: 421614,
+    name: "USDT Coin",
+    symbol: "USDC",
+    decimals: 6,
+    address: "0x75faf114eafb1BDbe2F0316DF893fd58CE46AA4d",
+    logoURI: USDC,
+  },
+  weth: {
+    chainId: 421614,
+    name: "ETH (wrapper)",
+    symbol: "WETH",
+    decimals: 18,
+    address: "0x980B62Da83eFf3D4576C647993b0c1D7faf17c73",
+    logoURI: WETH,
+  },
 };
 
 export const MAINNET_TOKENS_BY_ADDRESS: Record<string, Token> = {
@@ -173,21 +153,22 @@ export const MAINNET_TOKENS_BY_ADDRESS: Record<string, Token> = {
   },
 };
 export const defaultChainId = 421614;
-export const DEFAULT_BUY_TOKEN = (chainId: number) => {
+export const DEFAULT_BUY_TOKEN = (chainId: number): string => {
   if (chainId == 1) {
     return "weth";
   } else if (chainId == 421614) {
-    return "rstx";
+    ("hi this isthe weth buy");
+    return "weth";
   } else {
     return "weth";
   }
 };
 
-export const DEFAULT_SELL_TOKEN = (chainId: number) => {
+export const DEFAULT_SELL_TOKEN = (chainId: number): string => {
   if (chainId == 1) {
     return "weth";
   } else if (chainId == 421614) {
-    return "stx";
+    return "usdc";
   } else {
     return "weth";
   }
