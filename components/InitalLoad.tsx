@@ -28,25 +28,25 @@ const InitialLoad = ({ children }: { children: React.ReactNode }) => {
     };
     foolData();
   }, []);
-  useEffect(() => {
-    const foolData = async () => {
-      if (address) {
-        let position = await fetchUserPositions(
-          providerDefault!,
-          address,
-          FACTORY_ADDRESS(chainId)
-        );
-        await fetchTokenBalances(address, provider);
-      }
-    };
+  // useEffect(() => {
+  //   const foolData = async () => {
+  //     if (address) {
+  //       let position = await fetchUserPositions(
+  //         providerDefault!,
+  //         address,
+  //         FACTORY_ADDRESS(chainId)
+  //       );
+  //       await fetchTokenBalances(address, provider);
+  //     }
+  //   };
 
-    foolData();
-  }, [address, chainId]);
+  //   foolData();
+  // }, [address, chainId]);
   useEffect(() => {
     if (isConnected) {
       updateTokenBalances(String(address), provider);
     }
-  }, [isConnected, currentSellAsset, currentBuyAsset]);
+  }, [isConnected, currentSellAsset]);
 
   return <div className="w-full h-full relative">{children}</div>;
 };

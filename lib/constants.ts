@@ -30,7 +30,7 @@ interface Token {
 }
 
 export const fallbackUrls: Record<number, string> = {
-  421614: "https://sepolia-rollup.arbitrum.io/rpc",
+  421614: "https://arbitrum-sepolia-rpc.publicnode.com",
   1: "https://eth-mainnet.public.blastapi.io", // Ethereum Mainnet
   5: "https://eth-goerli.public.blastapi.io", // Goerli Testnet
   137: "https://polygon-rpc.com", // Polygon

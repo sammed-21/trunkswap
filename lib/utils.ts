@@ -23,3 +23,8 @@ export function deadlineFormatted(min: number = 20) {
   const deadline = currentTimeInSeconds + min * 60; // add 20 minutes (20 * 60 seconds)
   return deadline;
 }
+
+export function shortenAddress(address: string | `0x${string}`) {
+  if (!address) return "";
+  return `${address.slice(0, 6)}...${address.slice(-4)}`;
+}
