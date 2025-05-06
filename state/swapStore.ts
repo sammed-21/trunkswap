@@ -114,7 +114,7 @@ const useSwapStore = create<SwapState & SwapActions>((set, get) => ({
 
     // Update state with current value
     set({
-      TokenBAmount: amount,
+      TokenBAmount: formatDigits(amount),
       TokenBUsdValue: usdValue,
     });
 
@@ -150,7 +150,7 @@ const useSwapStore = create<SwapState & SwapActions>((set, get) => ({
 
     // Update state with current value
     set({
-      TokenAAmount: amount,
+      TokenAAmount: formatDigits(amount),
       TokenAUsdValue: usdValue,
     });
 
