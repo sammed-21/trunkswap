@@ -92,7 +92,7 @@ export const SwapWidget = (props: Props) => {
 
   // Optional: if you have ETH price fetched from CoinGecko
 
-  const getButtonProps = useCallback(() => {
+  const getButtonProps = () => {
     if (!isConnected) {
       return {
         onClick: openConnectModal,
@@ -124,7 +124,7 @@ export const SwapWidget = (props: Props) => {
         disabled: quoteLoading || !TokenAAmount || !TokenBAmount,
       };
     }
-  }, [tokenABalance, TokenAAmount]);
+  };
 
   const buttonProps = getButtonProps();
 
