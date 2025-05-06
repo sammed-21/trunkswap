@@ -4,6 +4,8 @@ import { Contract, ethers, formatUnits } from "ethers";
 import { getNetworkNameUsingChainId } from "../getNetworkNameUsingChainId";
 import { FACTORY_ABI } from "@/abi/FACTORY_ABI";
 import { ERC20_ABI } from "@/abi/ERC20ABI";
+import { getPrice } from "@/lib/utils";
+import { Prices } from "@/lib/types";
 export async function getAllPairs(factoryContract: Contract) {
   let allPairsLength = await factoryContract.allPairsLength();
 

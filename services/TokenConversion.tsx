@@ -150,6 +150,12 @@ const TokenConversion: React.FC<TokenConversionProps> = ({
     <div className="flex flex-row items-center gap-2 h-8 pb-1 w-fit bg-background">
       {conversionRate !== null ? (
         <>
+          <button
+            className="px-3 py-1 rounded"
+            onClick={() => setIsReversed(!isReversed)}
+          >
+            <GoArrowSwitch size={20} />
+          </button>
           <div className="text-sm font-medium flex items-center gap-2">
             <span>1 {displayFrom}</span>
             <Image
@@ -170,12 +176,6 @@ const TokenConversion: React.FC<TokenConversionProps> = ({
             />
             <span>{displayTo}</span>
           </div>
-          <button
-            className="px-3 py-1 rounded"
-            onClick={() => setIsReversed(!isReversed)}
-          >
-            <GoArrowSwitch size={20} />
-          </button>
         </>
       ) : (
         <>

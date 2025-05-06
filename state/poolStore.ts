@@ -3,8 +3,11 @@ import { useShallow } from "zustand/react/shallow";
 import { ethers, JsonRpcProvider } from "ethers";
 import { FACTORY_ABI } from "@/abi/FACTORY_ABI";
 import { PAIR_ABI } from "@/abi/PAIR_ABI";
-import { poolData } from "@/services/pool/getPoolDetailsFunction";
 import { ERC20_ABI } from "@/abi/ERC20ABI";
+import { useSwapState } from "./swapStore";
+import { getPrice } from "@/lib/utils";
+import { Prices } from "@/lib/types";
+import { poolData } from "@/services/pool/getPoolDetailsFunction";
 
 // correct the path if needed
 // <-- Direct call outside React component
@@ -108,6 +111,7 @@ export const usePoolStore = create<PoolState>((set, get) => ({
 
   fetchPoolData: async (provider: ethers.Provider, factoryAddress: string) => {
     set({ isLoading: true, error: null });
+
     // Check for provider
     if (!provider) {
       set({ isLoading: false }); // Important: reset loading if no provider
@@ -147,14 +151,14 @@ export const usePoolStore = create<PoolState>((set, get) => ({
     account: string,
     factoryAddress: string
   ) => {
-    if (!provider || !account || !factoryAddress) {
+    let prices = useSwapState().prices;
+    if (!provider || !account || !factoryAddress || !prices) {
       set({ error: "Missing required parameters", isLoading: false });
       return;
     }
 
     try {
       set({ isLoading: true, error: null });
-
       // Create factory contract instance
 
       const factoryContract = new ethers.Contract(
@@ -239,6 +243,7 @@ export const usePoolStore = create<PoolState>((set, get) => ({
             token1Decimals
           );
           // Add position to the list
+
           positions.push({
             pairAddress,
             token0: token0Address,

@@ -1,6 +1,7 @@
 // components/InitialLoad.tsx
 "use client";
 
+import { usePriceFeed } from "@/hooks/usePriceFeed";
 import { FACTORY_ADDRESS } from "@/lib/constants";
 import { getProvider } from "@/services/walletEvents";
 import { useAccountState } from "@/state/accountStore";
@@ -12,10 +13,10 @@ import { useAccount, useChainId } from "wagmi";
 
 const InitialLoad = ({ children }: { children: React.ReactNode }) => {
   const { address, isConnected } = useAccount();
-
+  usePriceFeed();
   const chainId = useChainId();
   const { fetchUserPositions, fetchPoolData } = usePoolActions();
-  const { currentSellAsset, currentBuyAsset } = useSwapState();
+  const { currentSellAsset, currentBuyAsset, prices } = useSwapState();
   const { fetchTokenBalances, updateTokenBalances } = useSwapActions();
   const { provider } = useAccountState();
   let providerDefault = !provider ? getProvider() : provider;
