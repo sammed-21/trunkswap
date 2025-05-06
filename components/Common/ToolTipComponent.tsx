@@ -26,11 +26,13 @@ export const ToolTipComponent = ({ title, subTitle, content }: Props) => {
               <div className="flex items-center justify-center w-8 h-8 rounded-full bg-primary">
                 <FaCircleExclamation />
               </div>
-              <h3 className="text-sm font-semibold text-white">{subTitle}</h3>
+              <h3 className="text-sm font-semibold text-textprimary">
+                {subTitle}
+              </h3>
             </div>
 
             <div className="space-y-2">
-              <p className="text-sm text-gray-300">{content}</p>
+              <p className="text-sm text-textpriamry">{content}</p>
             </div>
 
             <div className="absolute -bottom-1.5 left-1/2 -translate-x-1/2 w-3 h-3 bg-gradient-to-br from-background/95 to-forground/95 rotate-45 border-r border-b border-white/10"></div>
