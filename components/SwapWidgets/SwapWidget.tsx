@@ -1,9 +1,9 @@
 "use client";
 import { useSwapActions, useSwapState } from "@/state/swapStore";
-import React, { useState } from "react";
+import React, { useCallback, useState } from "react";
 import { Button } from "../ui/Button";
 import AmountInput from "./AmountInput";
-import { useAccount } from "wagmi";
+import { useAccount, useCall } from "wagmi";
 import { useConnectModal } from "@rainbow-me/rainbowkit";
 import { SlippageModal } from "../Slippage/SlippageModal";
 import { useAccountState } from "@/state/accountStore";
@@ -92,12 +92,18 @@ export const SwapWidget = (props: Props) => {
 
   // Optional: if you have ETH price fetched from CoinGecko
 
-  const getButtonProps = () => {
+  const getButtonProps = useCallback(() => {
     if (!isConnected) {
       return {
         onClick: openConnectModal,
         text: "Connect",
         disabled: false,
+      };
+    } else if (Number(tokenABalance) === 0) {
+      return {
+        onClick: () => {},
+        text: "Insufficent Balance",
+        disabled: true,
       };
     } else if (isApproving || isSwapping) {
       return {
@@ -118,7 +124,7 @@ export const SwapWidget = (props: Props) => {
         disabled: quoteLoading || !TokenAAmount || !TokenBAmount,
       };
     }
-  };
+  }, [tokenABalance, TokenAAmount]);
 
   const buttonProps = getButtonProps();
 
@@ -192,7 +198,8 @@ export const SwapWidget = (props: Props) => {
           <Button
             onClick={handleTransaction}
             variant={"primary"}
-            className="w-full mt-4 py-3  text-title font-bold  "
+            disabled={buttonProps.disabled}
+            className="w-full mt-4 py-3 disabled:cursor-not-allowed  text-title font-bold  "
           >
             {buttonProps.text}
           </Button>
