@@ -53,6 +53,7 @@ const useSwapStore = create<SwapState & SwapActions>((set, get) => ({
     estimatedFee: null,
     formatedEstimatedFee: null,
   },
+  exceedsBalanceError: false,
   priceImpact: null,
   fee: null,
   TokenAUsdValue: null,
@@ -75,57 +76,24 @@ const useSwapStore = create<SwapState & SwapActions>((set, get) => ({
       TokenAUsdPrice: null,
       TokenAUsdValue: null,
     })),
-  // setTokenBAmount: (amount) =>
-  //   set(() => ({
-  //     TokenBAmount: formatDigits(amount),
-  //   })),
-  // setTokenBAmount: (amount) => {
-  //   set(() => {
-  //     // Calculate USD value
-  //     const token = get().TokenA;
-  //     const usdValue = amount ? getUSDValue(amount, token) : null;
 
-  //     return {
-  //       TokenBAmount: amount,
-  //       TokenBUsdValue: usdValue,
-  //     };
-  //   });
-  // },
   setPrices: (prices: Prices) => set({ prices }),
 
-  // setTokenAAmount: (amount) => {
-  //   set(() => {
-  //     // Calculate USD value
-  //     const token = get().TokenA;
-  //     const usdValue = amount ? getUSDValue(amount, token) : null;
-
-  //     return {
-  //       TokenAAmount: amount,
-  //       TokenAUsdValue: usdValue,
-  //     };
-  //   });
-  // },
   setTokenBAmount: (amount) => {
-    // Immediate update with sync method
-
     const state = get();
     const token = state.TokenB;
     const usdValue = amount ? getUSDValueSync(amount, token) : null;
 
-    // Update state with current value
     set({
       TokenBAmount: formatDigits(amount),
       TokenBUsdValue: usdValue,
     });
 
-    // Then do an async update to get the most accurate value
     (async () => {
       if (amount) {
         try {
-          // Get updated USD value with fresh price data
           const freshUsdValue = await getUSDValue(amount, token, true);
 
-          // Only update if the value is different
           if (freshUsdValue !== usdValue) {
             set({ TokenBUsdValue: freshUsdValue });
           }
@@ -147,7 +115,13 @@ const useSwapStore = create<SwapState & SwapActions>((set, get) => ({
     const state = get();
     const token = state.TokenA;
     const usdValue = amount ? getUSDValueSync(amount, token) : null;
+    const balanceA = get().tokenABalance;
 
+    if (Number(balanceA) < Number(amount)) {
+      state.setExceedsBalanceError(true);
+    } else {
+      state.setExceedsBalanceError(false);
+    }
     // Update state with current value
     set({
       TokenAAmount: formatDigits(amount),
@@ -230,6 +204,8 @@ const useSwapStore = create<SwapState & SwapActions>((set, get) => ({
   setIsApproving: (isApproving: boolean) => set({ isApproving }),
   setMinAmountOut: (minAmountOut: any) => set({ minAmountOut }),
   setEstimatedFees: (estimatedFee: any) => set({ estimatedFees: estimatedFee }),
+  setExceedsBalanceError: (exceedsBalanceError: boolean) =>
+    set({ exceedsBalanceError }),
   // updateUsdValues: () => {
   //   const state = get();
   //   set({
@@ -402,6 +378,7 @@ export const useSwapState = () =>
       TokenAUsdPrice: state.TokenAUsdPrice,
       TokenBUsdPrice: state.TokenBUsdPrice,
       prices: state.prices,
+      exceedsBalanceError: state.exceedsBalanceError,
     }))
   );
 
@@ -442,5 +419,6 @@ export const useSwapActions = () =>
       setTokenAUsdPrice: state.setTokenAUsdPrice,
       setTokenBUsdPrice: state.setTokenBUsdPrice,
       setPrices: state.setPrices,
+      setExceedsBalanceError: state.setExceedsBalanceError,
     }))
   );

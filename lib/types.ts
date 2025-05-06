@@ -128,6 +128,7 @@ export interface SwapState {
   TokenAUsdPrice: null | number;
   TokenBUsdPrice: null | number;
   prices: Prices | null;
+  exceedsBalanceError: boolean;
 }
 export interface Token {
   name: string;
@@ -175,6 +176,7 @@ export interface SwapActions {
   setTokenAUsdPrice: (tokenUsdPrice: number | any) => void;
   setTokenBUsdPrice: (tokenUsdPrice: number | any) => void;
   setPrices: (prices: Prices) => void;
+  setExceedsBalanceError: (exceedsBalanceError: boolean) => void;
 }
 
 export interface TokenDetail {

@@ -6,11 +6,12 @@
   --background: #f7f7f8; /* Subtle light ivory */
   --foreground: #ffffff; /* Cards and surfaces */
   --border: #dcdfe3; /* Soft border gray */
-
-  --primary: #12abfc; /* Your brand blue */
+  --error-secondary: #f3d3d3;
+  --error-primary: #ef5151;
+  --primary: #0caaff; /* Your brand blue */
   --primary-dark: #0984e3; /* For hover or depth */
   --secondary: #e3ebf4; /* Muted secondary blue-gray */
-  --accent: #c4a669; /* Gold sand accent */
+  --accent: #ebeae9; /* Gold sand accent */
 
   --textprimary: #1e1e1e; /* Deep gray/black */
   --subtitle: #6c727f; /* Soft readable gray */
@@ -28,12 +29,13 @@
   --primary: #12abfc; /* Keep logo blue consistent */
   --primary-dark: #0a8cd9; /* Hover or pressed state */
   --secondary: #404856; /* Subtle background elements */
-  --accent: #c4a669; /* Gold pop on dark bg */
+  --accent: #312e2a; /* Gold pop on dark bg */
 
   --textprimary: #e2e4e8; /* Light gray for body text */
   --subtitle: #a4a6ab; /* Dimmed gray for secondary text */
   --lightgray: #2b2e33; /* Dark neutral for UIs */
-
+  --error-secondary: #3d2130;
+  --error-primary: #a72e3b;
   --headingbackground: #1c1e22; /* Navigation/header background */
   --title: #ffffff; /* Pure white for titles */
 }

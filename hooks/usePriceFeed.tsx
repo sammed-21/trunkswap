@@ -12,7 +12,6 @@ import {
 } from "@/services/priceFeed";
 import { useSwapActions, useSwapState } from "@/state/swapStore";
 import { Prices } from "@/lib/types";
-import { useSwapTransactions } from "./useSwapTransaction";
 
 interface UsePriceFeedReturn {
   getUSDValue: (amount: number | string, symbol: Symbol) => Promise<number>;

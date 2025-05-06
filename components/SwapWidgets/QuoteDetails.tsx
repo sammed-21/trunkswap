@@ -1,9 +1,10 @@
 "use client";
 
-import { formatDigits } from "@/lib/utils";
+import { formatDigits, shortenAddress } from "@/lib/utils";
 import React from "react";
 import { runInContext } from "vm";
 import { Skeleton } from "../ui/skeleton";
+import { Prices } from "@/lib/types";
 
 interface QuoteDetailsProps {
   maxReceived: string | bigint;
@@ -16,7 +17,9 @@ interface QuoteDetailsProps {
   routingSource: string;
   buySymbol: string;
   sellSymbol: string;
+  prices: Prices | null;
   isLoading: boolean;
+  address: string | undefined | `0x${string}`;
 }
 
 export const QuoteDetails: React.FC<QuoteDetailsProps> = ({
@@ -31,11 +34,12 @@ export const QuoteDetails: React.FC<QuoteDetailsProps> = ({
   buySymbol,
   isLoading,
   sellSymbol,
+  prices,
+  address,
 }) => {
   if (isLoading) {
     return (
       <div className="px-4 shadow-sm transaction duration-500 translate-y-0 h-fit max-w-[448px] w-full space-y-2">
-        <h2 className="text-lg text-title font-semibold">Swap Details</h2>
         <div className="flex justify-between text-sm">
           <span className="text-subtitle">Price Impact</span>
 
@@ -97,7 +101,6 @@ export const QuoteDetails: React.FC<QuoteDetailsProps> = ({
   }
   return (
     <div className="px-4 shadow-sm transaction duration-500 translate-y-0 h-fit max-w-[448px] w-full space-y-2">
-      <h2 className="text-lg text-title font-semibold">Swap Details</h2>
       <div className="flex justify-between text-sm">
         <span className="text-subtitle">Price Impact</span>
         <span
@@ -112,37 +115,45 @@ export const QuoteDetails: React.FC<QuoteDetailsProps> = ({
       </div>
       <div className="flex justify-between text-sm">
         <span className="text-subtitle">Slippage</span>
-        <span className="text-title"> {slippage}</span>
+        <span className="text-textprimary"> {slippage}</span>
       </div>
       <div className="flex justify-between text-sm">
         <span className="text-subtitle">Max. Received</span>
-        <span className="text-title">
+        <span className="text-textprimary">
           {formatDigits(maxReceived)} {buySymbol}
         </span>
       </div>
       <div className="flex justify-between text-sm">
         <span className="text-subtitle">Min. Received</span>
-        <span className="text-title">
+        <span className="text-textprimary">
           {formatDigits(minReceived)} {buySymbol}
         </span>
       </div>
       <div className="flex justify-between text-sm">
         <span className="text-subtitle">Fee (0.30%)</span>
-        <span className="text-title">
+        <span className="text-textprimary">
           {formatDigits(Number(fee))} {sellSymbol}
           {/* {feeUSD && ` (≈ $${feeUSD})`} */}
         </span>
       </div>
       <div className="flex justify-between text-sm">
         <span className="text-subtitle">Network Fee</span>
-        <span className="text-title">
+        <span className="text-textprimary">
           {networkFeeUsd && `≈ ${networkFeeUsd} ETH`}
         </span>
       </div>
       <div className="flex justify-between text-sm">
         <span className="text-subtitle">Routing Source</span>
-        <span className="text-title">{routingSource}</span>
+        <span className="text-textprimary">{routingSource}</span>
       </div>
+      {address && (
+        <div className="flex justify-between text-sm">
+          <span className="text-subtitle">Recipient</span>
+          <span className="font-bold text-base text-textprimary">
+            {shortenAddress(address)}
+          </span>
+        </div>
+      )}
     </div>
   );
 };

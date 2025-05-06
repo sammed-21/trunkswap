@@ -16,6 +16,8 @@ const config: Config = {
         "primary-dark": "var(--primary-dark)",
         secondary: "var(--secondary)",
         accent: "var(--accent)",
+        "error-primary": "var(--error-primary)",
+        "error-secondary": "var(--error-secondary)",
         title: "var(--title)",
         subtitle: "var(--subtitle)",
         textpriamry: "var(--textprimary)",

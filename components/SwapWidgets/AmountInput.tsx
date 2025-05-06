@@ -6,6 +6,7 @@ import { TokenDetail } from "@/lib/types";
 import { useAccount } from "wagmi";
 import { Skeleton } from "../ui/skeleton";
 import { formatUSD } from "@/services/priceFeed";
+import { FormatUsd } from "../Common/FormatUsd";
 interface AmountInputProps {
   title: string;
   token: string;
@@ -19,6 +20,7 @@ interface AmountInputProps {
   isLoading?: boolean;
   readOnly?: boolean;
   tokenUsdValue: any;
+  exceedsBalanceError?: boolean;
 }
 
 const AmountInput: React.FC<AmountInputProps> = ({
@@ -34,6 +36,7 @@ const AmountInput: React.FC<AmountInputProps> = ({
   tokenUsdValue,
   readOnly = false,
   isLoading = false,
+  exceedsBalanceError,
 }) => {
   const [selectorOpen, setSelectorOpen] = useState<boolean>(false);
   //   const { setSelectorOpen } = useSwapActions();
@@ -51,7 +54,13 @@ const AmountInput: React.FC<AmountInputProps> = ({
   };
 
   return (
-    <div className="p-4 bg-forground border-primary border-[1px]  shadow-md w-full max-w-md relative">
+    <div
+      className={`p-4 ${
+        exceedsBalanceError
+          ? "bg-error-secondary border-error-primary"
+          : "border-primary bg-forground "
+      }  border-[1px]  shadow-md w-full max-w-md relative`}
+    >
       <div className="mb-4">
         <div className="flex justify-between items-center">
           <label className="block text-sm font-medium text-subtitle">
@@ -61,13 +70,13 @@ const AmountInput: React.FC<AmountInputProps> = ({
           {address && (
             <>
               {loadingBalances ? (
-                <div className="mb-1">
-                  <Skeleton className="w-[100px] h-[22px] rounded-none" />{" "}
+                <div className="">
+                  <Skeleton className="w-[100px] h-[23px] rounded-none" />{" "}
                 </div>
               ) : (
                 <span
                   onClick={() => setAmount(walletBalanceAsset)}
-                  className="balance-display cursor-pointer"
+                  className="balance-display h-[23px]  cursor-pointer"
                 >
                   {" "}
                   {walletBalanceAsset} {currentTokenAsset?.symbol}
@@ -79,19 +88,24 @@ const AmountInput: React.FC<AmountInputProps> = ({
         <div className="relative  w-full justify-between flex items-center gap-3">
           <div className="w-full max-w-[70%]">
             {isLoading ? (
-              <Skeleton className="w-[100px] h-12 bg-primary" />
+              <Skeleton className="w-[100px] h-10 bg-primary" />
             ) : (
               <input
                 type="text"
-                className="w-full placeholder:text-textprimary   py-2 bg-transparent text-title focus:none border-none text-2xl rounded-none"
+                className={`truncate appearance-none dark:text-slate-50 text-gray-900 w-full !ring-0 !outline-none min-h-[40px] h-[40px] py-2 border-0 bg-transparent p-0 py-1 !text-3xl font-medium flex-grow flex-1 !outline-none !ring-0`}
+                // className={`w-full placeholder:text-textprimary   py-2 bg-transparent text-title focus:none border-none text-2xl rounded-none`}
                 placeholder="0.00"
                 value={Amount}
                 readOnly={readOnly}
                 onChange={handleAmountChange}
               />
             )}
-            <span className="text-xs text-textpriamry font-medium">
-              {formatUSD(tokenUsdValue)}
+            <span className="text-xl text-textpriamry font-medium">
+              {exceedsBalanceError ? (
+                <h1 className="text-error-primary">Exceeds Balance</h1>
+              ) : (
+                <>{FormatUsd(tokenUsdValue)}</>
+              )}
             </span>
           </div>
           <div className="w-full max-w-[30%] pr-2 pl-2 flex justify-end">
