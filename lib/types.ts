@@ -92,6 +92,7 @@ export interface V2QuoteTransaction {
 export type Prices = { [symbol: string]: number };
 
 export interface SwapState {
+  chartFlag: boolean;
   isWalletConnected: any;
   TokenB: string;
   TokenA: string;
@@ -139,6 +140,7 @@ export interface Token {
   logoURI: string;
 }
 export interface SwapActions {
+  setChartFlag: (chartFlag: boolean) => void;
   setTokens: (tokens: Token[]) => void;
   setTokenB: (token: string) => void;
   setTokenA: (token: string) => void;

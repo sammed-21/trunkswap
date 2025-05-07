@@ -7,7 +7,7 @@ type Props = {};
 
 export const SwapComponent = (props: Props) => {
   return (
-    <div className="flex w-full flex-col max-w-[448px] mb-2 items-center justify-center ">
+    <div className="flex w-full flex-col max-w-[424px] mb-2 items-center justify-center ">
       <SwapWidget />
     </div>
   );

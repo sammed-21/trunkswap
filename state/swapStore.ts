@@ -62,6 +62,7 @@ export const useSwapStore = create<SwapState & SwapActions>((set, get) => ({
   TokenAUsdPrice: null,
   TokenBUsdPrice: null,
   prices: {},
+  chartFlag: false,
   // Actions
   setTokenB: (token) =>
     set((state) => ({
@@ -119,7 +120,6 @@ export const useSwapStore = create<SwapState & SwapActions>((set, get) => ({
 
   setTokenAAmount: (amount) => {
     // Immediate update with sync method
-    debugger;
     const state = get();
     const token = state.TokenA;
     const pricesStores = usePriceStore.getState();
@@ -166,7 +166,7 @@ export const useSwapStore = create<SwapState & SwapActions>((set, get) => ({
       // updateQuote(state.TokenA, state.TokenB, state.TokenAAmount);
     }
   },
-
+  setChartFlag: (chartFlag: boolean) => set({ chartFlag }),
   setTokenBUsdValue: (usdValue: number | null | undefined) =>
     set({
       TokenBUsdValue: usdValue,
@@ -234,11 +234,9 @@ export const useSwapStore = create<SwapState & SwapActions>((set, get) => ({
   // },
   resetSwapState: () =>
     set({
-      TokenB: DEFAULT_SELL_TOKEN(defaultChainId)?.toUpperCase(),
-      TokenA: DEFAULT_SELL_TOKEN(defaultChainId)?.toUpperCase(),
       TokenBAmount: "",
       TokenAAmount: "",
-      tradeDirection: "sell",
+
       selectorOpen: false,
       transactionButtonText: "Swap",
       isSwapping: false,
@@ -261,7 +259,6 @@ export const useSwapStore = create<SwapState & SwapActions>((set, get) => ({
   // Function to fetch token balances when wallet connects
   fetchTokenBalances: async (walletAddress: string, provider: any) => {
     const { currentSellAsset, currentBuyAsset } = get();
-    debugger;
     if (!walletAddress || !provider) return;
 
     try {
@@ -394,6 +391,7 @@ export const useSwapState = () =>
       TokenBUsdPrice: state.TokenBUsdPrice,
       prices: state.prices,
       exceedsBalanceError: state.exceedsBalanceError,
+      chartFlag: state.chartFlag,
     }))
   );
 
@@ -435,5 +433,6 @@ export const useSwapActions = () =>
       setTokenBUsdPrice: state.setTokenBUsdPrice,
       setPrices: state.setPrices,
       setExceedsBalanceError: state.setExceedsBalanceError,
+      setChartFlag: state.setChartFlag,
     }))
   );
