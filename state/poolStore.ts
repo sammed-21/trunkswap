@@ -4,9 +4,8 @@ import { ethers, JsonRpcProvider } from "ethers";
 import { FACTORY_ABI } from "@/abi/FACTORY_ABI";
 import { PAIR_ABI } from "@/abi/PAIR_ABI";
 import { ERC20_ABI } from "@/abi/ERC20ABI";
-import { useSwapState } from "./swapStore";
-import { getPrice } from "@/lib/utils";
-import { Prices } from "@/lib/types";
+import { useSwapStore } from "./swapStore";
+
 import { poolData } from "@/services/pool/getPoolDetailsFunction";
 
 // correct the path if needed
@@ -23,6 +22,7 @@ interface PoolPosition {
   token0Amount: string;
   token1Amount: string;
 }
+
 export type PoolDetails = {
   pairAddress: string; // EVM address
   token0: {
@@ -37,6 +37,7 @@ export type PoolDetails = {
   reserve1: any;
   reserves: readonly [bigint, bigint, bigint]; // reserve0, reserve1, blockTimestampLast
   totalSupply: bigint;
+  tvl: number;
 };
 
 interface PoolState {
@@ -47,6 +48,7 @@ interface PoolState {
   lastUpdated: number;
   poolData: PoolDetails[];
   totalPool: number | string;
+  totalTvl: number;
 
   // Actions
   setUserPositions: (positions: PoolPosition[]) => void;
@@ -74,6 +76,7 @@ const defaultPoolState = {
   error: null,
   lastUpdated: 0,
   totalPool: 0,
+  totalTvl: 0,
 };
 
 export const usePoolStore = create<PoolState>((set, get) => ({
@@ -151,7 +154,7 @@ export const usePoolStore = create<PoolState>((set, get) => ({
     account: string,
     factoryAddress: string
   ) => {
-    let prices = useSwapState().prices;
+    let prices = useSwapStore.getState().prices;
     if (!provider || !account || !factoryAddress || !prices) {
       set({ error: "Missing required parameters", isLoading: false });
       return;

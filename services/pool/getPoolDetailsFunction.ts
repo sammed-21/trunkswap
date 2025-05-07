@@ -6,6 +6,8 @@ import { FACTORY_ABI } from "@/abi/FACTORY_ABI";
 import { ERC20_ABI } from "@/abi/ERC20ABI";
 import { getPrice } from "@/lib/utils";
 import { Prices } from "@/lib/types";
+import { getUSDValue } from "../priceFeed";
+import { usePriceStore } from "@/state/priceStore";
 export async function getAllPairs(factoryContract: Contract) {
   let allPairsLength = await factoryContract.allPairsLength();
 
@@ -52,6 +54,12 @@ export async function getPairDetails(
 
   let reserve0 = formatUnits(reserves[0], token0Decimals).toString();
   let reserve1 = formatUnits(reserves[1], token1Decimals).toString();
+  const tvl = await getTVLForPool(
+    reserve0,
+    token0Symbol,
+    reserve1,
+    token1Symbol
+  );
 
   return {
     pairAddress,
@@ -68,6 +76,7 @@ export async function getPairDetails(
     reserves,
 
     totalSupply,
+    tvl,
     // balance,
   };
 }
@@ -90,3 +99,17 @@ export async function poolData(factoryContract: Contract, provider: any) {
   );
   return poolDetails;
 }
+
+// Adjust the path if needed
+
+export const getTVLForPool = async (
+  reserve0: string,
+  symbol0: string,
+  reserve1: string,
+  symbol1: string
+): Promise<number> => {
+  const value0 = await usePriceStore.getState().getUSDValue(reserve0, symbol0);
+  const value1 = await usePriceStore.getState().getUSDValue(reserve1, symbol1);
+
+  return value0 + value1;
+};

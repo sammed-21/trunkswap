@@ -12,6 +12,8 @@ import Image from "next/image";
 import { useSwapTransactions } from "@/hooks/useSwapTransaction";
 import { QuoteDetails } from "./QuoteDetails";
 import TokenConversion from "@/services/TokenConversion";
+import { usePriceState } from "@/state/priceStore";
+import { Skeleton } from "../ui/skeleton";
 
 type Props = {};
 
@@ -27,6 +29,7 @@ export const SwapWidget = (props: Props) => {
   const { provider } = useAccountState();
   const { isConnected, address } = useAccount();
   const { openConnectModal } = useConnectModal();
+  const { prices, isLoading } = usePriceState();
 
   const [isRotated, setIsRotated] = useState<boolean>(false);
   const {
@@ -52,9 +55,10 @@ export const SwapWidget = (props: Props) => {
     TokenBUsdValue,
     TokenAUsdPrice,
     TokenBUsdPrice,
-    prices,
+    // prices,
     exceedsBalanceError,
   } = useSwapState();
+
   const {
     setTokenB,
     setTokenA,
@@ -128,7 +132,12 @@ export const SwapWidget = (props: Props) => {
     <div className=" flex flex-col  gap-3 items-center justify-center  w-full">
       <div className="text-3xl font-semibold w-full justify-start items-center ">
         Trade
-        <TokenConversion prices={prices} from={TokenA} to={TokenB} />
+        <TokenConversion
+          prices={prices}
+          isLoading={isLoading}
+          from={TokenA}
+          to={TokenB}
+        />
       </div>
       <div className="flex w-full  justify-between">
         <h2 className="text-lg font-bold text-white bg-primary w-fit px-2 py-1 rounded-none ">
@@ -152,6 +161,7 @@ export const SwapWidget = (props: Props) => {
             setAmount={setTokenAAmount}
             setToken={setTokenA}
             exceedsBalanceError={exceedsBalanceError}
+            isConnected={isConnected}
           />
           <div
             onClick={handleToggleTradeDirection}

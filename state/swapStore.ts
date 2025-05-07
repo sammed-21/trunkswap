@@ -17,9 +17,10 @@ import {
   getUSDValueSync,
   updatePrices,
 } from "@/services/priceFeed";
+import { usePriceState, usePriceStore } from "./priceStore";
 
 // Unified Zustand Store
-const useSwapStore = create<SwapState & SwapActions>((set, get) => ({
+export const useSwapStore = create<SwapState & SwapActions>((set, get) => ({
   tokens: MAINNET_TOKENS,
   // Initial State
   TokenB: DEFAULT_BUY_TOKEN(defaultChainId)?.toUpperCase(),
@@ -82,8 +83,10 @@ const useSwapStore = create<SwapState & SwapActions>((set, get) => ({
   setTokenBAmount: (amount) => {
     const state = get();
     const token = state.TokenB;
-    const usdValue = amount ? getUSDValueSync(amount, token) : null;
-
+    const pricesStores = usePriceStore.getState();
+    const usdValue = amount
+      ? pricesStores.getUSDValueSync(amount, token)
+      : null;
     set({
       TokenBAmount: formatDigits(amount),
       TokenBUsdValue: usdValue,
@@ -92,7 +95,11 @@ const useSwapStore = create<SwapState & SwapActions>((set, get) => ({
     (async () => {
       if (amount) {
         try {
-          const freshUsdValue = await getUSDValue(amount, token, true);
+          const freshUsdValue = await pricesStores.getUSDValue(
+            amount,
+            token,
+            true
+          );
 
           if (freshUsdValue !== usdValue) {
             set({ TokenBUsdValue: freshUsdValue });
@@ -112,9 +119,13 @@ const useSwapStore = create<SwapState & SwapActions>((set, get) => ({
 
   setTokenAAmount: (amount) => {
     // Immediate update with sync method
+    debugger;
     const state = get();
     const token = state.TokenA;
-    const usdValue = amount ? getUSDValueSync(amount, token) : null;
+    const pricesStores = usePriceStore.getState();
+    const usdValue = amount
+      ? pricesStores.getUSDValueSync(amount, token)
+      : null;
     const balanceA = get().tokenABalance;
 
     if (Number(balanceA) < Number(amount)) {
@@ -133,7 +144,11 @@ const useSwapStore = create<SwapState & SwapActions>((set, get) => ({
       if (amount) {
         try {
           // Get updated USD value with fresh price data
-          const freshUsdValue = await getUSDValue(amount, token, true);
+          const freshUsdValue = await pricesStores.getUSDValue(
+            amount,
+            token,
+            true
+          );
 
           // Only update if the value is different
           if (freshUsdValue !== usdValue) {
@@ -246,7 +261,7 @@ const useSwapStore = create<SwapState & SwapActions>((set, get) => ({
   // Function to fetch token balances when wallet connects
   fetchTokenBalances: async (walletAddress: string, provider: any) => {
     const { currentSellAsset, currentBuyAsset } = get();
-
+    debugger;
     if (!walletAddress || !provider) return;
 
     try {

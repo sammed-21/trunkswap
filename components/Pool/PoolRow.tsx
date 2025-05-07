@@ -1,6 +1,7 @@
 // components/pool/PoolRow.tsx
 "use client";
 import { formatDigits, shortenAddress } from "@/lib/utils";
+import { formatUSD } from "@/services/priceFeed";
 import { PoolDetails } from "@/state/poolStore";
 import Image from "next/image";
 import Link from "next/link";
@@ -46,9 +47,9 @@ export const PoolRow = ({ pool }: RowProps) => {
           {pool.pairAddress.slice(0, )}…{pool.pairAddress.slice(-4)}
         </span> */}
       </div>
-      {/* <div>
-        {pool.tvl}
-      </div> */}
+      <div className="col-span-1 flex justify-center items-center">
+        {formatUSD(pool.tvl)}
+      </div>
 
       <div className="flex gap-6 justify-around   text-lg col-span-2">
         <span>
@@ -72,13 +73,16 @@ export const PoolRowHeading = () => {
         <span className="font-medium columns-1 ">Pool</span>
       </div>
 
-      <div className="  gap-6    flex justify-around col-span-2   text-sm">
-        <span className="col-start-3 w-fit ">TVL</span>
-        <span className="col-start-3 w-fit ">Token A</span>
-        <span className="col-start-4 col-end-5 items-center flex justify-center w-fit ">
-          Token B
-        </span>
-      </div>
+      <span className="col-start-3 col-span-1 w-full  flex items-center justify-center">
+        TVL
+      </span>
+      <span className="col-start-4 col-span-1 w-full  flex items-center justify-center">
+        Token A
+      </span>
+      <span className="col-start-5 col-span-1 col-end-5 items-center flex justify-center w-full ">
+        Token B
+      </span>
+
       <span className="flex col-span-1 items-center justify-center">
         Total Supply
       </span>

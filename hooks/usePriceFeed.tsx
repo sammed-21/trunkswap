@@ -1,23 +1,20 @@
 import { useAccountState } from "@/state/accountStore";
 import { useEffect, useState, useCallback } from "react";
 
-import {
-  initializePriceFeed,
-  updatePrices,
-  getUSDValue,
-  formatUSD,
-  getTokenUSDPrice,
-  type Symbol,
-  getUSDValueSync,
-} from "@/services/priceFeed";
+// import {
+//   initializePriceFeed,
+//   updatePrices,
+//   getUSDValue,
+//   formatUSD,
+//   getTokenUSDPrice,
+//   type Symbol,
+//   getUSDValueSync,
+// } from "@/services/priceFeed";
 import { useSwapActions, useSwapState } from "@/state/swapStore";
 import { Prices } from "@/lib/types";
+import { usePriceActions } from "@/state/priceStore";
 
 interface UsePriceFeedReturn {
-  getUSDValue: (amount: number | string, symbol: Symbol) => Promise<number>;
-  getUSDValueSync: (amount: number | string, symbol: Symbol) => number;
-  formatUSD: (value: number) => string;
-  getTokenUSDPrice: (symbol: Symbol | string) => number;
   isLoading: boolean;
   lastUpdated: Date | null;
   refreshPrices: () => Promise<void>;
@@ -25,10 +22,15 @@ interface UsePriceFeedReturn {
 
 export function usePriceFeed(): UsePriceFeedReturn {
   const { provider, chainId: chain } = useAccountState();
+  const { initializePriceFeed, formatUSD, updatePrices } = usePriceActions();
+
+  // Initialize price feeds on component mount or when provider/chainId changes
+
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [lastUpdated, setLastUpdated] = useState<Date | null>(null);
   const { setPrices } = useSwapActions();
   const { TokenAAmount } = useSwapState();
+
   // Initialize price feeds when provider and chain are available
   useEffect(() => {
     if (provider && chain) {
@@ -56,7 +58,7 @@ export function usePriceFeed(): UsePriceFeedReturn {
     const intervalId = setInterval(async () => {
       try {
         const prices = await updatePrices();
-        ({ prices });
+
         setPrices(prices as unknown as Prices);
 
         setLastUpdated(new Date());
@@ -84,10 +86,6 @@ export function usePriceFeed(): UsePriceFeedReturn {
   }, [provider, chain]);
 
   return {
-    getUSDValue,
-    getUSDValueSync,
-    formatUSD,
-    getTokenUSDPrice,
     isLoading,
     lastUpdated,
     refreshPrices,

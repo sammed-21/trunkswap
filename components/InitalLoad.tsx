@@ -13,13 +13,19 @@ import { useAccount, useChainId } from "wagmi";
 
 const InitialLoad = ({ children }: { children: React.ReactNode }) => {
   const { address, isConnected } = useAccount();
-  usePriceFeed();
   const chainId = useChainId();
   const { fetchUserPositions, fetchPoolData } = usePoolActions();
-  const { currentSellAsset, currentBuyAsset, prices } = useSwapState();
+  const {
+    currentSellAsset,
+    currentBuyAsset,
+    prices,
+    tokenABalance,
+    tokenBBalance,
+  } = useSwapState();
   const { fetchTokenBalances, updateTokenBalances } = useSwapActions();
   const { provider } = useAccountState();
   let providerDefault = !provider ? getProvider() : provider;
+
   useEffect(() => {
     const foolData = async () => {
       let position = await fetchPoolData(
@@ -28,26 +34,25 @@ const InitialLoad = ({ children }: { children: React.ReactNode }) => {
       );
     };
     foolData();
-  }, []);
-  // useEffect(() => {
-  //   const foolData = async () => {
-  //     if (address) {
-  //       let position = await fetchUserPositions(
-  //         providerDefault!,
-  //         address,
-  //         FACTORY_ADDRESS(chainId)
-  //       );
-  //       await fetchTokenBalances(address, provider);
-  //     }
-  //   };
+  }, [provider, chainId]);
+  useEffect(() => {
+    const foolData = async () => {
+      if (address) {
+        let position = await fetchUserPositions(
+          providerDefault!,
+          address,
+          FACTORY_ADDRESS(chainId)
+        );
+      }
+    };
 
-  //   foolData();
-  // }, [address, chainId]);
+    foolData();
+  }, [address, chainId]);
   useEffect(() => {
     if (isConnected) {
       updateTokenBalances(String(address), provider);
     }
-  }, [isConnected, currentSellAsset]);
+  }, [isConnected]);
 
   return <div className="w-full h-full relative">{children}</div>;
 };
