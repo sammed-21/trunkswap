@@ -127,7 +127,7 @@ export interface SwapState {
   TokenBUsdValue: number | null;
   TokenAUsdPrice: null | number;
   TokenBUsdPrice: null | number;
-  prices: Prices | null;
+  prices?: Prices;
   exceedsBalanceError: boolean;
 }
 export interface Token {

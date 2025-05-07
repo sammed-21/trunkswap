@@ -5,6 +5,7 @@ import React from "react";
 import { runInContext } from "vm";
 import { Skeleton } from "../ui/skeleton";
 import { Prices } from "@/lib/types";
+import { usePriceState } from "@/state/priceStore";
 
 interface QuoteDetailsProps {
   maxReceived: string | bigint;
@@ -132,7 +133,7 @@ export const QuoteDetails: React.FC<QuoteDetailsProps> = ({
       <div className="flex justify-between text-sm">
         <span className="text-subtitle">Fee (0.30%)</span>
         <span className="text-textprimary">
-          {formatDigits(Number(fee))} {sellSymbol}
+          {formatDigits(Number(fee))} {sellSymbol}{" "}
           {/* {feeUSD && ` (≈ $${feeUSD})`} */}
         </span>
       </div>

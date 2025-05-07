@@ -11,7 +11,7 @@ export const PoolPositionsList = () => {
       <div className="p-6 border rounded-none shadow-sm">
         <div className="flex flex-col items-center justify-center py-8">
           <div className="w-12 h-12 border-t-4 border-blue-500 border-solid rounded-none animate-spin"></div>
-          <p className="mt-4 text-gray-600">Loading your positions...</p>
+          <p className="mt-4 text-gray-600">Loading....</p>
         </div>
       </div>
     );

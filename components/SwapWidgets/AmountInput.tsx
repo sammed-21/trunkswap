@@ -21,6 +21,7 @@ interface AmountInputProps {
   readOnly?: boolean;
   tokenUsdValue: any;
   exceedsBalanceError?: boolean;
+  isConnected?: boolean;
 }
 
 const AmountInput: React.FC<AmountInputProps> = ({
@@ -37,6 +38,7 @@ const AmountInput: React.FC<AmountInputProps> = ({
   readOnly = false,
   isLoading = false,
   exceedsBalanceError,
+  isConnected,
 }) => {
   const [selectorOpen, setSelectorOpen] = useState<boolean>(false);
   //   const { setSelectorOpen } = useSwapActions();
@@ -56,7 +58,7 @@ const AmountInput: React.FC<AmountInputProps> = ({
   return (
     <div
       className={`p-4 ${
-        exceedsBalanceError
+        exceedsBalanceError && isConnected
           ? "bg-error-secondary border-error-primary"
           : "border-primary bg-forground "
       }  border-[1px]  shadow-md w-full max-w-md relative`}
@@ -101,7 +103,7 @@ const AmountInput: React.FC<AmountInputProps> = ({
               />
             )}
             <span className="text-xl text-textpriamry font-medium">
-              {exceedsBalanceError ? (
+              {exceedsBalanceError && isConnected ? (
                 <h1 className="text-error-primary">Exceeds Balance</h1>
               ) : (
                 <>{FormatUsd(tokenUsdValue)}</>
@@ -110,7 +112,7 @@ const AmountInput: React.FC<AmountInputProps> = ({
           </div>
           <div className="w-full max-w-[30%] pr-2 pl-2 flex justify-end">
             <button
-              className=" justify-between gap-1 px-2  w-full relative flex py-2 bg-primary text-white items-center "
+              className=" justify-between gap-1 px-2  w-full relative flex py-2 bg-background  text-white items-center "
               onClick={() => setSelectorOpen(true)}
             >
               <Image

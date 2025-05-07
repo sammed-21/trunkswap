@@ -6,20 +6,23 @@ import { FACTORY_ADDRESS } from "@/lib/constants";
 import { getProvider } from "@/services/walletEvents";
 import { useAccountState } from "@/state/accountStore";
 import { usePoolActions } from "@/state/poolStore";
+import { usePriceState } from "@/state/priceStore";
 import { useSwapActions, useSwapState } from "@/state/swapStore";
 import { useEffect } from "react";
 import { useAccount, useChainId } from "wagmi";
 // import { WalletInit } from "@/services/WalletInit"; // changed from useWalletInit
 
-const InitialLoad = ({ children }: { children: React.ReactNode }) => {
+export const useInitialLoad = () => {
   const { address, isConnected } = useAccount();
-  usePriceFeed();
   const chainId = useChainId();
   const { fetchUserPositions, fetchPoolData } = usePoolActions();
-  const { currentSellAsset, currentBuyAsset, prices } = useSwapState();
-  const { fetchTokenBalances, updateTokenBalances } = useSwapActions();
+
+  const { updateTokenBalances } = useSwapActions();
+  usePriceFeed();
+  const { fetchPriceFlag, prices } = usePriceState();
   const { provider } = useAccountState();
   let providerDefault = !provider ? getProvider() : provider;
+
   useEffect(() => {
     const foolData = async () => {
       let position = await fetchPoolData(
@@ -27,29 +30,27 @@ const InitialLoad = ({ children }: { children: React.ReactNode }) => {
         FACTORY_ADDRESS(chainId)
       );
     };
-    foolData();
-  }, []);
-  // useEffect(() => {
-  //   const foolData = async () => {
-  //     if (address) {
-  //       let position = await fetchUserPositions(
-  //         providerDefault!,
-  //         address,
-  //         FACTORY_ADDRESS(chainId)
-  //       );
-  //       await fetchTokenBalances(address, provider);
-  //     }
-  //   };
 
-  //   foolData();
-  // }, [address, chainId]);
+    foolData();
+  }, [provider, chainId, fetchPriceFlag]);
+  useEffect(() => {
+    const foolData = async () => {
+      if (address) {
+        let position = await fetchUserPositions(
+          providerDefault!,
+          address,
+          FACTORY_ADDRESS(chainId)
+        );
+      }
+    };
+
+    foolData();
+  }, [address, chainId]);
   useEffect(() => {
     if (isConnected) {
       updateTokenBalances(String(address), provider);
     }
-  }, [isConnected, currentSellAsset]);
+  }, [isConnected]);
 
-  return <div className="w-full h-full relative">{children}</div>;
+  return null;
 };
-
-export default InitialLoad;

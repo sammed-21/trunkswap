@@ -1,3 +1,4 @@
+import { Prices } from "@/lib/types";
 import { ethers, Contract } from "ethers";
 
 export type Symbol = "ETH" | "WETH" | "USDC" | "STX" | "RSTX";
@@ -6,13 +7,6 @@ interface PriceFeedsByChain {
   [chainId: number]: {
     [symbol: string]: string; // Mapping from 'ETH_USD', 'USDC_USD' => address
   };
-}
-
-interface Prices {
-  ETH_USD: number;
-  USDC_USD: number;
-  STX_USD: number;
-  RSTX_USD: number;
 }
 
 const PRICE_FEED_ABI = [
@@ -163,10 +157,11 @@ export const updatePrices = async (): Promise<Prices> => {
 export const getUSDValue = async (
   amount: number | string,
   symbol: Symbol | string,
-  forceUpdate = false
+  forceUpdate = false,
+  prices?: Prices | null
 ): Promise<number> => {
   if (!amount) return 0;
-
+  if (!prices) return 0;
   const numAmount = typeof amount === "string" ? parseFloat(amount) : amount;
   if (isNaN(numAmount)) return 0;
 
@@ -198,9 +193,11 @@ export const getUSDValue = async (
  */
 export const getUSDValueSync = (
   amount: number | string,
-  symbol: Symbol | string
+  symbol: Symbol | string,
+  prices?: Prices | null
 ): number => {
   if (!amount) return 0;
+  if (!prices) return 0;
 
   const numAmount = typeof amount === "string" ? parseFloat(amount) : amount;
   if (isNaN(numAmount)) return 0;
