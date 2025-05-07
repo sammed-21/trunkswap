@@ -21,6 +21,7 @@ export interface PriceState {
   isLoading: boolean;
   chainId: number | null;
   provider: ethers.Provider | null;
+  fetchPriceFlag: boolean;
 }
 
 // Actions Interface
@@ -96,6 +97,7 @@ export const usePriceStore = create<PriceState & PriceActions>((set, get) => ({
     STX_USD: DEFAULT_PRICES.STX_USD,
     RSTX_USD: DEFAULT_PRICES.RSTX_USD,
   },
+  fetchPriceFlag: false,
   lastUpdated: 0,
   feeds: {},
   isLoading: true,
@@ -106,7 +108,7 @@ export const usePriceStore = create<PriceState & PriceActions>((set, get) => ({
   initializePriceFeed: async (chainId: number, provider: ethers.Provider) => {
     if (!provider) return;
 
-    set({ isLoading: true, chainId, provider });
+    set({ isLoading: true, chainId, provider, fetchPriceFlag: true });
 
     try {
       if (!(chainId in CHAINLINK_FEEDS)) {
@@ -133,6 +135,7 @@ export const usePriceStore = create<PriceState & PriceActions>((set, get) => ({
           STX_USD: DEFAULT_PRICES.STX_USD,
           RSTX_USD: DEFAULT_PRICES.RSTX_USD,
         },
+        fetchPriceFlag: false,
       });
 
       // Initial price update
@@ -140,7 +143,7 @@ export const usePriceStore = create<PriceState & PriceActions>((set, get) => ({
     } catch (error) {
       console.error("Failed to initialize price feeds:", error);
     } finally {
-      set({ isLoading: false });
+      set({ isLoading: false, fetchPriceFlag: false });
     }
   },
 
@@ -217,7 +220,6 @@ export const usePriceStore = create<PriceState & PriceActions>((set, get) => ({
 
     const numAmount = typeof amount === "string" ? parseFloat(amount) : amount;
     if (isNaN(numAmount)) return 0;
-
     const { prices, updatePrices } = get();
 
     // Force update prices if requested or if we don't have prices yet
@@ -306,6 +308,7 @@ export const usePriceState = () =>
       lastUpdated: state.lastUpdated,
       isLoading: state.isLoading,
       chainId: state.chainId,
+      fetchPriceFlag: state.fetchPriceFlag,
     }))
   );
 

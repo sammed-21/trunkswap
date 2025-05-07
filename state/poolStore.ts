@@ -132,11 +132,17 @@ export const usePoolStore = create<PoolState>((set, get) => ({
 
       const totalPool = await factoryContract.allPairsLength();
       const poolDetails = await poolData(factoryContract, provider);
-
+      const poolTotalTVl = poolDetails?.reduce(
+        (acc: number, item: PoolDetails) => {
+          return acc + item.tvl;
+        },
+        0
+      );
       // Update state with results
       set({
         poolData: poolDetails,
         totalPool: totalPool.toString(),
+        totalTvl: poolTotalTVl,
       });
     } catch (error: any) {
       console.log(error);
@@ -289,6 +295,7 @@ export const usePoolState = () =>
       lastUpdated: state.lastUpdated,
       poolData: state.poolData,
       totalPool: state.totalPool,
+      totalTvl: state.totalTvl,
     }))
   );
 

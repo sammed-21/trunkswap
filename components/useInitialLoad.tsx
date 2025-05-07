@@ -6,23 +6,20 @@ import { FACTORY_ADDRESS } from "@/lib/constants";
 import { getProvider } from "@/services/walletEvents";
 import { useAccountState } from "@/state/accountStore";
 import { usePoolActions } from "@/state/poolStore";
+import { usePriceState } from "@/state/priceStore";
 import { useSwapActions, useSwapState } from "@/state/swapStore";
 import { useEffect } from "react";
 import { useAccount, useChainId } from "wagmi";
 // import { WalletInit } from "@/services/WalletInit"; // changed from useWalletInit
 
-const InitialLoad = ({ children }: { children: React.ReactNode }) => {
+export const useInitialLoad = () => {
   const { address, isConnected } = useAccount();
   const chainId = useChainId();
   const { fetchUserPositions, fetchPoolData } = usePoolActions();
-  const {
-    currentSellAsset,
-    currentBuyAsset,
-    prices,
-    tokenABalance,
-    tokenBBalance,
-  } = useSwapState();
-  const { fetchTokenBalances, updateTokenBalances } = useSwapActions();
+
+  const { updateTokenBalances } = useSwapActions();
+  usePriceFeed();
+  const { fetchPriceFlag, prices } = usePriceState();
   const { provider } = useAccountState();
   let providerDefault = !provider ? getProvider() : provider;
 
@@ -33,8 +30,9 @@ const InitialLoad = ({ children }: { children: React.ReactNode }) => {
         FACTORY_ADDRESS(chainId)
       );
     };
+
     foolData();
-  }, [provider, chainId]);
+  }, [provider, chainId, fetchPriceFlag]);
   useEffect(() => {
     const foolData = async () => {
       if (address) {
@@ -54,7 +52,5 @@ const InitialLoad = ({ children }: { children: React.ReactNode }) => {
     }
   }, [isConnected]);
 
-  return <div className="w-full h-full relative">{children}</div>;
+  return null;
 };
-
-export default InitialLoad;

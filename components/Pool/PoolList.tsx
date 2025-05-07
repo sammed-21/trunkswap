@@ -31,7 +31,7 @@ export const PoolList = () => {
         <div>this page is loading</div>
       ) : (
         <div className="w-full ">
-          <div className="mb-4 flex justify-between">
+          <div className="mb-4  hidden justify-between">
             <input
               type="text"
               value={searchQuery}

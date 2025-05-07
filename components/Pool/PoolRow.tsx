@@ -12,8 +12,8 @@ interface RowProps {
 
 export const PoolRow = ({ pool }: RowProps) => {
   return (
-    <Link
-      href={`/pool/${pool.pairAddress}`}
+    <div
+      // href={`/pool/${pool.pairAddress}`}
       className="grid grid-cols-6 w-full items-center justify-between px-4 bg-forground  border-[1px] border-border  py-3 hover:bg-zinc-100 dark:hover:bg-zinc-800 transition p-4"
     >
       <div className="flex   col-span-2 items-center gap-5">
@@ -62,7 +62,7 @@ export const PoolRow = ({ pool }: RowProps) => {
       <span className="  flex items-center justify-center col-span-1  md:flex">
         &nbsp; {Number(pool.totalSupply) / 1e18}
       </span>
-    </Link>
+    </div>
   );
 };
 

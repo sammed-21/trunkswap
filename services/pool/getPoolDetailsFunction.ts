@@ -60,6 +60,7 @@ export async function getPairDetails(
     reserve1,
     token1Symbol
   );
+  console.log(tvl);
 
   return {
     pairAddress,
