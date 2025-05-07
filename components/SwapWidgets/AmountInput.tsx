@@ -42,7 +42,6 @@ const AmountInput: React.FC<AmountInputProps> = ({
 }) => {
   const [selectorOpen, setSelectorOpen] = useState<boolean>(false);
   //   const { setSelectorOpen } = useSwapActions();
-
   const { address } = useAccount();
   //   const { selectorOpen } = useSwapState()
   const handleAmountChange = (e: React.ChangeEvent<HTMLInputElement>) => {

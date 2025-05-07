@@ -14,6 +14,7 @@ import { QuoteDetails } from "./QuoteDetails";
 import TokenConversion from "@/services/TokenConversion";
 import { usePriceState } from "@/state/priceStore";
 import { Skeleton } from "../ui/skeleton";
+import { FaChartLine } from "react-icons/fa6";
 
 type Props = {};
 
@@ -30,6 +31,7 @@ export const SwapWidget = (props: Props) => {
   const { isConnected, address } = useAccount();
   const { openConnectModal } = useConnectModal();
   const { prices, isLoading } = usePriceState();
+  const { resetSwapState } = useSwapActions();
 
   const [isRotated, setIsRotated] = useState<boolean>(false);
   const {
@@ -55,6 +57,7 @@ export const SwapWidget = (props: Props) => {
     TokenBUsdValue,
     TokenAUsdPrice,
     TokenBUsdPrice,
+    chartFlag,
     // prices,
     exceedsBalanceError,
   } = useSwapState();
@@ -74,6 +77,7 @@ export const SwapWidget = (props: Props) => {
     setTokenAUsdValue,
     setTokenAUsdPrice,
     setTokenBUsdPrice,
+    setChartFlag,
   } = useSwapActions();
   const handleToggleTradeDirection = () => {
     // Toggle direction
@@ -84,10 +88,13 @@ export const SwapWidget = (props: Props) => {
     setTokenBBalance(tokenABalance);
     setTokenA(TokenB);
     setTokenB(TokenA);
-    setTokenBUsdValue(TokenAUsdValue);
-    setTokenAUsdValue(TokenBUsdValue);
+    setTokenAAmount("");
+    setTokenBAmount("");
+    setTokenBUsdValue(null);
+    setTokenAUsdValue(null);
     setCurrentSellAsset(currentBuyAsset);
     setCurrentBuyAsset(currentSellAsset);
+    resetSwapState();
   };
 
   // Optional: if you have ETH price fetched from CoinGecko
@@ -143,7 +150,16 @@ export const SwapWidget = (props: Props) => {
         <h2 className="text-lg font-bold text-white bg-primary w-fit px-2 py-1 rounded-none ">
           Swap
         </h2>
-        <div>
+        <div className="flex flex-row gap-2 items-center">
+          <FaChartLine
+            onClick={() => setChartFlag(!chartFlag)}
+            color={`${chartFlag ? "#fff" : "#0caaff "}`}
+            className={` w-6 h-6 ${
+              chartFlag
+                ? "bg-[#0caaff] p-1 text-white"
+                : "bg-forground p-1 text-white"
+            } cursor-pointer`}
+          />
           <SlippageModal />
         </div>
       </div>
@@ -165,7 +181,7 @@ export const SwapWidget = (props: Props) => {
           />
           <div
             onClick={handleToggleTradeDirection}
-            className="absolute top-1/2   border-border left-[45%] bg-primary -translate-y-1/2  z-[1] bg- p-1 border"
+            className="absolute top-1/2  cursor-pointer border-border left-[45%] bg-primary -translate-y-1/2  z-[1] bg- p-1 border"
           >
             <Image
               src={rotateImage}

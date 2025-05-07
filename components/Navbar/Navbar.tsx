@@ -5,7 +5,7 @@ import Link from "next/link";
 import logo from "@/public/logo/logo21.png";
 import Image from "next/image";
 import { ModeToggle } from "../Common/ModeToggle";
-import { useInitialLoad } from "../useInitialLoad";
+import { useInitialLoad } from "../../hooks/useInitialLoad";
 
 export const Navbar = () => {
   useInitialLoad();
