@@ -55,7 +55,7 @@ const AmountInput: React.FC<AmountInputProps> = ({
 
   const handleTokenSelect = (selectedToken: any) => {
     setToken(selectedToken.symbol);
-
+    console.log(selectedToken);
     setSelectorOpen(false);
     setTokenBalance(selectedToken.balance);
     setCurrentTokenDetal(selectedToken);
