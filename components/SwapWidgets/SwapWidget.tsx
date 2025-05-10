@@ -58,7 +58,7 @@ export const SwapWidget = (props: Props) => {
     TokenAUsdPrice,
     TokenBUsdPrice,
     chartFlag,
-    // prices,
+
     exceedsBalanceError,
   } = useSwapState();
 
@@ -73,11 +73,12 @@ export const SwapWidget = (props: Props) => {
     setTokenABalance,
     setTokenBBalance,
     setTokenBUsdValue,
-
+    fetchTokenBalances,
     setTokenAUsdValue,
     setTokenAUsdPrice,
     setTokenBUsdPrice,
     setChartFlag,
+    setChartActiveToken,
   } = useSwapActions();
   const handleToggleTradeDirection = () => {
     // Toggle direction
@@ -91,6 +92,7 @@ export const SwapWidget = (props: Props) => {
     setTokenAAmount("");
     setTokenBAmount("");
     setTokenBUsdValue(null);
+    setChartActiveToken(currentSellAsset.symbol.toUpperCase());
     setTokenAUsdValue(null);
     setCurrentSellAsset(currentBuyAsset);
     setCurrentBuyAsset(currentSellAsset);
@@ -132,7 +134,6 @@ export const SwapWidget = (props: Props) => {
       };
     }
   };
-
   const buttonProps = getButtonProps();
 
   return (
@@ -178,6 +179,7 @@ export const SwapWidget = (props: Props) => {
             setToken={setTokenA}
             exceedsBalanceError={exceedsBalanceError}
             isConnected={isConnected}
+            setTokenBalance={setTokenABalance}
           />
           <div
             onClick={handleToggleTradeDirection}
@@ -207,6 +209,7 @@ export const SwapWidget = (props: Props) => {
             setCurrentTokenDetal={setCurrentBuyAsset}
             isLoading={quoteLoading}
             readOnly={true}
+            setTokenBalance={setTokenBBalance}
             // setAmount={setTokenBAmount}
             // setToken={setTokenB}
           />

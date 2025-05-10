@@ -1,8 +1,6 @@
 // store/useFaucetStore.ts
-import { FACTORY_ABI } from "@/abi/FACTORY_ABI";
-import { Contract, ethers } from "ethers";
+
 import { create } from "zustand";
-import { useAccountState } from "./accountStore";
 
 interface FaucetState {
   isLoading: boolean;

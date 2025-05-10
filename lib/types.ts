@@ -1,7 +1,8 @@
 import { Address, PublicClient, WalletClient, type Hex } from "viem";
-import { EIP712TypedData } from "./signature";
+
 import { UsePublicClientReturnType, UseWalletClientReturnType } from "wagmi";
 import { Signer } from "ethers";
+import { Provider } from "ethers";
 
 // This interface is subject to change as the API V2 endpoints aren't finalized.
 export interface PriceResponse {
@@ -34,54 +35,6 @@ export interface PriceResponse {
   };
 }
 
-// This interface is subject to change as the API V2 endpoints aren't finalized.
-export interface QuoteResponse {
-  TokenA: Address;
-  TokenB: Address;
-  TokenAAmount: string;
-  TokenBAmount: string;
-  grossTokenAAmount: string;
-  grossTokenBAmount: string;
-  gasPrice: string;
-  allowanceTarget: Address;
-  route: [];
-  fees: {
-    integratorFee: {
-      amount: string;
-      token: string;
-      type: "volume" | "gas";
-    } | null;
-    zeroExFee: {
-      billingType: "on-chain" | "off-chain";
-      feeAmount: string;
-      feeToken: Address;
-      feeType: "volume" | "gas";
-    };
-    gasFee: null;
-  } | null;
-  auxiliaryChainData: {};
-  to: Address;
-  data: Hex;
-  value: string;
-  gas: string;
-  permit2: {
-    type: "Permit2";
-    hash: Hex;
-    eip712: EIP712TypedData;
-  };
-  transaction: V2QuoteTransaction;
-  tokenMetadata: {
-    TokenB: {
-      buyTaxBps: string | null;
-      sellTaxBps: string | null;
-    };
-    TokenA: {
-      buyTaxBps: string | null;
-      sellTaxBps: string | null;
-    };
-  };
-}
-
 export interface V2QuoteTransaction {
   data: Hex;
   gas: string | null;
@@ -93,6 +46,8 @@ export type Prices = { [symbol: string]: number };
 
 export interface SwapState {
   chartFlag: boolean;
+  tokensWithBalances: Token[];
+  chartActiveToken: string;
   isWalletConnected: any;
   TokenB: string;
   TokenA: string;
@@ -138,6 +93,8 @@ export interface Token {
   decimals: number;
   chainId: number;
   logoURI: string;
+  balance?: string;
+  usdValue?: number;
 }
 export interface SwapActions {
   setChartFlag: (chartFlag: boolean) => void;
@@ -179,6 +136,9 @@ export interface SwapActions {
   setTokenBUsdPrice: (tokenUsdPrice: number | any) => void;
   setPrices: (prices: Prices) => void;
   setExceedsBalanceError: (exceedsBalanceError: boolean) => void;
+  setChartActiveToken: (chartActiveToken: string) => void;
+
+  fetchAllTokens: (walletAddress: string, provider: Provider) => void;
 }
 
 export interface TokenDetail {
@@ -188,6 +148,12 @@ export interface TokenDetail {
   logoURI: string;
   decimals: number;
   chainId: number;
+  balance?: string;
+  usdValue?: number;
+}
+
+export interface TokenWithBalance extends TokenDetail {
+  balance: string; // or BigNumber if you prefer
 }
 
 export interface AccountInfo {

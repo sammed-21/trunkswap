@@ -18,6 +18,8 @@ import {
   updatePrices,
 } from "@/services/priceFeed";
 import { usePriceState, usePriceStore } from "./priceStore";
+import { useAccountStore } from "./accountStore";
+import { Provider } from "ethers";
 
 // Unified Zustand Store
 export const useSwapStore = create<SwapState & SwapActions>((set, get) => ({
@@ -25,7 +27,8 @@ export const useSwapStore = create<SwapState & SwapActions>((set, get) => ({
   // Initial State
   TokenB: DEFAULT_BUY_TOKEN(defaultChainId)?.toUpperCase(),
   TokenA: DEFAULT_SELL_TOKEN(defaultChainId)?.toUpperCase(),
-
+  chartActiveToken: DEFAULT_SELL_TOKEN(defaultChainId)?.toUpperCase(),
+  tokensWithBalances: [],
   TokenBAmount: "",
   tradeDirection: "sell",
   TokenAAmount: "",
@@ -167,6 +170,7 @@ export const useSwapStore = create<SwapState & SwapActions>((set, get) => ({
     }
   },
   setChartFlag: (chartFlag: boolean) => set({ chartFlag }),
+  setChartActiveToken: (chartActiveToken: string) => set({ chartActiveToken }),
   setTokenBUsdValue: (usdValue: number | null | undefined) =>
     set({
       TokenBUsdValue: usdValue,
@@ -252,6 +256,7 @@ export const useSwapStore = create<SwapState & SwapActions>((set, get) => ({
         estimatedFee: null,
         formatedEstimatedFee: null,
       },
+
       priceImpact: null,
       fee: null,
       // Don't reset tokens, balances, slippage, etc.
@@ -297,6 +302,28 @@ export const useSwapStore = create<SwapState & SwapActions>((set, get) => ({
         loadingBalances: false,
       });
     }
+  },
+  fetchAllTokens: async (walletAddress: string, provider: Provider) => {
+    const { tokens } = get();
+    const chainId = useAccountStore.getState().chainId;
+    await updatePrices();
+    const updatedTokens = await Promise.all(
+      tokens.map(async (token) => {
+        if (token.chainId !== chainId) return token;
+
+        const balance = await fetchTokenBalance(
+          token.address,
+          walletAddress,
+          provider,
+          token.decimals
+        );
+
+        const usdValue = await getUSDValue(balance, token.symbol);
+        return { ...token, balance, usdValue };
+      })
+    );
+
+    set({ tokens: updatedTokens });
   },
 
   // Function to update balances when tokens change
@@ -392,6 +419,8 @@ export const useSwapState = () =>
       prices: state.prices,
       exceedsBalanceError: state.exceedsBalanceError,
       chartFlag: state.chartFlag,
+      chartActiveToken: state.chartActiveToken,
+      tokensWithBalances: state.tokensWithBalances,
     }))
   );
 
@@ -434,5 +463,7 @@ export const useSwapActions = () =>
       setPrices: state.setPrices,
       setExceedsBalanceError: state.setExceedsBalanceError,
       setChartFlag: state.setChartFlag,
+      setChartActiveToken: state.setChartActiveToken,
+      fetchAllTokens: state.fetchAllTokens,
     }))
   );

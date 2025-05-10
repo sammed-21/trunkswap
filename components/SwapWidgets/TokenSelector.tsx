@@ -13,7 +13,7 @@ const TokenSelector: React.FC<TokenSelectorProps> = ({
   onSelect,
   closeModal,
 }) => {
-  const { chainId } = useAccountState();
+  const { chainId, address } = useAccountState();
   const { tokens, currentSellAsset, currentBuyAsset } = useSwapState();
   const [searchQuery, setSearchQuery] = useState<string>("");
   const isTokenDisabled = (token: Token) => {
@@ -30,12 +30,16 @@ const TokenSelector: React.FC<TokenSelectorProps> = ({
   };
 
   // Filter tokens based on the search query (case-insensitive match)
-  const filteredTokens = tokens.filter(
-    (token) =>
-      token.chainId === chainId &&
-      (token.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        token.symbol.toLowerCase().includes(searchQuery.toLowerCase()))
-  );
+  const filteredTokens = tokens
+    .filter(
+      (token) =>
+        token.chainId === chainId &&
+        (token.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+          token.symbol.toLowerCase().includes(searchQuery.toLowerCase()))
+    )
+    .sort(
+      (a, b) => parseFloat(b.balance || "0") - parseFloat(a.balance || "0")
+    );
 
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
@@ -66,7 +70,7 @@ const TokenSelector: React.FC<TokenSelectorProps> = ({
           <span className="text-title font-medium text-xl">Select Token</span>
           <button
             onClick={closeModal}
-            className="text-title bg-secondary  rounded-none p-2"
+            className="text-title bg-accent  rounded-none p-2"
           >
             ESC
           </button>
@@ -78,7 +82,7 @@ const TokenSelector: React.FC<TokenSelectorProps> = ({
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             placeholder="Search tokens..."
-            className="w-full p-2 bg-secondary text-title rounded-none"
+            className="w-full p-2 bg-accent text-title rounded-none"
           />
         </div>
         <div className="space-y-4 z-50">
@@ -91,12 +95,12 @@ const TokenSelector: React.FC<TokenSelectorProps> = ({
                   key={token.address}
                   className={`flex justify-between items-center p-4 border-none rounded-none ${
                     disabled
-                      ? "bg-primary cursor-not-allowed"
-                      : "cursor-pointer hover:bg-primary-dark"
+                      ? "bg-primary text-white cursor-not-allowed"
+                      : "cursor-pointer hover:bg-accent"
                   }`}
                   onClick={() => !disabled && onSelect(token)} // Allow selection only if not disabled
                 >
-                  <div className="flex text-title items-center">
+                  <div className="flex  items-center">
                     <Image
                       src={token.logoURI}
                       alt={token.name}
@@ -104,11 +108,26 @@ const TokenSelector: React.FC<TokenSelectorProps> = ({
                       height={20}
                       className="w-6 h-6 mr-2"
                     />
-                    <span>
-                      {token.name} ({token.symbol})
-                    </span>
+                    <div className="flex flex-col text-start items-start gap-1">
+                      <span>
+                        {token.name} ({token.symbol})
+                      </span>
+                      {address && (
+                        <div className="flex flex-col items-end text-xs ">
+                          <span>
+                            {token.balance
+                              ? `${parseFloat(token.balance).toFixed(2)} ${
+                                  token.symbol
+                                }`
+                              : "--"}{" "}
+                            {/* {token.usdValue ? `${token.usdValue}` : "--"}{" "} */}
+                          </span>
+                        </div>
+                      )}
+                    </div>
                   </div>
-                  {disabled && <span className="text-subtitle">Selected</span>}
+
+                  {disabled && <span className="">Selected</span>}
                 </div>
               );
             })

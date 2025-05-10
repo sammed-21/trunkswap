@@ -7,6 +7,7 @@ import { useAccount } from "wagmi";
 import { Skeleton } from "../ui/skeleton";
 import { formatUSD } from "@/services/priceFeed";
 import { FormatUsd } from "../Common/FormatUsd";
+import { useAccountState } from "@/state/accountStore";
 interface AmountInputProps {
   title: string;
   token: string;
@@ -22,6 +23,7 @@ interface AmountInputProps {
   tokenUsdValue: any;
   exceedsBalanceError?: boolean;
   isConnected?: boolean;
+  setTokenBalance: (balance: string) => void;
 }
 
 const AmountInput: React.FC<AmountInputProps> = ({
@@ -38,11 +40,14 @@ const AmountInput: React.FC<AmountInputProps> = ({
   readOnly = false,
   isLoading = false,
   exceedsBalanceError,
+  setTokenBalance,
   isConnected,
 }) => {
   const [selectorOpen, setSelectorOpen] = useState<boolean>(false);
   //   const { setSelectorOpen } = useSwapActions();
   const { address } = useAccount();
+  const { provider } = useAccountState();
+
   //   const { selectorOpen } = useSwapState()
   const handleAmountChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setAmount(e.target.value);
@@ -50,7 +55,9 @@ const AmountInput: React.FC<AmountInputProps> = ({
 
   const handleTokenSelect = (selectedToken: any) => {
     setToken(selectedToken.symbol);
+
     setSelectorOpen(false);
+    setTokenBalance(selectedToken.balance);
     setCurrentTokenDetal(selectedToken);
   };
 
@@ -80,7 +87,10 @@ const AmountInput: React.FC<AmountInputProps> = ({
                   className="balance-display h-[23px]  cursor-pointer"
                 >
                   {" "}
-                  {walletBalanceAsset} {currentTokenAsset?.symbol}
+                  {walletBalanceAsset == "0"
+                    ? currentTokenAsset.balance
+                    : walletBalanceAsset}{" "}
+                  {currentTokenAsset?.symbol}
                 </span>
               )}
             </>
@@ -111,7 +121,7 @@ const AmountInput: React.FC<AmountInputProps> = ({
           </div>
           <div className="w-full max-w-[30%] pr-2 pl-2 flex justify-end">
             <button
-              className=" justify-between gap-1 px-2  w-full relative flex py-2 bg-background  text-white items-center "
+              className=" justify-between gap-1 px-2   w-full relative flex py-2 bg-background dark:text-title text-title items-center "
               onClick={() => setSelectorOpen(true)}
             >
               <Image
@@ -123,7 +133,7 @@ const AmountInput: React.FC<AmountInputProps> = ({
               {currentTokenAsset?.symbol || "Select Token"}
               <Image
                 src={dropdown}
-                className="invert object-contain"
+                className="light:invert-1 dark:invert  object-contain"
                 width={10}
                 height={20}
                 alt={"image"}

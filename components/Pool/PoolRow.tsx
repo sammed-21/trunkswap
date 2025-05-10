@@ -5,6 +5,7 @@ import { formatUSD } from "@/services/priceFeed";
 import { PoolDetails } from "@/state/poolStore";
 import Image from "next/image";
 import Link from "next/link";
+import { formatEther } from "viem";
 
 interface RowProps {
   pool: PoolDetails;
@@ -60,7 +61,7 @@ export const PoolRow = ({ pool }: RowProps) => {
         </span>
       </div>
       <span className="  flex items-center justify-center col-span-1  md:flex">
-        &nbsp; {Number(pool.totalSupply) / 1e18}
+        &nbsp; {formatEther(pool.totalSupply)}
       </span>
     </div>
   );

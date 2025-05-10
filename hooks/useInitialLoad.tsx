@@ -3,7 +3,7 @@
 
 import { usePriceFeed } from "@/hooks/usePriceFeed";
 import { FACTORY_ADDRESS } from "@/lib/constants";
-import { getProvider } from "@/services/walletEvents";
+import { getProvider } from "@/services/getProvider";
 import { useAccountState } from "@/state/accountStore";
 import { usePoolActions } from "@/state/poolStore";
 import { usePriceState } from "@/state/priceStore";
@@ -17,40 +17,23 @@ export const useInitialLoad = () => {
   const chainId = useChainId();
   const { fetchUserPositions, fetchPoolData } = usePoolActions();
 
-  const { updateTokenBalances } = useSwapActions();
-  usePriceFeed();
+  const { updateTokenBalances, fetchAllTokens } = useSwapActions();
+
   const { fetchPriceFlag, prices } = usePriceState();
   const { provider } = useAccountState();
-  let providerDefault = !provider ? getProvider() : provider;
 
   useEffect(() => {
-    const foolData = async () => {
-      let position = await fetchPoolData(
-        providerDefault,
-        FACTORY_ADDRESS(chainId)
-      );
-    };
-
-    foolData();
+    if (!provider || !chainId) return;
+    fetchPoolData(provider, FACTORY_ADDRESS(chainId));
   }, [provider, chainId, fetchPriceFlag]);
-  useEffect(() => {
-    const foolData = async () => {
-      if (address) {
-        let position = await fetchUserPositions(
-          providerDefault!,
-          address,
-          FACTORY_ADDRESS(chainId)
-        );
-      }
-    };
 
-    foolData();
-  }, [address, chainId]);
   useEffect(() => {
-    if (isConnected) {
-      updateTokenBalances(String(address), provider);
+    if (isConnected && provider && address) {
+      fetchUserPositions(provider, address, FACTORY_ADDRESS(chainId));
+      fetchAllTokens(address, provider);
+      updateTokenBalances(address, provider);
     }
-  }, [isConnected]);
+  }, [isConnected, provider, address]);
 
   return null;
 };

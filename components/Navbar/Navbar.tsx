@@ -1,15 +1,19 @@
 "use client";
 import React from "react";
-import { ConnectWallet } from "../ConnetWalletButton/ConnectWallet";
 import Link from "next/link";
 import logo from "@/public/logo/logo21.png";
 import Image from "next/image";
 import { ModeToggle } from "../Common/ModeToggle";
 import { useInitialLoad } from "../../hooks/useInitialLoad";
+import ConnectWallet from "../Common/ConnectWallet";
+import { NetworkComponent } from "../Common/NetworkComponent";
+import { useTokenInitializer } from "@/hooks/useTokenInitializer";
+import { ShowETHBalance } from "./ShowETHBalance";
+import { usePriceFeed } from "@/hooks/usePriceFeed";
 
 export const Navbar = () => {
+  usePriceFeed();
   useInitialLoad();
-
   return (
     <nav className="h-20 border-[1px] text-title bg-background  backdrop-filter backdrop-blur-lg bg-opacity-30 border-border px-4  rounded-none  justify-between flex items-center  w-full font-semibold ">
       <div className="flex gap-10 items-center justify-start">
@@ -32,6 +36,8 @@ export const Navbar = () => {
       </div>
       <div className="flex gap-2 items-center justify-end">
         <ModeToggle />
+        <ShowETHBalance />
+        <NetworkComponent />
         <ConnectWallet />
       </div>
     </nav>

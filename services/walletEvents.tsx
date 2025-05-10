@@ -12,6 +12,7 @@ import { usePoolActions } from "@/state/poolStore";
 import { addressess } from "@/address";
 import { getNetworkNameUsingChainId } from "./getNetworkNameUsingChainId";
 import { usePriceFeed } from "@/hooks/usePriceFeed";
+import { useFaucetStore } from "@/state/faucetStore";
 // Your fallback URLs and chain mapping
 
 const chainMap = {
@@ -36,10 +37,13 @@ const chainMap = {
 // Factory address for fetching pool data
 type Props = { children: React.ReactNode };
 export const WalletInit = ({ children }: Props) => {
+  const { data: walletClient } = useWalletClient();
   const { address, isConnected, isDisconnected } = useAccount();
   const chainId = useChainId();
-  const { data: walletClient } = useWalletClient();
   let walletSigner: ethers.Signer | ethers.JsonRpcSigner | null;
+
+  const resetFaucetState = useFaucetStore((state) => state.resetFaucetState);
+
   const getSigners = useCallback(async () => {
     if (isConnected && window.ethereum) {
       const walletProvider = new ethers.BrowserProvider(window.ethereum);
@@ -50,7 +54,9 @@ export const WalletInit = ({ children }: Props) => {
       setSigner(walletSigner);
     }
   }, [isConnected]);
+
   const { isInitialized, provider } = useAccountState();
+
   const {
     setProvider,
     setSigner,
@@ -62,6 +68,7 @@ export const WalletInit = ({ children }: Props) => {
   } = useAccountActions();
 
   const { fetchUserPositions, clearPoolStore } = usePoolActions();
+
   let FACTORY_ADDRESS =
     addressess[getNetworkNameUsingChainId(421614)].FACTORY_ADDRESS;
   // Helper function to initialize provider
@@ -71,6 +78,7 @@ export const WalletInit = ({ children }: Props) => {
 
       // Always create a provider regardless of wallet connection
       const rpcUrl = fallbackUrls[currentChainId] || fallbackUrls[421614];
+
       FACTORY_ADDRESS =
         addressess[getNetworkNameUsingChainId(currentChainId)].FACTORY_ADDRESS;
       const ethersProvider = new JsonRpcProvider(rpcUrl);
@@ -81,13 +89,10 @@ export const WalletInit = ({ children }: Props) => {
         chain,
         transport: http(rpcUrl),
       });
+
       setProvider(ethersProvider);
       setChainId(currentChainId);
-
       setViemClient(viemClient);
-      // Set signer if wallet is connected
-
-      // If user is connected, fetch their positions
 
       setInitialized(true);
       // if(ethersProvider){
@@ -109,9 +114,11 @@ export const WalletInit = ({ children }: Props) => {
     const initialProvider = async () => {
       await initializeProvider(chainId || defaultChainId);
     };
+
     if (!isInitialized || !provider) {
       initialProvider();
     }
+
     if (isConnected) {
       setAddress(address!?.toString());
       getSigners();
@@ -123,6 +130,8 @@ export const WalletInit = ({ children }: Props) => {
     if (isDisconnected) {
       // Keep the provider but clear user-specific data
       setSigner(null);
+      resetFaucetState();
+      resetAccountStore();
       clearPoolStore();
     }
   }, [isDisconnected]);
@@ -130,75 +139,17 @@ export const WalletInit = ({ children }: Props) => {
   // Handle chain changes
   useEffect(() => {
     if (!chainId) return;
-
+    resetFaucetState();
     // Reset pool store when chain changes
     resetAccountStore();
+
     clearPoolStore();
 
     // Initialize for the new chain
     initializeProvider(chainId);
   }, [chainId]);
 
-  // Watch for account changes
-  useEffect(() => {
-    if (!isConnected) return;
-
-    const unwatchAccount = watchAccount(config, {
-      onChange(address) {
-        if (address) {
-          setSigner(null);
-          clearPoolStore();
-          return;
-        }
-
-        const currentChainId = chainId || 421614;
-
-        if (walletClient) {
-          setSigner(walletSigner);
-
-          // Fetch user positions when account changes
-          const provider = useAccountState().provider;
-          if (provider && address) {
-            fetchUserPositions(provider, address, FACTORY_ADDRESS);
-          }
-        }
-      },
-    });
-    const unwatchChainId = watchChainId(config, {
-      onChange(chainId) {
-        if (address) {
-          setSigner(null);
-          clearPoolStore();
-          return;
-        }
-
-        const currentChainId = chainId || 421614;
-
-        if (walletSigner) {
-          setSigner(walletSigner);
-
-          // Fetch user positions when account changes
-          const provider = useAccountState().provider;
-          if (provider && address) {
-            fetchUserPositions(provider, address, FACTORY_ADDRESS);
-          }
-        }
-      },
-    });
-
-    // Clean up
-    return () => {
-      unwatchChainId();
-      unwatchAccount();
-    };
-  }, [isConnected, walletClient, chainId]);
-
   return <div>{children}</div>;
 };
 
 // Helper function to get provider
-export const getProvider = (chainId: number = 421614) => {
-  const rpcUrl = fallbackUrls[chainId] || fallbackUrls[421614];
-
-  return new JsonRpcProvider(rpcUrl);
-};

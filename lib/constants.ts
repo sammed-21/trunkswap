@@ -41,6 +41,9 @@ export const FactoryAddressChainId = 421614;
 export const FACTORY_ADDRESS = (chainId: any) =>
   addressess[getNetworkNameUsingChainId((chainId = FactoryAddressChainId))]
     .FACTORY_ADDRESS;
+export const ROUTER_ADDRESS = (chainId: any) =>
+  addressess[getNetworkNameUsingChainId((chainId = FactoryAddressChainId))]
+    .ROUTER_ADDRESS;
 
 export const DefaultSlippage = "5.5";
 
@@ -63,7 +66,7 @@ export const MAINNET_TOKENS: Token[] = [
   },
   {
     chainId: 421614,
-    name: "USDT Coin",
+    name: "USDC Coin",
     symbol: "USDC",
     decimals: 6,
     address: "0x75faf114eafb1BDbe2F0316DF893fd58CE46AA4d",
@@ -98,7 +101,7 @@ export const MAINNET_TOKENS_BY_SYMBOL: Record<string, Token> = {
   },
   usdc: {
     chainId: 421614,
-    name: "USDT Coin",
+    name: "USDC Coin",
     symbol: "USDC",
     decimals: 6,
     address: "0x75faf114eafb1BDbe2F0316DF893fd58CE46AA4d",
