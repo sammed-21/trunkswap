@@ -181,7 +181,18 @@ export const useSwapStore = create<SwapState & SwapActions>((set, get) => ({
     }),
   // setTokenAAmount: (amount) =>
   //   set(() => ({ TokenAAmount: formatDigits(amount) })),
-  setTradeDirection: (direction) => set(() => ({ tradeDirection: direction })),
+  setTradeDirection: (direction) => () => {
+    const balanceA = get().tokenABalance;
+    let amount = get().TokenAAmount;
+
+    if (Number(balanceA) < Number(amount)) {
+      get().setExceedsBalanceError(true);
+    } else {
+      get().setExceedsBalanceError(false);
+    }
+
+    set({ tradeDirection: direction });
+  },
   setSlippage: (slippage) => set(() => ({ slippage })),
   setTokens: (tokens: any) => set({ tokens }),
   setSelectorOpen: (isOpen: Boolean) => set(() => ({ selectorOpen: isOpen })),
