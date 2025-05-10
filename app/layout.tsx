@@ -24,8 +24,6 @@ export const metadata: Metadata = {
   description: "trunkswap.vercel.app/",
 };
 
-const MEASUREMENT_ID = process.env.MEASUREMENT_ID;
-
 export default function RootLayout({
   children,
 }: Readonly<{
@@ -68,7 +66,12 @@ export default function RootLayout({
             </Providers>
           </div>
         </ThemeProvider>
-        <GoogleAnalytics gaId={MEASUREMENT_ID!} />
+        {process.env.NEXT_PUBLIC_GOOGLE_ANALYTICS_ID &&
+          process.env.NODE_ENV === "production" && (
+            <GoogleAnalytics
+              gaId={process.env.NEXT_PUBLIC_GOOGLE_ANALYTICS_ID!}
+            />
+          )}
       </body>
     </html>
   );
