@@ -197,10 +197,20 @@ export const useSwapStore = create<SwapState & SwapActions>((set, get) => ({
   setTokens: (tokens: any) => set({ tokens }),
   setSelectorOpen: (isOpen: Boolean) => set(() => ({ selectorOpen: isOpen })),
   setDeadline: (deadline) => set({ deadline: deadline }),
-  setCurrentSellAsset: (asset: TokenDetail) =>
+  setCurrentSellAsset: (asset: TokenDetail) => {
+    const balanceA = get().tokenABalance;
+    let amount = get().TokenAAmount;
+
+    if (Number(balanceA) < Number(amount)) {
+      get().setExceedsBalanceError(true);
+    } else {
+      get().setExceedsBalanceError(false);
+    }
+
     set(() => ({
       currentSellAsset: asset,
-    })),
+    }));
+  },
   setCurrentBuyAsset: (asset: TokenDetail) =>
     set(() => ({
       currentBuyAsset: asset,
