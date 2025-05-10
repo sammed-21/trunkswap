@@ -36,3 +36,19 @@ export const getPrice = (
 ): number | null => {
   return prices?.[`${token === "WETH" ? "ETH" : token}_USD`] ?? null;
 };
+
+import React from "react";
+
+type Props = {
+  userLpBalance: string;
+  totalSupply: string;
+};
+
+export const formatPercentage = (userLp: string, total: string): string => {
+  const user = parseFloat(userLp);
+  const supply = parseFloat(total);
+  if (isNaN(user) || isNaN(supply) || supply === 0) return "0.00%";
+
+  const percentage = (user / supply) * 100;
+  return `${percentage.toFixed(2)}%`;
+};

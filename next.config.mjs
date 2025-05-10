@@ -9,6 +9,15 @@ const nextConfig = {
       },
       {
         protocol: "https",
+        hostname: "cons.llamao.fi",
+        pathname: "/icons/chains",
+      },
+      {
+        protocol: "https",
+        hostname: "**",
+      },
+      {
+        protocol: "https",
         hostname: "raw.githubusercontent.com/",
         pathname: "/logos/**",
       },

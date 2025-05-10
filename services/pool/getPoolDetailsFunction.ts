@@ -66,11 +66,13 @@ export async function getPairDetails(
     pairAddress,
     token0: {
       address: token0Address,
+      decimal: token0Decimals,
       symbol: token0Symbol,
     },
     token1: {
       address: token1Address,
       symbol: token1Symbol,
+      decimal: token1Decimals,
     },
     reserve0,
     reserve1,

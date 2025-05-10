@@ -5,12 +5,13 @@ import { useSwapState } from "@/state/swapStore";
 
 export default function Home() {
   const { chartFlag } = useSwapState();
+
   return (
     <div className="w-full relative h-full mx-auto py-10  gap-4 flex flex-col md:flex-row  items-start justify-center">
       <div
-        className={`max-w-[1024px] w-full h-[400px] ${
+        className={`max-w-[1024px]  w-full h-[400px] ${
           chartFlag ? "block" : "hidden"
-        } md:max-h-[800px] relative `}
+        } md:min-h-[600px] relative `}
       >
         <TradingViewWidget />
       </div>

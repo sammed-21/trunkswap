@@ -1,25 +1,30 @@
+"use client";
 import React, { useCallback, useEffect, useState } from "react";
 import { useAccount } from "wagmi";
 import { formatUnits } from "ethers";
 import toast from "react-hot-toast";
 import { useFaucetStore } from "@/state/faucetStore";
 import { useAccountState } from "@/state/accountStore";
-import { ConnectWallet } from "../ConnetWalletButton/ConnectWallet";
 import { getErc20Contract, getFaucetContract } from "@/services/getContracts";
 import { SupportedToken, TOKENS } from "@/address";
 import Image from "next/image";
+import ConnectWallet from "../Common/ConnectWallet";
+import { useSwapActions } from "@/state/swapStore";
+import { Button } from "../ui/Button";
 
 export const FaucetComponent = () => {
   const { address } = useAccount();
-  const { signer, chainId } = useAccountState();
+
+  const { signer, chainId, provider } = useAccountState();
   const [userBalances, setUserBalances] = useState<
     Record<SupportedToken, string>
   >({} as Record<SupportedToken, string>);
+  const [loadingToken, setLoadingToken] = useState<SupportedToken | null>(null);
 
+  const { updateTokenBalances, fetchAllTokens } = useSwapActions();
   const {
-    isLoading,
     cooldowns,
-    faucetBalances,
+
     setIsLoading,
     setCooldown,
     setFaucetBalance,
@@ -54,29 +59,12 @@ export const FaucetComponent = () => {
     [signer, setCooldown]
   );
 
-  const fetchTokenBalance = useCallback(
-    async (symbol: SupportedToken, tokenAddress: string) => {
-      if (!signer || !tokenAddress) return;
-
-      try {
-        const tokenContract = getErc20Contract(tokenAddress, signer);
-        const userAddress = await signer.getAddress();
-        const balance = await tokenContract.balanceOf(userAddress);
-        const formattedBalance = formatUnits(balance, 18);
-        setUserBalances((prev) => ({ ...prev, [symbol]: formattedBalance }));
-      } catch (error) {
-        console.error(`Error fetching ${symbol} balance:`, error);
-        setUserBalances((prev) => ({ ...prev, [symbol]: "0" }));
-      }
-    },
-    [signer]
-  );
-
   const requestTokens = async (symbol: SupportedToken) => {
-    if (!signer || !chainId) {
+    if (!signer || !chainId || !address || !provider) {
       toast.error("Wallet or signer not available");
       return;
     }
+    setLoadingToken(symbol);
 
     const tokenAddress = TOKENS[symbol]?.addresses[chainId];
     const faucetAddress = TOKENS[symbol]?.faucetAddresses[chainId];
@@ -88,7 +76,9 @@ export const FaucetComponent = () => {
     const faucetContract = getFaucetContract(faucetAddress, signer);
 
     const balance = await tokenContract.balanceOf(faucetAddress);
-    const formattedBalance = formatUnits(balance, 18);
+    const decimals = await tokenContract.decimals();
+
+    const formattedBalance = formatUnits(balance, decimals);
     setFaucetBalance(symbol, formattedBalance);
 
     if (parseFloat(formattedBalance) <= 0) {
@@ -113,13 +103,15 @@ export const FaucetComponent = () => {
       });
 
       await addContractToMetamask(symbol, tokenAddress);
-      checkCooldown(symbol, faucetAddress);
-      fetchTokenBalance(symbol, tokenAddress);
+      await checkCooldown(symbol, faucetAddress);
+      await updateTokenBalances(String(address), provider);
+      fetchAllTokens(address.toString(), provider);
     } catch (error: any) {
-      toast.error(`Error: ${error?.message || "Transaction failed"}`);
+      toast.error(`Error:Transaction failed}`);
       console.error("Transaction error:", error);
     } finally {
       setIsLoading(false);
+      setLoadingToken(null);
     }
   };
 
@@ -165,7 +157,7 @@ export const FaucetComponent = () => {
       const faucetAddress = token.faucetAddresses[chainId];
       if (tokenAddress && faucetAddress) {
         checkCooldown(tokenSymbol, faucetAddress);
-        fetchTokenBalance(tokenSymbol, tokenAddress);
+        // fetchTokenBalance(tokenSymbol, tokenAddress);
       }
     });
 
@@ -181,11 +173,11 @@ export const FaucetComponent = () => {
     }, 1000);
 
     return () => clearInterval(timer);
-  }, [address, chainId, signer, checkCooldown, fetchTokenBalance]);
+  }, [address, chainId, signer, checkCooldown]);
 
   if (!address) {
     return (
-      <div className="bg-muted p-6 rounded-xl border border-border max-w-md mx-auto shadow-md text-center">
+      <div className="bg-muted p-6 border border-border max-w-md mx-auto shadow-md text-center">
         <p className="mb-4">Connect your wallet to access the faucet</p>
         <ConnectWallet />
       </div>
@@ -193,12 +185,12 @@ export const FaucetComponent = () => {
   }
 
   return (
-    <div className="bg-forground p-6 rounded-xl border border-border max-w-3xl w-full h-fit mx-auto shadow-md">
+    <div className="bg-forground p-6 border border-border max-w-3xl w-full h-fit mx-auto shadow-md">
       <table className="w-full">
         <thead>
           <tr className="text-left border-b border-border">
             <th className="pb-2">Token</th>
-            <th className="pb-2">Balance</th>
+            {/* <th className="pb-2">Balance</th> */}
             <th className="pb-2">Cooldown</th>
             <th className="pb-2 flex justify-center items-center">Action</th>
           </tr>
@@ -207,6 +199,7 @@ export const FaucetComponent = () => {
           {Object.entries(TOKENS).map(
             ([key, { symbol, image, addresses, faucetAddresses }]) => {
               const tokenSymbol = symbol as SupportedToken;
+
               const tokenAddress = addresses[chainId ?? 0];
               const faucetAddress = faucetAddresses[chainId ?? 0];
               if (!tokenAddress || !faucetAddress) return null;
@@ -222,26 +215,32 @@ export const FaucetComponent = () => {
                       <span>{symbol}</span>
                     </div>
                   </td>
-                  <td className="py-4">
+                  {/* <td className="py-4">
                     {userBalances[tokenSymbol]
-                      ? Number(userBalances[tokenSymbol]).toFixed(4)
+                      ? Number(userBalances[tokenSymbol]).toFixed()
                       : "0.0000"}
-                  </td>
+                  </td> */}
                   <td className="py-4">
                     {formatCooldownTime(cooldowns[tokenSymbol] || 0)}
                   </td>
                   <td className="py-4 flex items-center justify-center">
-                    <button
+                    <Button
+                      variant={"primary"}
                       onClick={() => requestTokens(tokenSymbol)}
-                      disabled={isLoading || cooldowns[tokenSymbol] > 0}
-                      className={`px-3 py-1 rounded text-white text-sm font-medium ${
-                        cooldowns[tokenSymbol] > 0 || isLoading
-                          ? "bg-gray-400 cursor-not-allowed"
-                          : "bg-blue-600 hover:bg-blue-700"
+                      disabled={
+                        loadingToken !== null || cooldowns[tokenSymbol] > 0
+                      }
+                      className={`px-3 py-1 text-white text-sm font-medium ${
+                        cooldowns[tokenSymbol] > 0 ||
+                        loadingToken === tokenSymbol
+                          ? "bg-secondary cursor-not-allowed"
+                          : "bg-primary-dark hover:bg-primary"
                       }`}
                     >
-                      {isLoading ? "Loading..." : "Get Tokens"}
-                    </button>
+                      {loadingToken === tokenSymbol
+                        ? "Loading..."
+                        : "Get Tokens"}
+                    </Button>
                   </td>
                 </tr>
               );

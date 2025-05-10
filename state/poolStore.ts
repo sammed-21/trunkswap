@@ -7,6 +7,8 @@ import { ERC20_ABI } from "@/abi/ERC20ABI";
 import { useSwapStore } from "./swapStore";
 
 import { poolData } from "@/services/pool/getPoolDetailsFunction";
+import { Prices } from "@/lib/types";
+import { usePriceStore } from "./priceStore";
 
 // correct the path if needed
 // <-- Direct call outside React component
@@ -145,7 +147,6 @@ export const usePoolStore = create<PoolState>((set, get) => ({
         totalTvl: poolTotalTVl,
       });
     } catch (error: any) {
-      console.log(error);
       // Important: Reset loading state in case of error
       set({
         isLoading: false,
@@ -160,7 +161,7 @@ export const usePoolStore = create<PoolState>((set, get) => ({
     account: string,
     factoryAddress: string
   ) => {
-    let prices = useSwapStore.getState().prices;
+    let prices = usePriceStore.getState().prices;
     if (!provider || !account || !factoryAddress || !prices) {
       set({ error: "Missing required parameters", isLoading: false });
       return;

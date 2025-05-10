@@ -1,17 +1,29 @@
 "use client";
-import { useSwapState } from "@/state/swapStore";
+import { useSwapActions, useSwapState } from "@/state/swapStore";
 import { useTheme } from "next-themes";
-import React, { useEffect, useRef, useState } from "react";
+import React, { useEffect, useMemo, useRef, useState } from "react";
 
 const unsupportedTokens = ["RSTX", "STX"]; // Add other dummy tokens here
-const fallbackToken = "BTC"; // Or use "ETH"
-
-export const TradingViewWidget = () => {
+const fallbackToken = "USDC"; // Or use "ETH"
+interface props {
+  TokenA?: string;
+  TokenB?: string;
+  chartActiveToken?: string;
+}
+export const TradingViewWidget = (props: props) => {
   const container = useRef<HTMLDivElement | null>(null);
-  const { TokenA, TokenB } = useSwapState();
+  const swapState = useSwapState();
+  const { setChartActiveToken } = useSwapActions();
   const { theme } = useTheme();
-  const [activeToken, setActiveToken] = useState<string>(TokenA);
   const [loading, setLoading] = useState<boolean>(true);
+
+  const effectiveTokens = useMemo(() => {
+    return {
+      TokenA: props.TokenA ?? swapState.TokenA,
+      TokenB: props.TokenB ?? swapState.TokenB,
+      chartActiveToken: props.chartActiveToken ?? swapState.chartActiveToken,
+    };
+  }, [props, swapState]);
 
   const getSymbol = (token: string) => {
     const tokenSymbol = token === "WETH" ? "ETH" : token;
@@ -20,7 +32,22 @@ export const TradingViewWidget = () => {
       : tokenSymbol;
   };
 
-  const fullSymbol = `${getSymbol(activeToken)}USD`;
+  const fullSymbol = `${getSymbol(effectiveTokens.chartActiveToken)}USD`;
+
+  // const container = useRef<HTMLDivElement | null>(null);
+  // const { TokenA, TokenB, chartActiveToken } = useSwapState();
+  // const { setChartActiveToken } = useSwapActions();
+  // const { theme } = useTheme();
+  // const [loading, setLoading] = useState<boolean>(true);
+  // console.log(chartActiveToken);
+  // const getSymbol = (token: string) => {
+  //   const tokenSymbol = token === "WETH" ? "ETH" : token;
+  //   return unsupportedTokens.includes(tokenSymbol)
+  //     ? fallbackToken
+  //     : tokenSymbol;
+  // };
+
+  // const fullSymbol = `${getSymbol(chartActiveToken)}USD`;
 
   useEffect(() => {
     if (!container.current) return;
@@ -48,29 +75,62 @@ export const TradingViewWidget = () => {
     });
 
     container.current.appendChild(script);
-  }, [activeToken, theme]);
+  }, [
+    effectiveTokens.chartActiveToken,
+    effectiveTokens.TokenA,
+    effectiveTokens.TokenB,
+    theme,
+  ]);
 
   return (
-    <div className="w-full h-full flex flex-col gap-2">
-      <div className="flex flex-row gap-2">
-        {[TokenA, TokenB].map((token) => (
-          <span
-            key={token}
-            className={`p-2   cursor-pointer transition ${
-              activeToken === token
-                ? "bg-primary text-white"
-                : "bg-gray-200 dark:bg-forground text-black dark:text-white"
-            }`}
-            onClick={() => setActiveToken(token)}
-          >
-            {token}
-          </span>
-        ))}
+    <div className="w-full h-full flex flex-col ">
+      {/* <div className="flex py-3 px-4 border-t-[1px] border-x-[1px] border-border bg-forground flex-row gap-2">
+        <span
+          key={effectiveTokens.TokenA}
+          className={`p-2   cursor-pointer transition ${
+            effectiveTokens.chartActiveToken === effectiveTokens.TokenA
+              ? "bg-primary text-white"
+              : "bg-accent text-white border-bordder rounded-none"
+          }`}
+          onClick={() => setChartActiveToken(effectiveTokens.TokenA)}
+        >
+          {effectiveTokens.TokenA}
+        </span>
+        <span
+          key={effectiveTokens.TokenB}
+          className={`p-2   cursor-pointer transition ${
+            effectiveTokens.chartActiveToken === effectiveTokens.TokenB
+              ? "bg-primary text-white"
+              : "bg-accent text-white border-bordder rounded-none"
+          }`}
+          onClick={() => setChartActiveToken(effectiveTokens.TokenB)}
+        >
+          {effectiveTokens.TokenB}
+        </span>
+      </div> */}
+      <div className="flex py-3 px-4 border-t-[1px] border-x-[1px] border-border bg-forground gap-2">
+        {[effectiveTokens.TokenA, effectiveTokens.TokenB].map((tokenSymbol) => {
+          const isActive = effectiveTokens.chartActiveToken === tokenSymbol;
+
+          return (
+            <span
+              key={tokenSymbol}
+              className={`p-2 cursor-pointer transition border-[1px] ${
+                isActive
+                  ? "bg-primary text-white border-primary"
+                  : "bg-transparent text-white border-border"
+              }`}
+              onClick={() => setChartActiveToken(tokenSymbol)}
+            >
+              {tokenSymbol}
+            </span>
+          );
+        })}
       </div>
 
       {/* Loader while chart is loading */}
       {loading && (
-        <div className="flex items-center justify-center h-64">
+        <div className="flex items-center h-full  border-x-[1px] border-border border-b-[1px] justify-center ">
           <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary" />
         </div>
       )}

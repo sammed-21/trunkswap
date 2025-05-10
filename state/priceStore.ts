@@ -39,6 +39,7 @@ export interface PriceActions {
   getUSDValueSync: (amount: number | string, symbol: Symbol | string) => number;
   formatUSD: (value: number) => string;
   getTokenUSDPrice: (symbol: Symbol | string) => number;
+  setPrices: (prices: Prices) => void;
 }
 
 // Combined store type
@@ -46,11 +47,11 @@ export type PriceStore = PriceState & PriceActions;
 
 // Constants
 const DEFAULT_PRICES: Record<string, number> = {
-  STX_USD: 1.0, // Assuming STX is a stablecoin at $1
-  RSTX_USD: 1.0, // Assuming rSTX is also pegged at $1
+  STX_USD: 1.0,
+  RSTX_USD: 1.0,
 };
 
-const UPDATE_INTERVAL = 60000; // 1 minute in milliseconds
+const UPDATE_INTERVAL = 5000; // 1 minute in milliseconds
 
 const PRICE_FEED_ABI = [
   {
@@ -91,12 +92,7 @@ const CHAINLINK_FEEDS: PriceFeedsByChain = {
 // Create the store
 export const usePriceStore = create<PriceState & PriceActions>((set, get) => ({
   // State
-  prices: {
-    ETH_USD: 0,
-    USDC_USD: 0,
-    STX_USD: DEFAULT_PRICES.STX_USD,
-    RSTX_USD: DEFAULT_PRICES.RSTX_USD,
-  },
+  prices: {},
   fetchPriceFlag: false,
   lastUpdated: 0,
   feeds: {},
@@ -115,6 +111,14 @@ export const usePriceStore = create<PriceState & PriceActions>((set, get) => ({
         console.warn(`No Chainlink feeds configured for chainId ${chainId}`);
         return;
       }
+      let initialPrices: Record<string, number> = {};
+
+      if (chainId === 421614) {
+        initialPrices = {
+          // Only keep prices that are valid for this chain
+          ...DEFAULT_PRICES,
+        };
+      }
 
       const chainFeeds = CHAINLINK_FEEDS[chainId];
 
@@ -130,11 +134,7 @@ export const usePriceStore = create<PriceState & PriceActions>((set, get) => ({
 
       set({
         feeds,
-        prices: {
-          ...get().prices,
-          STX_USD: DEFAULT_PRICES.STX_USD,
-          RSTX_USD: DEFAULT_PRICES.RSTX_USD,
-        },
+        prices: initialPrices,
         fetchPriceFlag: false,
       });
 
@@ -152,14 +152,14 @@ export const usePriceStore = create<PriceState & PriceActions>((set, get) => ({
     const now = Date.now();
 
     // Return cached prices if updated recently and not forcing update
-    if (now - lastUpdated < UPDATE_INTERVAL && !isLoading) {
-      return prices;
-    }
+    // if (now - lastUpdated < UPDATE_INTERVAL && !isLoading) {
+    //   return prices;
+    // }
 
     // If already loading, just return current prices
-    if (isLoading) {
-      return prices;
-    }
+    // if (isLoading) {
+    //   return prices;
+    // }
 
     set({ isLoading: true });
 
@@ -192,6 +192,7 @@ export const usePriceStore = create<PriceState & PriceActions>((set, get) => ({
       );
 
       const updatedPrices = await Promise.allSettled(pricePromises);
+
       const newPrices = { ...prices };
 
       updatedPrices.forEach((result) => {
@@ -201,7 +202,9 @@ export const usePriceStore = create<PriceState & PriceActions>((set, get) => ({
         }
       });
 
+      get().setPrices(newPrices);
       set({ prices: newPrices, lastUpdated: now });
+
       return newPrices;
     } catch (error) {
       console.error("Failed to update prices:", error);
@@ -220,13 +223,14 @@ export const usePriceStore = create<PriceState & PriceActions>((set, get) => ({
 
     const numAmount = typeof amount === "string" ? parseFloat(amount) : amount;
     if (isNaN(numAmount)) return 0;
-    const { prices, updatePrices } = get();
+    // const { prices, updatePrices } = get();
+    let prices = get().prices;
+    let updatePrices = get().updatePrices;
 
     // Force update prices if requested or if we don't have prices yet
     if (forceUpdate || prices.ETH_USD === 0 || prices.USDC_USD === 0) {
-      await updatePrices();
+      prices = await updatePrices();
     }
-
     switch (symbol.toUpperCase() as Symbol) {
       case "ETH":
       case "WETH":
@@ -298,6 +302,8 @@ export const usePriceStore = create<PriceState & PriceActions>((set, get) => ({
         return 0;
     }
   },
+
+  setPrices: (prices: Prices) => set({ prices }),
 }));
 
 // Selector hooks with optimized re-renders
@@ -322,6 +328,7 @@ export const usePriceActions = () =>
       getUSDValueSync: state.getUSDValueSync,
       formatUSD: state.formatUSD,
       getTokenUSDPrice: state.getTokenUSDPrice,
+      setPrices: state.setPrices,
     }))
   );
 

@@ -22,13 +22,14 @@ interface UsePriceFeedReturn {
 
 export function usePriceFeed(): UsePriceFeedReturn {
   const { provider, chainId: chain } = useAccountState();
-  const { initializePriceFeed, formatUSD, updatePrices } = usePriceActions();
+  const { initializePriceFeed, formatUSD, updatePrices, setPrices } =
+    usePriceActions();
 
   // Initialize price feeds on component mount or when provider/chainId changes
 
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [lastUpdated, setLastUpdated] = useState<Date | null>(null);
-  const { setPrices } = useSwapActions();
+
   const { TokenAAmount } = useSwapState();
 
   // Initialize price feeds when provider and chain are available
@@ -58,7 +59,6 @@ export function usePriceFeed(): UsePriceFeedReturn {
     const intervalId = setInterval(async () => {
       try {
         const prices = await updatePrices();
-
         setPrices(prices as unknown as Prices);
 
         setLastUpdated(new Date());
