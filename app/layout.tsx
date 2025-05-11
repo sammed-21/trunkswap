@@ -7,8 +7,7 @@ import "@rainbow-me/rainbowkit/styles.css";
 import NextTopLoader from "nextjs-toploader";
 import { Toaster } from "react-hot-toast";
 import { ThemeProvider } from "@/components/ui/theme-provider";
-import GoogleAnalytics from "@/components/Common/GoogleAnalytics";
-
+import { GoogleAnalytics } from "@next/third-parties/google";
 const geistSans = localFont({
   src: "./fonts/GeistVF.woff",
   variable: "--font-geist-sans",
@@ -24,6 +23,8 @@ export const metadata: Metadata = {
   title: "Exchange | TrunkSwap",
   description: "trunkswap.vercel.app/",
 };
+
+const MEASUREMENT_ID = process.env.MEASUREMENT_ID;
 
 export default function RootLayout({
   children,
@@ -67,12 +68,7 @@ export default function RootLayout({
             </Providers>
           </div>
         </ThemeProvider>
-        {process.env.NEXT_PUBLIC_GOOGLE_ANALYTICS_ID &&
-          process.env.NODE_ENV === "production" && (
-            <GoogleAnalytics
-              GA_MEASUREMENT_ID={process.env.NEXT_PUBLIC_GOOGLE_ANALYTICS_ID!}
-            />
-          )}
+        <GoogleAnalytics gaId={MEASUREMENT_ID!} />
       </body>
     </html>
   );

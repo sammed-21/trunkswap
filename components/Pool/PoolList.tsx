@@ -4,30 +4,43 @@ import React, { useState } from "react";
 import { PoolRow, PoolRowHeading } from "./PoolRow";
 import { Button } from "../ui/Button";
 import { IoMdAdd } from "react-icons/io";
+import { Pool, useLiquidityStore } from "@/state/liquidityStore";
+import { Skeleton } from "../ui/skeleton";
 
 export const PoolList = () => {
-  const { poolData, isLoading } = usePoolState();
+  // const { pools, isLoading } = usePoolState();
+  const {
+    pools,
+    fetchPools,
+    isLoadingPools,
+    error: poolsError,
+    setSelectedPool,
+  } = useLiquidityStore();
   const [searchQuery, setSearchQuery] = useState<string>("");
 
-  if (!poolData?.length)
+  if (!pools?.length)
     return (
       <>
         <PoolRowHeading />
-        <p className="text-center py-10">No pools found.</p>
+        <div className="flex flex-col gap-2">
+          {[0, 1].map((p, key) => (
+            <div key={key}>
+              <Skeleton className="h-[60px] w-full bg-forground" />
+            </div>
+          ))}
+        </div>
       </>
     );
 
-  const filteredTokens = poolData.filter(
-    (poolData) =>
-      poolData.token0.symbol
-        .toLowerCase()
-        .includes(searchQuery.toLowerCase()) ||
-      poolData.token1.symbol.toLowerCase().includes(searchQuery.toLowerCase())
+  const filteredTokens = pools.filter(
+    (pools: Pool) =>
+      pools.token0.symbol.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      pools.token1.symbol.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
   return (
     <div className="space-y-2 w-full">
-      {isLoading ? (
+      {isLoadingPools ? (
         <div>this page is loading</div>
       ) : (
         <div className="w-full ">
@@ -57,7 +70,11 @@ export const PoolList = () => {
             ) : (
               filteredTokens.map((p, key) => (
                 <div key={key}>
-                  <PoolRow key={p.pairAddress} pool={p} />
+                  <PoolRow
+                    key={p.pairAddress}
+                    pool={p}
+                    setSelectedPool={setSelectedPool}
+                  />
                 </div>
               ))
             )}

@@ -52,3 +52,17 @@ export const formatPercentage = (userLp: string, total: string): string => {
   const percentage = (user / supply) * 100;
   return `${percentage.toFixed(2)}%`;
 };
+
+export function formatCurrency(
+  value: number,
+  currency: string = "USD",
+  locale: string = "en-US"
+): string {
+  if (isNaN(value)) return "$0.00";
+  return new Intl.NumberFormat(locale, {
+    style: "currency",
+    currency,
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2,
+  }).format(value);
+}

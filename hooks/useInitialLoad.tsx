@@ -5,6 +5,7 @@ import { usePriceFeed } from "@/hooks/usePriceFeed";
 import { FACTORY_ADDRESS } from "@/lib/constants";
 import { getProvider } from "@/services/getProvider";
 import { useAccountState } from "@/state/accountStore";
+import { useLiquidityActions } from "@/state/liquidityStore";
 import { usePoolActions } from "@/state/poolStore";
 import { usePriceState } from "@/state/priceStore";
 import { useSwapActions, useSwapState } from "@/state/swapStore";
@@ -15,7 +16,7 @@ import { useAccount, useChainId } from "wagmi";
 export const useInitialLoad = () => {
   const { address, isConnected } = useAccount();
   const chainId = useChainId();
-  const { fetchUserPositions, fetchPoolData } = usePoolActions();
+  const { fetchPools } = useLiquidityActions();
 
   const { updateTokenBalances, fetchAllTokens } = useSwapActions();
 
@@ -24,12 +25,12 @@ export const useInitialLoad = () => {
 
   useEffect(() => {
     if (!provider || !chainId) return;
-    fetchPoolData(provider, FACTORY_ADDRESS(chainId));
+    fetchPools(provider);
   }, [provider, chainId, fetchPriceFlag]);
 
   useEffect(() => {
     if (isConnected && provider && address) {
-      fetchUserPositions(provider, address, FACTORY_ADDRESS(chainId));
+      // (provider, address, FACTORY_ADDRESS(chainId));
       fetchAllTokens(address, provider);
       updateTokenBalances(address, provider);
     }

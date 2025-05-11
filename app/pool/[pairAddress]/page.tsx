@@ -70,7 +70,6 @@ export default function PoolDetailPage({ params }: PoolDetailPageProps) {
         } else {
           // Otherwise fetch the pool details
           const poolDetails = await fetchPoolDetails(provider, pairAddress);
-
           if (poolDetails) {
             setPool(poolDetails);
             setSelectedPool(poolDetails);
@@ -155,7 +154,6 @@ export default function PoolDetailPage({ params }: PoolDetailPageProps) {
 
   const expectedReturns = getExpectedReturns();
   // Format address for display
-
   return (
     <div className="flex flex-col gap-4  mb-10 w-full mx-auto justify-center items-start ">
       <div className=" flex items-center  max-w-[1440px] py-6  w-full justify-start mx-auto  ">
@@ -258,7 +256,9 @@ export default function PoolDetailPage({ params }: PoolDetailPageProps) {
                         </div>
                       </div>
                       <div className="flex justify-between">
-                        <span className="text-gray-500">Current Price:</span>
+                        <span className="text-gray-500">
+                          Current Pool Price:
+                        </span>
                         <div className="text-right">
                           <div>{`1 ${pool.token0.symbol} = ${parseFloat(
                             pool.token1Price

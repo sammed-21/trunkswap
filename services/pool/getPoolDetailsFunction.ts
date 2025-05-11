@@ -114,5 +114,5 @@ export const getTVLForPool = async (
   const value0 = await usePriceStore.getState().getUSDValue(reserve0, symbol0);
   const value1 = await usePriceStore.getState().getUSDValue(reserve1, symbol1);
 
-  return value0 + value1;
+  return Number(value0) + Number(value1);
 };
