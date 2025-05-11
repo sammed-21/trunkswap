@@ -7,7 +7,7 @@ import "@rainbow-me/rainbowkit/styles.css";
 import NextTopLoader from "nextjs-toploader";
 import { Toaster } from "react-hot-toast";
 import { ThemeProvider } from "@/components/ui/theme-provider";
-import GoogleAnalytics from "@/services/GoogleAnalytics";
+import { GoogleAnalytics } from "@next/third-parties/google";
 const geistSans = localFont({
   src: "./fonts/GeistVF.woff",
   variable: "--font-geist-sans",
@@ -33,6 +33,8 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
+      <GoogleAnalytics gaId={MEASUREMENT_ID!} />
+
       <body
         className={`${geistSans.variable} ${geistMono.variable} w-full flex items-center justify-center relative h-full  antialiased`}
       >
@@ -69,7 +71,6 @@ export default function RootLayout({
           </div>
         </ThemeProvider>
       </body>
-      <GoogleAnalytics GA_MEASUREMENT_ID={MEASUREMENT_ID!} />
     </html>
   );
 }
