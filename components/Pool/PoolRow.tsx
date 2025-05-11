@@ -2,18 +2,23 @@
 "use client";
 import { formatDigits, shortenAddress } from "@/lib/utils";
 import { formatUSD } from "@/services/priceFeed";
+import { Pool } from "@/state/liquidityStore";
 import { PoolDetails } from "@/state/poolStore";
+import { parseEther } from "ethers";
 import Image from "next/image";
 import Link from "next/link";
 import { formatEther } from "viem";
+import { Button } from "../ui/Button";
 
 interface RowProps {
-  pool: PoolDetails;
+  pool: Pool;
+  setSelectedPool: (pool: Pool | null) => void;
 }
 
-export const PoolRow = ({ pool }: RowProps) => {
+export const PoolRow = ({ pool, setSelectedPool }: RowProps) => {
   return (
     <div
+      onClick={() => setSelectedPool(pool)}
       // href={`/pool/${pool.pairAddress}`}
       className="grid grid-cols-6 w-full items-center justify-between px-4 bg-forground  border-[1px] border-border  py-3 hover:bg-zinc-100 dark:hover:bg-zinc-800 transition p-4"
     >
@@ -54,15 +59,19 @@ export const PoolRow = ({ pool }: RowProps) => {
 
       <div className="flex gap-6 justify-around   text-lg col-span-2">
         <span>
-          {formatDigits(pool.reserve0)} {pool.token0.symbol}
+          {formatDigits(pool.reserves0)} {pool.token0.symbol}
         </span>
         <span>
-          {formatDigits(pool.reserve1)} {pool.token1.symbol}
+          {formatDigits(pool.reserves1)} {pool.token1.symbol}
         </span>
       </div>
-      <span className="  flex items-center justify-center col-span-1  md:flex">
-        &nbsp; {formatEther(pool.totalSupply)}
-      </span>
+      {/* <div className="flex gap-3 ">
+        <Button variant={"primary"}>+</Button>
+        <Button variant={"primary"}>Swap</Button>
+      </div> */}
+      {/* <span className="  flex items-center justify-center col-span-1  md:flex">
+        &nbsp; {pool.totalSupply}
+      </span> */}
     </div>
   );
 };
@@ -82,10 +91,6 @@ export const PoolRowHeading = () => {
       </span>
       <span className="col-start-5 col-span-1 col-end-5 items-center flex justify-center w-full ">
         Token B
-      </span>
-
-      <span className="flex col-span-1 items-center justify-center">
-        Total Supply
       </span>
     </div>
   );

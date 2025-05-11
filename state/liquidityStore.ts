@@ -1,7 +1,7 @@
 /// start new zustand store
 
 import { create } from "zustand";
-import { ethers } from "ethers";
+import { ethers, formatEther } from "ethers";
 import { persist } from "zustand/middleware";
 import { formatUnits, parseUnits } from "ethers";
 
@@ -12,6 +12,7 @@ import { ROUTER_ABI } from "@/abi/ROUTER_ABI";
 import { FACTORY_ABI } from "@/abi/FACTORY_ABI";
 import { useAccountState, useAccountStore } from "./accountStore";
 import { useShallow } from "zustand/shallow";
+import { getTVLForPool } from "@/services/pool/getPoolDetailsFunction";
 
 // Types
 export interface Token {
@@ -32,6 +33,7 @@ export interface Pool {
   userLpBalance?: string;
   token0Price: string;
   token1Price: string;
+  tvl: number;
 }
 
 export interface LiquidityState {
@@ -46,7 +48,8 @@ export interface LiquidityState {
   percentToRemove: number;
   isLoading: boolean;
   error: string | null;
-
+  totalPool: number;
+  totalTvl: number;
   // Contract addresses
   factoryAddress: string;
   routerAddress: string;
@@ -113,6 +116,8 @@ export const useLiquidityStore = create<LiquidityState & LiquidityActions>(
     percentToRemove: 0,
     isLoading: false,
     error: null,
+    totalPool: 0,
+    totalTvl: 0,
 
     factoryAddress: FACTORY_ADDRES,
     routerAddress: ROUTER_ADDRES,
@@ -171,7 +176,7 @@ export const useLiquidityStore = create<LiquidityState & LiquidityActions>(
         const pairCount = await factoryContract.allPairsLength();
         const poolsPromises = [];
 
-        for (let i = 0; i < pairCount.toNumber(); i++) {
+        for (let i = 0; i < Number(pairCount); i++) {
           poolsPromises.push(
             (async () => {
               try {
@@ -192,7 +197,16 @@ export const useLiquidityStore = create<LiquidityState & LiquidityActions>(
         const pools = (await Promise.all(poolsPromises)).filter(
           (pool): pool is Pool => pool !== null
         );
-        set({ pools, isLoadingPools: false });
+
+        const poolTotalTVl = pools?.reduce((acc: number, item: Pool) => {
+          return acc + item.tvl;
+        }, 0);
+        set({
+          totalPool: pairCount,
+          totalTvl: poolTotalTVl,
+          pools,
+          isLoadingPools: false,
+        });
       } catch (error) {
         console.error("Error fetching pools:", error);
         set({
@@ -200,14 +214,14 @@ export const useLiquidityStore = create<LiquidityState & LiquidityActions>(
             "Failed to load pools. Please check your connection and try again.",
           isLoadingPools: false,
         });
+      } finally {
+        set({ isLoadingPools: false });
       }
     },
 
     // Fetch details for a specific pool
     fetchPoolDetails: async (provider, pairAddress) => {
       try {
-        const userAddress = useAccountStore?.getState().signer;
-
         const pairContract = new ethers.Contract(
           pairAddress,
           PAIR_ABI,
@@ -253,10 +267,10 @@ export const useLiquidityStore = create<LiquidityState & LiquidityActions>(
         // Get user's LP balance
         let userLpBalance;
         let formatedUserLpBalance;
-        if (userAddress) {
-          userLpBalance = await pairContract?.balanceOf(userAddress);
-          formatedUserLpBalance = formatUnits(userLpBalance, 18);
-        }
+        // if (userAddress) {
+        //   userLpBalance = await pairContract?.balanceOf(userAddress);
+        //   formatedUserLpBalance = formatUnits(userLpBalance, 18);
+        // }
 
         // Create token objects
         const token0: Token = {
@@ -272,21 +286,31 @@ export const useLiquidityStore = create<LiquidityState & LiquidityActions>(
           name: token1Name,
           decimals: token1Decimals,
         };
+        let reserve0 = reserves[0];
+        let reserve1 = reserves[1];
+        reserve0 = formatUnits(reserve0, token0Decimals);
+        reserve1 = formatUnits(reserve1, token1Decimals);
+        let tvl = await getTVLForPool(
+          reserve0,
+          token0Symbol,
+          reserve1,
+          token1Symbol
+        );
 
         // Calculate prices from reserves
-        const reserve0 = reserves[0];
-        const reserve1 = reserves[1];
         const token1Price =
           reserve1 > 0
             ? formatUnits(
-                (reserve0 * ethers.parseUnits("1", token1Decimals)) / reserve1,
+                (reserves[0] * ethers.parseUnits("1", token1Decimals)) /
+                  reserves[1],
                 token0Decimals
               )
             : "0";
         const token0Price =
           reserve0 > 0
             ? formatUnits(
-                (reserve1 * ethers.parseUnits("1", token0Decimals)) / reserve0,
+                (reserves[1] * ethers.parseUnits("1", token0Decimals)) /
+                  reserves[0],
                 token1Decimals
               )
             : "0";
@@ -295,12 +319,13 @@ export const useLiquidityStore = create<LiquidityState & LiquidityActions>(
           pairAddress,
           token0,
           token1,
-          reserves0: formatUnits(reserve0, token0Decimals),
-          reserves1: formatUnits(reserve1, token1Decimals),
-          totalSupply: formatUnits(totalSupply, 18),
-          userLpBalance: formatedUserLpBalance,
+          reserves0: reserve0,
+          reserves1: reserve1,
+          totalSupply: totalSupply,
+          // userLpBalance: formatedUserLpBalance,
           token0Price,
           token1Price,
+          tvl,
         };
       } catch (error) {
         console.error("Error fetching pool details:", error);
@@ -903,6 +928,8 @@ export const useLiqudityState = () =>
       isLoadingPools: state.isLoadingPools,
       isAddingLiquidity: state.isAddingLiquidity,
       isRemovingLiquidity: state.isRemovingLiquidity,
+      totalPool: state.totalPool,
+      totalTvl: state.totalTvl,
     }))
   );
 
