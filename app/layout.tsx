@@ -24,7 +24,7 @@ export const metadata: Metadata = {
   description: "trunkswap.vercel.app/",
 };
 
-const MEASUREMENT_ID = process.env.MEASUREMENT_ID;
+const NEXT_PUBLIC_MEASUREMENT_ID = process.env.NEXT_PUBLIC_MEASUREMENT_ID;
 
 export default function RootLayout({
   children,
@@ -33,7 +33,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <GoogleAnalytics gaId={MEASUREMENT_ID!} />
+      <GoogleAnalytics gaId={NEXT_PUBLIC_MEASUREMENT_ID!} />
 
       <body
         className={`${geistSans.variable} ${geistMono.variable} w-full flex items-center justify-center relative h-full  antialiased`}
