@@ -24,7 +24,7 @@ export const metadata: Metadata = {
   description: "trunkswap.vercel.app/",
 };
 
-const NEXT_PUBLIC_MEASUREMENT_ID = process.env.MEASURNEXT_PUBLIC_MEASUREMENT_IDEMENT_ID;
+const NEXT_PUBLIC_MEASUREMENT_ID = process.env.NEXT_PUBLIC_MEASUREMENT_ID;
 
 export default function RootLayout({
   children,
