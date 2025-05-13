@@ -4,11 +4,12 @@ import { useSwapActions, useSwapState } from "@/state/swapStore";
 import { DefaultSlippage } from "@/lib/constants";
 import { ToolTipComponent } from "../Common/ToolTipComponent";
 
-type Props = {};
+type Props = {
+  slippage: any;
+  setSlippage: (value: number) => void;
+};
 
-export const SlippageTolerance = (props: Props) => {
-  const { slippage } = useSwapState();
-  const { setSlippage } = useSwapActions();
+export const SlippageTolerance = ({ slippage, setSlippage }: Props) => {
   const [customSlippage, setCustomSlippage] = useState<string | number>(
     slippage
   );

@@ -1,3 +1,4 @@
+ 
 import type { Metadata } from "next";
 import localFont from "next/font/local";
 import "./globals.css";
@@ -8,6 +9,10 @@ import NextTopLoader from "nextjs-toploader";
 import { Toaster } from "react-hot-toast";
 import { ThemeProvider } from "@/components/ui/theme-provider";
 import { GoogleAnalytics } from "@next/third-parties/google";
+import React from "react";
+import { LoadingScreen } from "@/components/Common/LoadingScreen";
+import { useRouter } from "next/router";
+ 
 const geistSans = localFont({
   src: "./fonts/GeistVF.woff",
   variable: "--font-geist-sans",
@@ -32,6 +37,7 @@ export default function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+ 
   return (
     <html lang="en">
       {NODE_ENV !=="development" && 
@@ -49,6 +55,8 @@ export default function RootLayout({
         >
           <div className="w-full  h-full relative">
             <Providers>
+         
+       
               {/* <div className="absolute top-0 bottom-0 left-0 bg-[#0d53bb] light:bg-[#0d53bb]/20 rounded-none blur-[300px] w-[22rem] h-[32rem] -z-10"></div> */}
               <Navbar />
               {children}
@@ -70,6 +78,7 @@ export default function RootLayout({
                 showAtBottom={false}
               />
               <Toaster />
+       
             </Providers>
           </div>
         </ThemeProvider>

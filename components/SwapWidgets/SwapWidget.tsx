@@ -1,6 +1,6 @@
 "use client";
 import { useSwapActions, useSwapState } from "@/state/swapStore";
-import React, { useCallback, useState } from "react";
+import React, { useCallback, useEffect, useState } from "react";
 import { Button } from "../ui/Button";
 import AmountInput from "./AmountInput";
 import { useAccount, useCall } from "wagmi";
@@ -15,10 +15,14 @@ import TokenConversion from "@/services/TokenConversion";
 import { usePriceState } from "@/state/priceStore";
 import { Skeleton } from "../ui/skeleton";
 import { FaChartLine } from "react-icons/fa6";
+import { useRouter, useSearchParams } from "next/navigation";
+import { Token } from "@/lib/types";
 
 type Props = {};
 
 export const SwapWidget = (props: Props) => {
+  const router = useRouter();
+  const searchParams = useSearchParams();
   const {
     needsApproval,
     isApproving,
@@ -70,12 +74,13 @@ export const SwapWidget = (props: Props) => {
     setCurrentSellAsset,
     setCurrentBuyAsset,
     setTradeDirection,
+    setDeadline,
     setTokenABalance,
     setTokenBBalance,
     setTokenBUsdValue,
-    fetchTokenBalances,
     setTokenAUsdValue,
     setTokenAUsdPrice,
+    setSlippage,
     setTokenBUsdPrice,
     setChartFlag,
     setChartActiveToken,
@@ -97,9 +102,55 @@ export const SwapWidget = (props: Props) => {
     setCurrentSellAsset(currentBuyAsset);
     setCurrentBuyAsset(currentSellAsset);
     resetSwapState();
+
+    const urlParams = new URLSearchParams();
+    urlParams.set("currencyIn", currentSellAsset.address);
+    urlParams.set("currencyOut", currentBuyAsset.address);
+    router.push(`/swap?${urlParams.toString()}`, { scroll: false });
   };
 
   // Optional: if you have ETH price fetched from CoinGecko
+
+  const findTokenByAddress = (address: string) => {
+    if (!address) return;
+    // Convert address to lowercase for case-insensitive comparison
+    const normalizedAddress = address.toLowerCase();
+    return tokens.find(
+      (token) => token.address.toLowerCase() === normalizedAddress
+    );
+  };
+
+  // Handle URL parameters on component mount
+  useEffect(() => {
+    const tokenIn =
+      searchParams.get("currencyIn") || searchParams.get("tokenIn");
+    const tokenOut =
+      searchParams.get("currencyOut") || searchParams.get("tokenOut");
+
+    // If we have parameters, update the state
+    if (tokenIn || tokenOut) {
+      if (tokenIn) {
+        const foundToken = findTokenByAddress(tokenIn);
+        console.log(foundToken);
+        if (foundToken) {
+          setTokenA(foundToken.symbol);
+          setCurrentSellAsset(foundToken);
+          setChartActiveToken(foundToken.symbol.toUpperCase());
+        }
+      }
+
+      if (tokenOut) {
+        const foundToken = findTokenByAddress(tokenOut);
+        console.log({ foundToken });
+        if (foundToken) {
+          setTokenB(foundToken.symbol);
+          setCurrentBuyAsset(foundToken);
+        }
+      }
+    }
+    // Only run once on component mount
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   const getButtonProps = () => {
     if (!isConnected) {
@@ -161,7 +212,11 @@ export const SwapWidget = (props: Props) => {
                 : "bg-forground p-1 text-white"
             } cursor-pointer`}
           />
-          <SlippageModal />
+          <SlippageModal
+            setDeadline={setDeadline}
+            setSlippage={setSlippage}
+            slippage={slippage}
+          />
         </div>
       </div>
       <div className="  col-span-2 max-w-[448px] w-full  ">

@@ -15,7 +15,6 @@ export default function GoogleAnalytics({
 }: {
   GA_MEASUREMENT_ID: string;
 }) {
-  console.log(GA_MEASUREMENT_ID);
   const pathname = usePathname();
   // SearchParams is a client side function.
   const searchParams = useSearchParams();

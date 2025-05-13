@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import TokenSelector from "./TokenSelector"; // Import the TokenSelector component
 import dropdown from "@/public/dropdown.svg";
 import Image from "next/image";
-import { TokenDetail } from "@/lib/types";
+import { Token, TokenDetail } from "@/lib/types";
 import { useAccount } from "wagmi";
 import { Skeleton } from "../ui/skeleton";
 import { formatUSD } from "@/services/priceFeed";
@@ -13,11 +13,11 @@ interface AmountInputProps {
   token: string;
   Amount: string | number;
   walletBalanceAsset: string;
-  currentTokenAsset: TokenDetail;
+  currentTokenAsset: Token;
   setAmount: (amount: string) => void;
   setToken: (token: string) => void;
   loadingBalances: boolean;
-  setCurrentTokenDetal: (token: TokenDetail) => void;
+  setCurrentTokenDetal: (token: Token) => void;
   isLoading?: boolean;
   readOnly?: boolean;
   tokenUsdValue: any;
@@ -124,7 +124,7 @@ const AmountInput: React.FC<AmountInputProps> = ({
               onClick={() => setSelectorOpen(true)}
             >
               <Image
-                src={currentTokenAsset?.logoURI}
+                src={currentTokenAsset?.logoURI!}
                 width={20}
                 height={20}
                 alt={"image"}

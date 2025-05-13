@@ -69,7 +69,11 @@ export default function PoolDetailPage({ params }: PoolDetailPageProps) {
           setPool(selectedPool);
         } else {
           // Otherwise fetch the pool details
-          const poolDetails = await fetchPoolDetails(provider, pairAddress);
+          const poolDetails = await fetchPoolDetails(
+            provider,
+            pairAddress,
+            chainId
+          );
           if (poolDetails) {
             setPool(poolDetails);
             setSelectedPool(poolDetails);
@@ -108,7 +112,11 @@ export default function PoolDetailPage({ params }: PoolDetailPageProps) {
 
       if (txHash) {
         // Refresh pool details
-        const updatedPool = await fetchPoolDetails(provider, pairAddress);
+        const updatedPool = await fetchPoolDetails(
+          provider,
+          pairAddress,
+          chainId
+        );
         if (updatedPool) {
           setPool(updatedPool);
           setSelectedPool(updatedPool);

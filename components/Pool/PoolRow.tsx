@@ -9,17 +9,22 @@ import Image from "next/image";
 import Link from "next/link";
 import { formatEther } from "viem";
 import { Button } from "../ui/Button";
+import { useRouter } from "next/navigation";
 
 interface RowProps {
   pool: Pool;
-  setSelectedPool: (pool: Pool | null) => void;
+  handleAddLiqudity: (pool: Pool) => void;
 }
 
-export const PoolRow = ({ pool, setSelectedPool }: RowProps) => {
+export const PoolRow = ({
+  pool,
+
+  handleAddLiqudity,
+}: RowProps) => {
+  const router = useRouter();
   return (
     <div
-      onClick={() => setSelectedPool(pool)}
-      // href={`/pool/${pool.pairAddress}`}
+      onClick={() => router.push(`/pool/${pool.pairAddress!}`)}
       className="grid grid-cols-6 w-full items-center justify-between px-4 bg-forground  border-[1px] border-border  py-3 hover:bg-zinc-100 dark:hover:bg-zinc-800 transition p-4"
     >
       <div className="flex   col-span-2 items-center gap-5">
@@ -65,10 +70,28 @@ export const PoolRow = ({ pool, setSelectedPool }: RowProps) => {
           {formatDigits(pool.reserves1)} {pool.token1.symbol}
         </span>
       </div>
-      {/* <div className="flex gap-3 ">
-        <Button variant={"primary"}>+</Button>
-        <Button variant={"primary"}>Swap</Button>
-      </div> */}
+      <div className="flex gap-3 ">
+        <Button
+          onClick={(e) => {
+            e.stopPropagation();
+            handleAddLiqudity(pool);
+          }}
+          variant={"primary"}
+        >
+          +
+        </Button>
+        <Button
+          onClick={(e) => {
+            e.stopPropagation();
+            router.push(
+              `/swap?currencyIn=${pool.token0.address}&currencyOut=${pool.token1.address}`
+            );
+          }}
+          variant={"primary"}
+        >
+          Swap
+        </Button>
+      </div>
       {/* <span className="  flex items-center justify-center col-span-1  md:flex">
         &nbsp; {pool.totalSupply}
       </span> */}

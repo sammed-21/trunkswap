@@ -2,11 +2,11 @@ import React, { useState } from "react";
 import { ToolTipComponent } from "../Common/ToolTipComponent";
 
 import { useSwapActions, useSwapState } from "@/state/swapStore";
-type Props = {};
+type Props = {
+  setDeadline: (deadline: number) => void;
+};
 
-export const DeadlineComponent = (props: Props) => {
-  const { deadline } = useSwapState();
-  const { setDeadline } = useSwapActions();
+export const DeadlineComponent = ({ setDeadline }: Props) => {
   const [deadlineCustom, setDeadlineCustom] = useState<any>(20);
 
   const handleCustomChange = (e: React.ChangeEvent<HTMLInputElement>) => {

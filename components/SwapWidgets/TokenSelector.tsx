@@ -1,8 +1,9 @@
 import React, { useEffect, useState } from "react";
-import { Token } from "@/lib/types";
+
 import { useSwapState } from "@/state/swapStore";
 import { useAccountState } from "@/state/accountStore";
 import Image from "next/image";
+import { Token } from "@/lib/types";
 
 interface TokenSelectorProps {
   onSelect: (token: Token) => void;
@@ -102,7 +103,7 @@ const TokenSelector: React.FC<TokenSelectorProps> = ({
                 >
                   <div className="flex  items-center">
                     <Image
-                      src={token.logoURI}
+                      src={token.logoURI!}
                       alt={token.name}
                       width={20}
                       height={20}

@@ -55,8 +55,8 @@ export interface SwapState {
   tradeDirection: "sell" | "buy";
   tokens: Token[];
   TokenAAmount: string;
-  currentSellAsset: TokenDetail;
-  currentBuyAsset: TokenDetail;
+  currentSellAsset: Token;
+  currentBuyAsset: Token;
   selectorOpen: Boolean;
   slippage: number | string | any;
   deadline: number;
@@ -88,11 +88,11 @@ export interface SwapState {
 }
 export interface Token {
   name: string;
-  address: Address;
+  address: string;
   symbol: string;
   decimals: number;
   chainId: number;
-  logoURI: string;
+  logoURI?: string;
   balance?: string;
   usdValue?: number;
 }
@@ -105,8 +105,8 @@ export interface SwapActions {
   setSelectorOpen: (isOpen: Boolean) => void;
   setTradeDirection: (direction: "sell" | "buy") => void;
   setTokenAAmount: (amount: string) => void;
-  setCurrentBuyAsset: (token: TokenDetail) => void;
-  setCurrentSellAsset: (token: TokenDetail) => void;
+  setCurrentBuyAsset: (token: Token) => void;
+  setCurrentSellAsset: (token: Token) => void;
   setSlippage: (slippage: number) => void;
   setDeadline: (deadline: number) => void;
   setTokenABalance: (tokenBalance: string) => void;
@@ -137,7 +137,11 @@ export interface SwapActions {
   setPrices: (prices: Prices) => void;
   setExceedsBalanceError: (exceedsBalanceError: boolean) => void;
   setChartActiveToken: (chartActiveToken: string) => void;
-
+  fetchTokenBalanceFor: (
+    token: Token,
+    walletAddress: string,
+    provider: Provider
+  ) => Promise<Token>;
   fetchAllTokens: (walletAddress: string, provider: Provider) => void;
 }
 

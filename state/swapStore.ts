@@ -1,7 +1,13 @@
 "use client";
 import { create } from "zustand";
 import { useShallow } from "zustand/shallow";
-import { Prices, SwapActions, SwapState, TokenDetail } from "@/lib/types";
+import {
+  Prices,
+  SwapActions,
+  SwapState,
+  Token,
+  TokenDetail,
+} from "@/lib/types";
 import {
   DEFAULT_BUY_TOKEN,
   DEFAULT_SELL_TOKEN,
@@ -66,6 +72,7 @@ export const useSwapStore = create<SwapState & SwapActions>((set, get) => ({
   TokenBUsdPrice: null,
   prices: {},
   chartFlag: false,
+
   // Actions
   setTokenB: (token) =>
     set((state) => ({
@@ -197,7 +204,7 @@ export const useSwapStore = create<SwapState & SwapActions>((set, get) => ({
   setTokens: (tokens: any) => set({ tokens }),
   setSelectorOpen: (isOpen: Boolean) => set(() => ({ selectorOpen: isOpen })),
   setDeadline: (deadline) => set({ deadline: deadline }),
-  setCurrentSellAsset: (asset: TokenDetail) => {
+  setCurrentSellAsset: (asset: Token) => {
     const balanceA = get().tokenABalance;
     let amount = get().TokenAAmount;
 
@@ -211,7 +218,7 @@ export const useSwapStore = create<SwapState & SwapActions>((set, get) => ({
       currentSellAsset: asset,
     }));
   },
-  setCurrentBuyAsset: (asset: TokenDetail) =>
+  setCurrentBuyAsset: (asset: Token) =>
     set(() => ({
       currentBuyAsset: asset,
     })),
@@ -246,17 +253,7 @@ export const useSwapStore = create<SwapState & SwapActions>((set, get) => ({
   setEstimatedFees: (estimatedFee: any) => set({ estimatedFees: estimatedFee }),
   setExceedsBalanceError: (exceedsBalanceError: boolean) =>
     set({ exceedsBalanceError }),
-  // updateUsdValues: () => {
-  //   const state = get();
-  //   set({
-  //     TokenAUsdValue: state.TokenAAmount
-  //       ? getUSDValue(state.TokenAAmount, state.TokenA)
-  //       : null,
-  //     TokenBUsdValue: state.TokenBAmount
-  //       ? getUSDValue(state.TokenBAmount, state.TokenB)
-  //       : null,
-  //   });
-  // },
+
   resetSwapState: () =>
     set({
       TokenBAmount: "",
@@ -282,48 +279,7 @@ export const useSwapStore = create<SwapState & SwapActions>((set, get) => ({
       fee: null,
       // Don't reset tokens, balances, slippage, etc.
     }),
-  // Function to fetch token balances when wallet connects
-  fetchTokenBalances: async (walletAddress: string, provider: any) => {
-    const { currentSellAsset, currentBuyAsset } = get();
-    if (!walletAddress || !provider) return;
 
-    try {
-      set({ loadingBalances: true });
-
-      // Fetch Token A balance
-      const tokenABalance = await fetchTokenBalance(
-        currentSellAsset?.address,
-        walletAddress,
-        provider,
-        currentSellAsset?.decimals
-      );
-
-      // Fetch Token B balance
-      const tokenBBalance = await fetchTokenBalance(
-        currentBuyAsset?.address,
-        walletAddress,
-        provider,
-        currentBuyAsset?.decimals
-      );
-
-      set({
-        tokenABalance,
-        tokenBBalance,
-        loadingBalances: false,
-      });
-    } catch (error) {
-      console.error("Error fetching token balances:", error);
-      set({
-        loadingBalances: false,
-        tokenABalance: "0",
-        tokenBBalance: "0",
-      });
-    } finally {
-      set({
-        loadingBalances: false,
-      });
-    }
-  },
   fetchAllTokens: async (walletAddress: string, provider: Provider) => {
     const { tokens } = get();
     const chainId = useAccountStore.getState().chainId;
@@ -345,19 +301,119 @@ export const useSwapStore = create<SwapState & SwapActions>((set, get) => ({
     );
 
     set({ tokens: updatedTokens });
+    return tokens;
+  },
+  fetchTokenBalanceFor: async (
+    token: Token,
+    walletAddress: string,
+    provider: Provider
+  ) => {
+    const balance = await fetchTokenBalance(
+      token.address,
+      walletAddress,
+      provider,
+      token.decimals
+    );
+    const usdValue = await getUSDValue(balance, token.symbol);
+    return { ...token, balance, usdValue };
   },
 
+  getTokenBySymbol: (symbol: string) =>
+    get().tokens.find(
+      (token) => token.symbol.toLowerCase() === symbol.toLowerCase()
+    ),
+
   // Function to update balances when tokens change
-  updateTokenBalances: async (address: string, provider: any) => {
-    const { fetchTokenBalances } = get();
-    // Only fetch balances if wallet is connected
-    if (address) {
-      if (address && provider) {
-        await fetchTokenBalances(address, provider);
-      }
+  // updateTokenBalances: async (address: string, provider: any) => {
+  //   const { fetchTokenBalances } = get();
+  //   // Only fetch balances if wallet is connected
+  //   if (address) {
+  //     if (address && provider) {
+  //       await fetchTokenBalances(address, provider);
+  //     }
+  //   }
+  // },
+  fetchTokenBalances: async (walletAddress: string, provider: Provider) => {
+    const {
+      currentSellAsset,
+      currentBuyAsset,
+      setTokenABalance,
+      setTokenBBalance,
+      setLoadingBalances,
+    } = get();
+
+    if (!walletAddress || !provider) return;
+
+    try {
+      setLoadingBalances(true);
+
+      const [tokenABalance, tokenBBalance] = await Promise.all([
+        fetchTokenBalance(
+          currentSellAsset?.address,
+          walletAddress,
+          provider,
+          currentSellAsset?.decimals
+        ),
+        fetchTokenBalance(
+          currentBuyAsset?.address,
+          walletAddress,
+          provider,
+          currentBuyAsset?.decimals
+        ),
+      ]);
+
+      setTokenABalance(tokenABalance);
+      setTokenBBalance(tokenBBalance);
+    } catch (error) {
+      console.error("Error fetching token balances:", error);
+    } finally {
+      setLoadingBalances(false);
     }
   },
 
+  updateTokenBalances: async (walletAddress: string, provider: any) => {
+    const { currentSellAsset, currentBuyAsset, fetchTokenBalanceFor } = get();
+
+    if (!walletAddress || !provider || !currentSellAsset || !currentBuyAsset)
+      return;
+
+    try {
+      set({ loadingBalances: true });
+
+      const updatedTokenA = await fetchTokenBalanceFor(
+        currentSellAsset,
+        walletAddress,
+        provider
+      );
+      const updatedTokenB = await fetchTokenBalanceFor(
+        currentBuyAsset,
+        walletAddress,
+        provider
+      );
+
+      set({
+        tokenABalance: updatedTokenA.balance,
+        tokenBBalance: updatedTokenB.balance,
+        loadingBalances: false,
+      });
+
+      // Optional: update the tokens list if needed
+      const updatedTokens = get().tokens.map((token) => {
+        if (token.address === updatedTokenA.address) return updatedTokenA;
+        if (token.address === updatedTokenB.address) return updatedTokenB;
+        return token;
+      });
+
+      set({ tokens: updatedTokens });
+    } catch (error) {
+      console.error("Error updating balances:", error);
+      set({
+        tokenABalance: "0",
+        tokenBBalance: "0",
+        loadingBalances: false,
+      });
+    }
+  },
   updateUsdValues: async () => {
     const state = get();
 
@@ -460,7 +516,6 @@ export const useSwapActions = () =>
       setCurrentSellAsset: state.setCurrentSellAsset,
       setCurrentBuyAsset: state.setCurrentBuyAsset,
       setIsWalletConnected: state.setIsWalletConnected,
-      fetchTokenBalances: state.fetchTokenBalances,
       updateTokenBalances: state.updateTokenBalances,
       setDeadline: state.setDeadline,
       setTransactionButtonText: state.setTransactionButtonText,

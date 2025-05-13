@@ -6,9 +6,11 @@ import { Button } from "../ui/Button";
 import { IoMdAdd } from "react-icons/io";
 import { Pool, useLiquidityStore } from "@/state/liquidityStore";
 import { Skeleton } from "../ui/skeleton";
+import { useRouter } from "next/navigation";
 
 export const PoolList = () => {
   // const { pools, isLoading } = usePoolState();
+  const router = useRouter();
   const {
     pools,
     fetchPools,
@@ -37,6 +39,18 @@ export const PoolList = () => {
       pools.token0.symbol.toLowerCase().includes(searchQuery.toLowerCase()) ||
       pools.token1.symbol.toLowerCase().includes(searchQuery.toLowerCase())
   );
+
+  const handlePoolSelect = (pool: Pool) => {
+    router.push(`/pool/${pool?.pairAddress}`);
+  };
+  // Handle create new pair
+  const handleAddLiqudity = (pool: Pool) => {
+    setSelectedPool(pool);
+    router.push(
+      `/add-liquidity/token0=${pool?.token0?.address}/token1=${pool?.token1?.address}`
+      // `/add-liquidity/token0=${pool?.token0?.address}/token1=${pool?.token1?.address}`
+    );
+  };
 
   return (
     <div className="space-y-2 w-full">
@@ -73,7 +87,7 @@ export const PoolList = () => {
                   <PoolRow
                     key={p.pairAddress}
                     pool={p}
-                    setSelectedPool={setSelectedPool}
+                    handleAddLiqudity={handleAddLiqudity}
                   />
                 </div>
               ))
