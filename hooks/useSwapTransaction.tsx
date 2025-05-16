@@ -1,4 +1,4 @@
-import { ethers, formatEther, formatUnits } from "ethers";
+import { ethers, formatEther, formatUnits, parseUnits } from "ethers";
 import { useEffect, useState, useCallback } from "react";
 import { useSwapState, useSwapActions } from "@/state/swapStore";
 import { useAccountState } from "@/state/accountStore";
@@ -11,12 +11,13 @@ import { deadlineFormatted } from "@/lib/utils";
 import { getGasEstimation } from "@/services/getEstimatedGas";
 import { getRouterContract } from "@/services/getContracts";
 import { defaultChainId } from "@/lib/constants";
+import { useTxToast } from "./useToast";
 
 // Replace with your actual router address
 
 export function useSwapTransactions() {
   // const { address } = useAccount();
-
+  const { withToast } = useTxToast();
   const {
     currentSellAsset,
     currentBuyAsset,
@@ -261,10 +262,31 @@ export function useSwapTransactions() {
       );
 
       // Max approval
-      const maxApproval = ethers.MaxUint256;
+      // const maxApproval = ethers.MaxUint256;
 
-      const tx = await tokenContract.approve(ROUTER_ADDRESS, maxApproval);
-      await tx.wait();
+      // const tx = await tokenContract.approve(ROUTER_ADDRESS, maxApproval);
+
+      let formatedSellTokenApproval = parseUnits(
+        TokenAAmount,
+        currentSellAsset.decimals
+      );
+      // const maxApproval = ethers.MaxUint256;
+      await withToast(
+        async () => {
+          return tokenContract.approve(
+            ROUTER_ADDRESS,
+            formatedSellTokenApproval
+          );
+        },
+        "approve",
+        {
+          chainId: chainId,
+          meta: {
+            tokenAAmount: TokenAAmount,
+            tokenASymbol: currentSellAsset.symbol,
+          },
+        }
+      );
 
       // Check approval again
       await checkApproval();
@@ -314,23 +336,52 @@ export function useSwapTransactions() {
       // Calculate deadline timestamp
       const deadlineTimestamp = deadlineFormatted(deadline); // deadline in minutes
 
-      // Execute the swap
-      const tx = await routerContract.swapExactTokensForTokens(
-        amountIn,
-        minAmountOut.raw, // Min amount out with slippage
-        [currentSellAsset.address, currentBuyAsset.address],
-        signerAddress,
-        deadlineTimestamp
+      await withToast(
+        async () => {
+          // This function returns the transaction promise
+          return routerContract.swapExactTokensForTokens(
+            amountIn,
+            minAmountOut.raw, // Min amount out with slippage
+            [currentSellAsset.address, currentBuyAsset.address],
+            signerAddress,
+            deadlineTimestamp
+          );
+        },
+        "swap", // Transaction type
+        {
+          // actionLabel:"Swap",
+          chainId: chainId, // Replace with your network's chain ID
+          meta: {
+            tokenAAmount: TokenAAmount,
+            tokenASymbol: `${currentSellAsset.symbol}`,
+            tokenBAmount: TokenBAmount,
+            tokenBSymbol: `${currentBuyAsset.symbol}`,
+            aggregate: "→",
+          },
+          // Optional callbacks
+          onSuccess: async (receipt) => {
+            // Clear form or update UI after successful swap
+            // You could update balances here
+            setTokenBAmount("");
+            setTransactionButtonText("Swap");
+            await updateTokenBalances(address!, provider);
+            resetSwapState();
+          },
+          onError: (error) => {
+            setTransactionButtonText("Swap");
+            // Any additional error handling specific to your app
+          },
+        },
+        // Optional custom title
+        `Swap ${currentSellAsset.symbol} for ${currentBuyAsset.symbol}`
       );
-
-      await tx.wait();
       // Reset fields after successful swap
       setTokenBAmount("");
       setTransactionButtonText("Swap");
       await updateTokenBalances(address!, provider);
       resetSwapState();
     } catch (error) {
-      console.error("Error executing swap:", error);
+      // console.error("Error executing swap:", error);
       setTransactionButtonText("Swap");
     } finally {
       setIsSwapping(false);

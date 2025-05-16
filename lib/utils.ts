@@ -48,9 +48,16 @@ export const formatPercentage = (userLp: string, total: string): string => {
   const user = parseFloat(userLp);
   const supply = parseFloat(total);
   if (isNaN(user) || isNaN(supply) || supply === 0) return "0.00%";
-
   const percentage = (user / supply) * 100;
   return `${percentage.toFixed(2)}%`;
+};
+
+export const getBlockchainExplorer = (txHash: string, chainId: number) => {
+  let Obj: Record<number, string> = {
+    421614: "https://sepolia.arbiscan.io/tx/",
+  };
+
+  return `${Obj[chainId]}${txHash}`;
 };
 
 export function formatCurrency(

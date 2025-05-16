@@ -15,16 +15,11 @@ import { Copy, LogOut } from "lucide-react";
 import { shortenAddress } from "@/lib/utils";
 import { Button } from "../ui/Button";
 import toast from "react-hot-toast";
+import { CopyAddress } from "./CopyAddress";
 
 export function WalletDropdown() {
   const { address, isConnected } = useAccount();
   const { disconnect } = useDisconnect();
-
-  const copyAddress = () => {
-    if (!address) return;
-    navigator.clipboard.writeText(address);
-    toast.success("wallet Address copied");
-  };
 
   if (!isConnected) return null;
 
@@ -36,9 +31,8 @@ export function WalletDropdown() {
       <DropdownMenuContent align="end" className="w-56">
         <DropdownMenuLabel>Wallet</DropdownMenuLabel>
         <DropdownMenuSeparator />
-        <DropdownMenuItem onClick={copyAddress}>
-          <Copy className="mr-2 h-4 w-4" />
-          Copy Address
+        <DropdownMenuItem>
+          <CopyAddress />
         </DropdownMenuItem>
         <DropdownMenuItem onClick={() => disconnect()} className="text-red-600">
           <LogOut className="mr-2 h-4 w-4" />

@@ -1,4 +1,3 @@
- 
 import type { Metadata } from "next";
 import localFont from "next/font/local";
 import "./globals.css";
@@ -6,13 +5,12 @@ import { Navbar } from "@/components/Navbar/Navbar";
 import { Providers } from "@/components/provider/Providers";
 import "@rainbow-me/rainbowkit/styles.css";
 import NextTopLoader from "nextjs-toploader";
-import { Toaster } from "react-hot-toast";
 import { ThemeProvider } from "@/components/ui/theme-provider";
 import { GoogleAnalytics } from "@next/third-parties/google";
 import React from "react";
-import { LoadingScreen } from "@/components/Common/LoadingScreen";
-import { useRouter } from "next/router";
- 
+import { Toaster } from "sonner";
+import { PendingTransactions } from "@/components/Common/PendingTransactions";
+
 const geistSans = localFont({
   src: "./fonts/GeistVF.woff",
   variable: "--font-geist-sans",
@@ -30,19 +28,18 @@ export const metadata: Metadata = {
 };
 
 const NEXT_PUBLIC_MEASUREMENT_ID = process.env.NEXT_PUBLIC_MEASUREMENT_ID;
-const NODE_ENV = process.env.NODE_ENV 
+const NODE_ENV = process.env.NODE_ENV;
 
 export default function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
- 
   return (
     <html lang="en">
-      {NODE_ENV !=="development" && 
-      <GoogleAnalytics gaId={NEXT_PUBLIC_MEASUREMENT_ID!} />
-      }
+      {NODE_ENV !== "development" && (
+        <GoogleAnalytics gaId={NEXT_PUBLIC_MEASUREMENT_ID!} />
+      )}
 
       <body
         className={`${geistSans.variable} ${geistMono.variable} w-full flex items-center justify-center relative h-full  antialiased`}
@@ -55,8 +52,6 @@ export default function RootLayout({
         >
           <div className="w-full  h-full relative">
             <Providers>
-         
-       
               {/* <div className="absolute top-0 bottom-0 left-0 bg-[#0d53bb] light:bg-[#0d53bb]/20 rounded-none blur-[300px] w-[22rem] h-[32rem] -z-10"></div> */}
               <Navbar />
               {children}
@@ -77,8 +72,7 @@ export default function RootLayout({
                 zIndex={1600}
                 showAtBottom={false}
               />
-              <Toaster />
-       
+              <PendingTransactions />
             </Providers>
           </div>
         </ThemeProvider>

@@ -10,6 +10,7 @@ import { getProvider } from "@/services/getProvider";
 import { ERC20_ABI } from "@/abi/ERC20ABI";
 import { ROUTER_ABI } from "@/abi/ROUTER_ABI";
 import { ROUTER_ADDRESS } from "@/lib/constants";
+import { useTxToast } from "./useToast";
 
 function extractAddress(param: string): string {
   const decoded = decodeURIComponent(param); // e.g., "token0=0xABC..."
@@ -18,6 +19,7 @@ function extractAddress(param: string): string {
 export function useAddLiquidityLogic(tokenA: string, tokenB: string) {
   const router = useRouter();
   const chainId = useChainId();
+  const { withToast } = useTxToast();
 
   const latestTokenARequest = useRef(0);
   const latestTokenBRequest = useRef(0);
@@ -140,7 +142,7 @@ export function useAddLiquidityLogic(tokenA: string, tokenB: string) {
       await getUserBalances(address);
     }
     init();
-  }, [address, provider, !selectedTokenABalance, !selectedTokenBBalance]);
+  }, [address, signer, selectedTokenABalance, selectedTokenBBalance]);
 
   // LP info
   useEffect(() => {
@@ -593,7 +595,6 @@ export function useAddLiquidityLogic(tokenA: string, tokenB: string) {
 
   // Fixed handleAddLiquidity function
   const handleAddLiquidity = async () => {
-    debugger;
     if (!provider) {
       setError("No Provider");
       return;
@@ -643,19 +644,60 @@ export function useAddLiquidityLogic(tokenA: string, tokenB: string) {
       const amountBMin = BigInt(Math.floor(Number(amountB) * slippageFactor));
 
       // FIXED: Removed staticCall to actually execute the transaction
-      const tx = await routerContract.addLiquidity(
-        selectedTokenA.address,
-        selectedTokenB.address,
-        amountA,
-        amountB,
-        amountAMin,
-        amountBMin,
-        userAddress,
-        deadlineTimestamp,
-        { gasLimit: 3000000 }
+      // const tx = await routerContract.addLiquidity(
+      //   selectedTokenA.address,
+      //   selectedTokenB.address,
+      //   amountA,
+      //   amountB,
+      //   amountAMin,
+      //   amountBMin,
+      //   userAddress,
+      //   deadlineTimestamp,
+      //   { gasLimit: 3000000 }
+      // );
+      await withToast(
+        async () => {
+          // This function returns the transaction promise
+          return routerContract.addLiquidity(
+            selectedTokenA.address,
+            selectedTokenB.address,
+            amountA,
+            amountB,
+            amountAMin,
+            amountBMin,
+            userAddress,
+            deadlineTimestamp,
+            { gasLimit: 3000000 }
+          );
+        },
+        "addLiquidity", // Transaction type
+        {
+          // actionLabel:"Swap",
+          chainId: chainId, // Replace with your network's chain ID
+          meta: {
+            tokenAAmount: tokenAAmount,
+            tokenASymbol: `${selectedTokenA.symbol}`,
+            tokenBAmount: tokenBAmount,
+            tokenBSymbol: `${selectedTokenB.symbol}`,
+            aggregate: "+",
+          },
+          // Optional callbacks
+          onSuccess: async (receipt) => {
+            // Clear form or update UI after successful swap
+            // You could update balances here
+            setTokenBAmount("");
+            setTransactionButtonText("Add Liquidity");
+            await getUserBalances(address);
+          },
+          onError: (error) => {
+            setTransactionButtonText("Swap");
+            // Any additional error handling specific to your app
+          },
+        },
+        // Optional custom title
+        `Liquidity ${selectedTokenA.symbol} +  ${selectedTokenB.symbol}`
       );
-
-      const receipt = await tx.wait();
+      // const receipt = await tx.wait();
 
       // Reset form after successful transaction
       resetForm();
@@ -669,7 +711,7 @@ export function useAddLiquidityLogic(tokenA: string, tokenB: string) {
 
       //   router.push(`/pool/${selectedPool?.pairAddress}`);
 
-      return receipt.transactionHash;
+      // return receipt.transactionHash;
     } catch (err: any) {
       console.error("Failed to add liquidity:", err);
       setError(err.message || "Failed to add liquidity. Please try again.");
@@ -702,11 +744,22 @@ export function useAddLiquidityLogic(tokenA: string, tokenB: string) {
         // For better UX, we could approve a large amount (MAX_UINT256)
         // const amountToApprove = ethers.MaxUint256;
 
-        const tx = await tokenContract.approve(
-          ROUTER_ADDRESS(chainId),
-          amountToApprove
+        await withToast(
+          async () => {
+            return tokenContract.approve(
+              ROUTER_ADDRESS(chainId),
+              amountToApprove
+            );
+          },
+          "approve",
+          {
+            chainId: chainId,
+            meta: {
+              tokenAAmount: tokenAmountA,
+              tokenASymbol: selectedTokenA?.symbol,
+            },
+          }
         );
-        await tx.wait();
 
         // Check approval again after transaction completes
         await checkApprovalTokenA();
@@ -750,11 +803,22 @@ export function useAddLiquidityLogic(tokenA: string, tokenB: string) {
         // For better UX, we could approve a large amount (MAX_UINT256)
         // const amountToApprove = ethers.MaxUint256;
 
-        const tx = await tokenContract.approve(
-          ROUTER_ADDRESS(chainId),
-          amountToApprove
+        await withToast(
+          async () => {
+            return tokenContract.approve(
+              ROUTER_ADDRESS(chainId),
+              amountToApprove
+            );
+          },
+          "approve",
+          {
+            chainId: chainId,
+            meta: {
+              tokenAAmount: tokenAmountB,
+              tokenASymbol: selectedTokenB?.symbol,
+            },
+          }
         );
-        await tx.wait();
 
         // Check approval again after transaction completes
         await checkApprovalTokenB();
@@ -778,7 +842,7 @@ export function useAddLiquidityLogic(tokenA: string, tokenB: string) {
   //old
   //   const approveTokenB = useCallback(
   //     async (tokenAmountB: any) => {
-  //       debugger;
+  //
 
   //       if (!signer || !selectedTokenB?.address) return;
 

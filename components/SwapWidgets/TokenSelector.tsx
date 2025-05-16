@@ -65,7 +65,7 @@ const TokenSelector: React.FC<TokenSelectorProps> = ({
     >
       <div
         className="absolute right-0 top-0 bg-forground max-w-[448px] w-full h-full shadow-lg p-4"
-        onClick={(e) => e.stopPropagation()} // Prevent click propagation to the overlay
+        onClick={(e) => e.stopPropagation()}
       >
         <div className="border-b-[1px] mb-5 -mx-3 py-3 px-3 border-secondary flex justify-between items-center">
           <span className="text-title font-medium text-xl">Select Token</span>

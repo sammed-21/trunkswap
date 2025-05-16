@@ -1,15 +1,18 @@
 "use client";
 import { usePoolState } from "@/state/poolStore";
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { PoolRow, PoolRowHeading } from "./PoolRow";
 import { Button } from "../ui/Button";
 import { IoMdAdd } from "react-icons/io";
 import { Pool, useLiquidityStore } from "@/state/liquidityStore";
 import { Skeleton } from "../ui/skeleton";
 import { useRouter } from "next/navigation";
+import { useAccountState } from "@/state/accountStore";
+import { LoadingScreen } from "../Common/LoadingScreen";
 
 export const PoolList = () => {
   // const { pools, isLoading } = usePoolState();
+  const { provider } = useAccountState();
   const router = useRouter();
   const {
     pools,
@@ -55,7 +58,9 @@ export const PoolList = () => {
   return (
     <div className="space-y-2 w-full">
       {isLoadingPools ? (
-        <div>this page is loading</div>
+        <div className="w-full h-full flex items-center justify-center">
+          <LoadingScreen />
+        </div>
       ) : (
         <div className="w-full ">
           <div className="mb-4  hidden justify-between">

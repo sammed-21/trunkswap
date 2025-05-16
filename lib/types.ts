@@ -1,7 +1,7 @@
 import { Address, PublicClient, WalletClient, type Hex } from "viem";
 
 import { UsePublicClientReturnType, UseWalletClientReturnType } from "wagmi";
-import { Signer } from "ethers";
+import { Signer, TransactionReceipt } from "ethers";
 import { Provider } from "ethers";
 
 // This interface is subject to change as the API V2 endpoints aren't finalized.
@@ -172,3 +172,51 @@ export interface AccountInfo {
   resetAccountStore: () => void;
   // setSignerAndProvider: (signer: string, chainId: string | number) => void;
 }
+
+export type PendingTransaction = {
+  id: string;
+  hash: string;
+  type: TransactionType;
+  title: string;
+  chainId: number;
+  meta?: TransactionMeta;
+  status: "pending" | "processing" | "success" | "failed";
+  timestamp: number;
+};
+
+export type TransactionMeta = {
+  tokenAAmount?: string;
+  tokenASymbol?: string;
+  tokenBAmount?: string;
+  tokenBSymbol?: string;
+  aggregate?: string;
+  amount?: string;
+  symbol?: string;
+  iconUrl?: string;
+  recipient?: string;
+};
+
+export type TransactionType =
+  | "swap"
+  | "addLiquidity"
+  | "removeLiquidity"
+  | "approve"
+  | "stake"
+  | "unstake"
+  | "claim"
+  | "bridge"
+  | "faucet"
+  | "other";
+
+// Toast configuration options
+export type TxToastOptions = {
+  actionLabel?: string;
+  onActionClick?: () => void;
+  chainId?: number;
+  meta?: TransactionMeta;
+  onError?: (error: any) => void;
+  onSuccess?: (receipt: TransactionReceipt) => void;
+  // New option to control whether to track the transaction
+  toastDuration?: number;
+  trackTransaction?: boolean;
+};

@@ -22,7 +22,7 @@ export const PoolListHead = () => {
             {isLoadingPools ? (
               <Skeleton className="w-[100px] h-[20px] rounded-none" />
             ) : (
-              <span className="text-white text-3xl font-bols">
+              <span className="text-title text-3xl font-bols">
                 {totalPool.toString()}
               </span>
             )}{" "}
@@ -32,7 +32,7 @@ export const PoolListHead = () => {
             {isLoadingPools ? (
               <Skeleton className="w-[100px] h-[20px] rounded-none" />
             ) : (
-              <span className="text-white text-3xl font-bols">
+              <span className="text-title text-3xl font-bols">
                 {formatUSD(totalTvl)}
               </span>
             )}{" "}

@@ -289,7 +289,7 @@ export default function AddLiquidityPage({ params }: AddLiquidityPageProps) {
                     Total Liquidity
                   </span>
                   <span className="text-gray-800 dark:text-gray-100">
-                    {formatUnits(selectedPool.totalSupply, 18)} LP
+                    {selectedPool.totalSupply} LP
                   </span>
                 </div>
               )}

@@ -13,6 +13,7 @@ import { addressess } from "@/address";
 import { getNetworkNameUsingChainId } from "./getNetworkNameUsingChainId";
 import { usePriceFeed } from "@/hooks/usePriceFeed";
 import { useFaucetStore } from "@/state/faucetStore";
+
 // Your fallback URLs and chain mapping
 
 const chainMap = {
@@ -40,18 +41,15 @@ export const WalletInit = ({ children }: Props) => {
   const { data: walletClient } = useWalletClient();
   const { address, isConnected, isDisconnected } = useAccount();
   const chainId = useChainId();
-  let walletSigner: ethers.Signer | ethers.JsonRpcSigner | null;
+  let walletSigner: ethers.Signer | null;
 
   const resetFaucetState = useFaucetStore((state) => state.resetFaucetState);
 
   const getSigners = useCallback(async () => {
     if (isConnected && window.ethereum) {
       const walletProvider = new ethers.BrowserProvider(window.ethereum);
-
-      // Get the signer from the wallet provider
-      walletSigner = await walletProvider.getSigner();
-      // Store the signer in your state
-      setSigner(walletSigner);
+      const signer = await walletProvider.getSigner();
+      setSigner(signer);
     }
   }, [isConnected]);
 
@@ -67,7 +65,7 @@ export const WalletInit = ({ children }: Props) => {
     setInitialized,
   } = useAccountActions();
 
-  const { fetchUserPositions, clearPoolStore } = usePoolActions();
+  const { clearPoolStore } = usePoolActions();
 
   let FACTORY_ADDRESS =
     addressess[getNetworkNameUsingChainId(421614)].FACTORY_ADDRESS;

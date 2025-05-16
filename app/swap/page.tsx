@@ -1,21 +1,18 @@
-"use client";
-import { TradingViewWidget } from "@/components/Chart/TradingViewWidget";
+import { LoadingScreen } from "@/components/Common/LoadingScreen";
 import { SwapComponent } from "@/components/SwapWidgets/SwapComponent";
-import { useSwapState } from "@/state/swapStore";
-
+import { Suspense } from "react";
 export default function Home() {
-  const { chartFlag } = useSwapState();
-
   return (
-    <div className="w-full relative h-full mx-auto py-10  gap-4 flex flex-col md:flex-row  items-start justify-center">
-      <div
-        className={`max-w-[1024px]  w-full h-[400px] ${
-          chartFlag ? "block" : "hidden"
-        } md:min-h-[600px] relative `}
-      >
-        <TradingViewWidget />
+    <Suspense
+      fallback={
+        <div className="h-screen w-full flex items-center justify-center">
+          <LoadingScreen />
+        </div>
+      }
+    >
+      <div className="w-full relative h-full mx-auto py-10  gap-4 flex flex-col md:flex-row  items-start justify-center">
+        <SwapComponent />
       </div>
-      <SwapComponent />
-    </div>
+    </Suspense>
   );
 }

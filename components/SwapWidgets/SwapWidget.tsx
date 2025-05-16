@@ -23,6 +23,7 @@ type Props = {};
 export const SwapWidget = (props: Props) => {
   const router = useRouter();
   const searchParams = useSearchParams();
+
   const {
     needsApproval,
     isApproving,
@@ -85,6 +86,9 @@ export const SwapWidget = (props: Props) => {
     setChartFlag,
     setChartActiveToken,
   } = useSwapActions();
+
+  // Optional: if you have ETH price fetched from CoinGecko
+
   const handleToggleTradeDirection = () => {
     // Toggle direction
     const newDirection = tradeDirection === "sell" ? "buy" : "sell";
@@ -103,14 +107,13 @@ export const SwapWidget = (props: Props) => {
     setCurrentBuyAsset(currentSellAsset);
     resetSwapState();
 
-    const urlParams = new URLSearchParams();
-    urlParams.set("currencyIn", currentSellAsset.address);
-    urlParams.set("currencyOut", currentBuyAsset.address);
-    router.push(`/swap?${urlParams.toString()}`, { scroll: false });
+    // const urlParams = new URLSearchParams();
+    // urlParams.set("currencyIn", currentSellAsset.address);
+    // urlParams.set("currencyOut", currentBuyAsset.address);
+    // router.replace(`/swap?${urlParams.toString()}`, {
+    //   scroll: false,
+    // });
   };
-
-  // Optional: if you have ETH price fetched from CoinGecko
-
   const findTokenByAddress = (address: string) => {
     if (!address) return;
     // Convert address to lowercase for case-insensitive comparison
@@ -123,34 +126,40 @@ export const SwapWidget = (props: Props) => {
   // Handle URL parameters on component mount
   useEffect(() => {
     const tokenIn =
-      searchParams.get("currencyIn") || searchParams.get("tokenIn");
+      searchParams?.get("currencyIn") || searchParams?.get("tokenIn");
     const tokenOut =
-      searchParams.get("currencyOut") || searchParams.get("tokenOut");
+      searchParams?.get("currencyOut") || searchParams?.get("tokenOut");
 
     // If we have parameters, update the state
     if (tokenIn || tokenOut) {
       if (tokenIn) {
         const foundToken = findTokenByAddress(tokenIn);
-        console.log(foundToken);
         if (foundToken) {
-          setTokenA(foundToken.symbol);
+          setTokenA(foundToken?.symbol);
           setCurrentSellAsset(foundToken);
-          setChartActiveToken(foundToken.symbol.toUpperCase());
+          setChartActiveToken(foundToken?.symbol?.toUpperCase());
+          if (foundToken.balance) {
+            setTokenABalance(foundToken?.balance);
+          }
         }
       }
 
       if (tokenOut) {
         const foundToken = findTokenByAddress(tokenOut);
-        console.log({ foundToken });
+
         if (foundToken) {
           setTokenB(foundToken.symbol);
           setCurrentBuyAsset(foundToken);
+
+          if (foundToken.balance) {
+            setTokenBBalance(foundToken?.balance);
+          }
         }
       }
     }
     // Only run once on component mount
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [searchParams]);
 
   const getButtonProps = () => {
     if (!isConnected) {
@@ -186,7 +195,6 @@ export const SwapWidget = (props: Props) => {
     }
   };
   const buttonProps = getButtonProps();
-
   return (
     <div className=" flex flex-col  gap-3 items-center justify-center  w-full">
       <div className="text-3xl font-semibold w-full justify-start items-center ">
@@ -245,7 +253,7 @@ export const SwapWidget = (props: Props) => {
               width={20}
               height={20}
               alt="rotate"
-              className={` dark:invert invert-0  transition-transform duration-300  ${
+              className={` dark:invert  transition-transform duration-300  ${
                 isRotated ? "rotate-180" : "rotate-0"
               }`}
             />

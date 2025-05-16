@@ -22,6 +22,7 @@ import {
   FactoryAddressChainId,
   ROUTER_ADDRESS,
 } from "@/lib/constants";
+import { Provider } from "react";
 
 // // Types
 // export interface Token {
@@ -95,6 +96,7 @@ export interface LiquidityActions {
   setSlippage: (value: number) => void;
   setTokenBLoading: (loading: boolean) => void;
   setPercentToRemove: (percent: number) => void;
+  setIsRemovingLiquidity: (isRemovingLiquidity: boolean) => void;
   setSelectedPool: (pool: Pool | null) => void;
   setTransactionButtonText: (transactionButtonText: string) => void;
   getUserBalances: (userAdddress: string) => Promise<any>;
@@ -106,6 +108,7 @@ export interface LiquidityActions {
   setIsApprovingTokenA: (needsApprovalTokenA: boolean) => void;
   setNeedsApprovalTokenB: (needsApprovalTokenB: boolean) => void;
   setIsApprovingTokenB: (needsApprovalTokenB: boolean) => void;
+  setError: (error: string) => void;
   // Pool operations
   fetchPools: (provider: ethers.Provider) => Promise<void>;
   fetchPoolDetails: (
@@ -128,7 +131,7 @@ export interface LiquidityActions {
   //   signer: ethers.Signer,
   //   deadlineTimestamp: number
   // ) => Promise<string | null>;
-  removeLiquidity: (provider: ethers.Signer) => Promise<string | null>;
+  // removeLiquidity: (signer: ethers.Signer) => Promise<string | null>;
 
   // Utility functions
   resetForm: () => void;
@@ -166,6 +169,7 @@ export const useLiquidityStore = create<LiquidityState & LiquidityActions>(
     percentToRemove: 0,
     isLoading: false,
     error: null,
+
     totalPool: 0,
     totalTvl: 0,
     expectedLPToken: "0",
@@ -204,6 +208,8 @@ export const useLiquidityStore = create<LiquidityState & LiquidityActions>(
     // setNeedsApproval: (needsApproval: boolean) => set({ needsApproval }),
     // setIsApproving: (isApproving: boolean) => set({ isApproving }),
     setDeadline: (value: number) => set({ deadline: value }),
+    setIsRemovingLiquidity: (isRemovingLiquidity: boolean) =>
+      set({ isRemovingLiquidity }),
     setSlippage: (value: number) => set({ slippage: value }),
     setTransactionTokenAButtonText: (transactionTokenAButtonText: string) =>
       set({ transactionTokenAButtonText }),
@@ -226,6 +232,7 @@ export const useLiquidityStore = create<LiquidityState & LiquidityActions>(
     setSelectedPool: (pool) => set({ selectedPool: pool }),
     setTokenALoading: (loading: boolean) => set({ tokenALoading: loading }),
     setTokenBLoading: (loading: boolean) => set({ tokenBLoading: loading }),
+    setError: (error: string) => set({ error }),
     // Form reset
     resetForm: () =>
       set({
@@ -234,10 +241,7 @@ export const useLiquidityStore = create<LiquidityState & LiquidityActions>(
         lpTokenAmount: "",
         percentToRemove: 0,
         error: null,
-        // selectedPool: null,
-        // selectedTokenA: null,
-        // selectedTokenB: null,
-        transactionButtonText: "Add Liquidity",
+
         isAddingLiquidity: false,
         selectedTokenABalance: "",
         selectedTokenBBalance: "",
@@ -250,8 +254,6 @@ export const useLiquidityStore = create<LiquidityState & LiquidityActions>(
 
         isLoading: false,
 
-        totalPool: 0,
-        totalTvl: 0,
         expectedLPToken: "0",
       }),
 
@@ -318,6 +320,7 @@ export const useLiquidityStore = create<LiquidityState & LiquidityActions>(
 
     // Fetch details for a specific pool
     fetchPoolDetails: async (provider, pairAddress, chainId) => {
+      const userAddress = useAccountStore.getState().address;
       try {
         const pairContract = new ethers.Contract(
           pairAddress,
@@ -364,10 +367,11 @@ export const useLiquidityStore = create<LiquidityState & LiquidityActions>(
         // Get user's LP balance
         let userLpBalance;
         let formatedUserLpBalance;
-        // if (userAddress) {
-        //   userLpBalance = await pairContract?.balanceOf(userAddress);
-        //   formatedUserLpBalance = formatUnits(userLpBalance, 18);
-        // }
+        let formateddTotalSupply = formatEther(totalSupply);
+        if (userAddress) {
+          userLpBalance = await pairContract?.balanceOf(userAddress);
+          formatedUserLpBalance = formatUnits(userLpBalance, 18);
+        }
 
         // Create token objects
         const token0: Token = {
@@ -420,8 +424,8 @@ export const useLiquidityStore = create<LiquidityState & LiquidityActions>(
           token1,
           reserves0: reserve0,
           reserves1: reserve1,
-          totalSupply: totalSupply,
-          // userLpBalance: formatedUserLpBalance,
+          totalSupply: formateddTotalSupply,
+          userLpBalance: formatedUserLpBalance,
           token0Price,
           token1Price,
           tvl,
@@ -829,33 +833,41 @@ export const useLiquidityStore = create<LiquidityState & LiquidityActions>(
           selectedPool;
 
         // Convert string values to BigNumber
-        const reserve0BN = ethers.parseUnits(reserves0, token0.decimals);
-        const reserve1BN = ethers.parseUnits(reserves1, token1.decimals);
-        const totalSupplyBN = BigInt(totalSupply);
+        const reserve0BN = BigInt(
+          ethers.parseUnits(reserves0, token0.decimals)
+        );
+        const reserve1BN = BigInt(
+          ethers.parseUnits(reserves1, token1.decimals)
+        );
+        const totalSupplyBN = BigInt(parseUnits(totalSupply, 18));
 
         // Convert input amounts to BigNumber
         let amountABN, amountBBN;
         let tokenAIsToken0 = selectedTokenA.address === token0.address;
 
         if (tokenAIsToken0) {
-          amountABN = ethers.parseUnits(tokenAAmount, token0.decimals);
-          amountBBN = ethers.parseUnits(tokenBAmount, token1.decimals);
+          amountABN = BigInt(ethers.parseUnits(tokenAAmount, token0.decimals));
+          amountBBN = BigInt(ethers.parseUnits(tokenBAmount, token1.decimals));
         } else {
-          amountABN = ethers.parseUnits(tokenAAmount, token1.decimals);
-          amountBBN = ethers.parseUnits(tokenBAmount, token0.decimals);
+          amountABN = BigInt(ethers.parseUnits(tokenAAmount, token1.decimals));
+          amountBBN = BigInt(ethers.parseUnits(tokenBAmount, token0.decimals));
         }
 
         // If the pool has no liquidity yet, the LP tokens will be sqrt(amountA * amountB)
         if (
-          reserve0BN == BigInt(0) ||
-          reserve1BN == BigInt(0) ||
-          totalSupplyBN == BigInt(0)
+          reserve0BN === BigInt(0) ||
+          reserve1BN === BigInt(0) ||
+          totalSupplyBN === BigInt(0)
         ) {
-          // For a new pool, return the geometric mean of the amounts
-          // LP tokens have 18 decimals regardless of token decimals
           const amountA = parseFloat(tokenAAmount);
           const amountB = parseFloat(tokenBAmount);
-          return Math.sqrt(amountA * amountB).toString();
+
+          // Calculate geometric mean and scale it to 18 decimals
+          const sqrtAmount = Math.sqrt(amountA * amountB);
+          const scaledSqrt = BigInt(Math.floor(sqrtAmount * 1e18)); // convert to BigInt
+
+          set({ expectedLPToken: formatUnits(scaledSqrt, 18) });
+          return formatUnits(scaledSqrt, 18); // ✅ safe formatting
         }
 
         // For existing pools, calculate the minimum LP tokens based on the ratio
@@ -881,112 +893,7 @@ export const useLiquidityStore = create<LiquidityState & LiquidityActions>(
     // Add liquidity
 
     // Remove liquidity
-    removeLiquidity: async (signer) => {
-      let chainId = useAccountStore.getState().chainId;
-      const { selectedPool, percentToRemove } = get();
-      let routerAddress = ROUTER_ADDRESS(chainId);
-      const provider = useAccountStore.getState().provider;
-      if (provider) return null;
-      if (!selectedPool || percentToRemove <= 0 || percentToRemove > 100) {
-        set({ error: "Please select a valid amount to remove" });
-        return null;
-      }
 
-      try {
-        set({ isRemovingLiquidity: true, error: null });
-
-        const routerContract = new ethers.Contract(
-          routerAddress,
-          ROUTER_ABI,
-          signer
-        );
-        const pairContract = new ethers.Contract(
-          selectedPool.pairAddress,
-          PAIR_ABI,
-          signer
-        );
-
-        const userAddress = await signer.getAddress();
-
-        // Calculate LP tokens to remove
-
-        const userLpBalanceBN = ethers.parseUnits(
-          selectedPool?.userLpBalance!,
-          18
-        );
-        const lpToRemove =
-          (Number(userLpBalanceBN) * Math.floor(percentToRemove)) / 100;
-
-        if (lpToRemove === 0) {
-          set({
-            error: "You don't have any liquidity to remove",
-            isRemovingLiquidity: false,
-          });
-          return null;
-        }
-
-        // Approve LP tokens if needed
-        const allowance = await pairContract.allowance(
-          userAddress,
-          routerAddress
-        );
-        if (allowance < lpToRemove) {
-          const approveTx = await pairContract.approve(
-            routerAddress,
-            ethers.MaxUint256
-          );
-          await approveTx.wait();
-        }
-
-        // Calculate minimum amounts (with 0.5% slippage)
-        const reserves = await pairContract.getReserves();
-        const totalSupply = await pairContract.totalSupply();
-
-        const amount0Min = reserves._reserve0
-          .mul(lpToRemove)
-          .div(totalSupply)
-          .mul(995)
-          .div(1000);
-        const amount1Min = reserves._reserve1
-          .mul(lpToRemove)
-          .div(totalSupply)
-          .mul(995)
-          .div(1000);
-
-        // Deadline 20 minutes from now
-        const deadline = Math.floor(Date.now() / 1000) + 20 * 60;
-
-        // Remove liquidity
-        const tx = await routerContract.removeLiquidity.staticCall(
-          selectedPool.token0.address,
-          selectedPool.token1.address,
-          lpToRemove,
-          amount0Min,
-          amount1Min,
-          userAddress,
-          deadline,
-          { gasLimit: 3000000 }
-        );
-
-        const receipt = await tx.wait();
-
-        // Reset form after successful transaction
-        get().resetForm();
-
-        // Refresh pools
-        await get().fetchPools(provider!);
-
-        set({ isRemovingLiquidity: false });
-        return receipt.transactionHash;
-      } catch (error) {
-        console.error("Error removing liquidity:", error);
-        set({
-          error: "Failed to remove liquidity. Please try again.",
-          isRemovingLiquidity: false,
-        });
-        return null;
-      }
-    },
     setTransactionButtonText: (transactionText: string) =>
       set({ transactionButtonText: transactionText }),
   })
@@ -1049,8 +956,10 @@ export const useLiquidityActions = () =>
       fetchPoolDetails: state.fetchPoolDetails,
       calculateTokenBAmount: state.calculateTokenBAmount,
       calculateTokenAAmount: state.calculateTokenAAmount,
+      setError: state.setError,
       // addLiquidity: state.addLiquidity,
-      removeLiquidity: state.removeLiquidity,
+      setIsRemovingLiquidity: state.setIsRemovingLiquidity,
+      // removeLiquidity: state.removeLiquidity,
       resetForm: state.resetForm,
       setPairFromAddresses: state.setPairFromAddresses,
       getUserBalances: state.getUserBalances,

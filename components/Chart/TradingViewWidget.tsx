@@ -118,7 +118,7 @@ export const TradingViewWidget = (props: props) => {
               className={`p-2 cursor-pointer transition border-[1px] ${
                 isActive
                   ? "bg-primary text-white border-primary"
-                  : "bg-transparent text-white border-border"
+                  : "bg-accent text-lightgray dark:text-white border-border"
               }`}
               onClick={() => setChartActiveToken(tokenSymbol)}
             >

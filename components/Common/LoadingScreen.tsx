@@ -5,14 +5,16 @@ type Props = {};
 
 export const LoadingScreen = (props: Props) => {
   return (
-    <div className="w-full h-screen bg-black flex items-center justify-center mx-auto">
+    <div className="w-full flex-col min-h-[400px]  flex items-center justify-center mx-auto">
       <Image
         src={Gif}
-        width={100}
-        height={100}
-        className="object-cover w-fit h-fit"
+        width={50}
+        height={50}
+        className="object-cover w-[90px] h-fit"
         alt="gif"
       />
+
+      <h1 className="text-title"> loading....</h1>
     </div>
   );
 };
