@@ -6,14 +6,19 @@ import toast from "react-hot-toast";
 import { useFaucetStore } from "@/state/faucetStore";
 import { useAccountState } from "@/state/accountStore";
 import { getErc20Contract, getFaucetContract } from "@/services/getContracts";
-import { SupportedToken, TOKENS } from "@/address";
+
 import Image from "next/image";
 import ConnectWallet from "../Common/ConnectWallet";
 import { useSwapActions } from "@/state/swapStore";
 import { Button } from "../ui/Button";
+import { SupportedToken, TOKENS } from "@/address";
+import { useTxToast } from "@/hooks/useToast";
+import { factoryContract } from "@/services/pool/getPoolDetailsFunction";
 
 export const FaucetComponent = () => {
   const { address } = useAccount();
+
+  const { withToast } = useTxToast();
 
   const { signer, chainId, provider } = useAccountState();
   const [userBalances, setUserBalances] = useState<
@@ -66,8 +71,9 @@ export const FaucetComponent = () => {
     }
     setLoadingToken(symbol);
 
-    const tokenAddress = TOKENS[symbol]?.addresses[chainId];
-    const faucetAddress = TOKENS[symbol]?.faucetAddresses[chainId];
+    const tokenAddress = TOKENS[symbol.toUpperCase()]?.addresses![chainId];
+    const faucetAddress =
+      TOKENS[symbol.toUpperCase()]?.faucetAddresses![chainId];
     if (!tokenAddress || !faucetAddress) {
       toast.error("Token not supported on this network");
       return;
@@ -77,6 +83,7 @@ export const FaucetComponent = () => {
 
     const balance = await tokenContract.balanceOf(faucetAddress);
     const decimals = await tokenContract.decimals();
+    const faucetAmount = await faucetContract.faucetAmount();
 
     const formattedBalance = formatUnits(balance, decimals);
     setFaucetBalance(symbol, formattedBalance);
@@ -95,12 +102,19 @@ export const FaucetComponent = () => {
 
     setIsLoading(true);
     try {
-      const tx = await faucetContract.requestTokens();
-      await toast.promise(tx.wait(), {
-        loading: "Transaction pending...",
-        success: "Tokens successfully requested!",
-        error: "Transaction failed",
-      });
+      const tx = await withToast(
+        async () => {
+          return faucetContract.requestTokens();
+        },
+        "faucet",
+        {
+          chainId: chainId,
+          meta: {
+            tokenAAmount: faucetAmount,
+            tokenASymbol: symbol,
+          },
+        }
+      );
 
       await addContractToMetamask(symbol, tokenAddress);
       await checkCooldown(symbol, faucetAddress);
@@ -153,8 +167,8 @@ export const FaucetComponent = () => {
 
     Object.entries(TOKENS).forEach(([symbol, token]) => {
       const tokenSymbol = symbol as SupportedToken;
-      const tokenAddress = token.addresses[chainId];
-      const faucetAddress = token.faucetAddresses[chainId];
+      const tokenAddress = token.addresses![chainId];
+      const faucetAddress = token.faucetAddresses![chainId];
       if (tokenAddress && faucetAddress) {
         checkCooldown(tokenSymbol, faucetAddress);
         // fetchTokenBalance(tokenSymbol, tokenAddress);
@@ -165,7 +179,7 @@ export const FaucetComponent = () => {
     const timer = setInterval(() => {
       Object.entries(TOKENS).forEach(([symbol, token]) => {
         const tokenSymbol = symbol as SupportedToken;
-        const faucetAddress = token.faucetAddresses[chainId];
+        const faucetAddress = token.faucetAddresses![chainId];
         if (faucetAddress) {
           checkCooldown(tokenSymbol, faucetAddress);
         }
@@ -200,16 +214,18 @@ export const FaucetComponent = () => {
             ([key, { symbol, image, addresses, faucetAddresses }]) => {
               const tokenSymbol = symbol as SupportedToken;
 
-              const tokenAddress = addresses[chainId ?? 0];
-              const faucetAddress = faucetAddresses[chainId ?? 0];
+              const tokenAddress = addresses![chainId ?? 0];
+              const faucetAddress = faucetAddresses![chainId ?? 0];
               if (!tokenAddress || !faucetAddress) return null;
               return (
                 <tr key={symbol} className="border-b border-border">
                   <td className="py-4">
                     <div className="flex items-center space-x-2">
                       <Image
-                        src={image}
-                        alt={symbol}
+                        src={image!}
+                        width={20}
+                        height={20}
+                        alt={symbol!}
                         className="w-6 h-6 rounded-full"
                       />
                       <span>{symbol}</span>

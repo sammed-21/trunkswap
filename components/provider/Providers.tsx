@@ -30,7 +30,7 @@ export const customLightTheme = lightTheme({
 export function Providers({ children }: { children: React.ReactNode }) {
   const { theme } = useTheme();
   return (
-    <WagmiProvider config={config}>
+    <WagmiProvider reconnectOnMount config={config}>
       <QueryClientProvider client={queryClient}>
         <RainbowKitProvider
           theme={theme === "dark" ? customDarkTheme : customLightTheme}

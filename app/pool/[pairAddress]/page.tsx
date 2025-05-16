@@ -1,15 +1,7 @@
 "use client";
-
 import { useCallback, useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import { ethers } from "ethers";
-
-// import { formatCurrency, formatPercent } from '@/utils/formatting';
-// import ErrorBoundary from '@/components/common/ErrorBoundary';
-// import LoadingSpinner from '@/components/common/LoadingSpinner';
-// import PoolChart from '@/components/liquidity/PoolChart';
-// import LiquidityStats from '@/components/liquidity/LiquidityStats';
 import {
   Pool,
   useLiqudityState,
@@ -20,12 +12,18 @@ import { useAccountState } from "@/state/accountStore";
 import { Skeleton } from "@/components/ui/skeleton";
 import { FormatUsd } from "@/components/Common/FormatUsd";
 import { formatUSD } from "@/services/priceFeed";
-import { formatPercentage, shortenAddress } from "@/lib/utils";
+import {
+  formatPercentage,
+  getBlockchainExplorer,
+  shortenAddress,
+} from "@/lib/utils";
 import { TradingViewWidget } from "@/components/Chart/TradingViewWidget";
 import { ConnectButton } from "@rainbow-me/rainbowkit";
 import ConnectWallet from "@/components/Common/ConnectWallet";
 import { Button } from "@/components/ui/Button";
 import { getProvider } from "@/services/getProvider";
+import { CopyAddress } from "@/components/Common/CopyAddress";
+import { useRemoveLiquidityLogic } from "@/hooks/useRemoteLiquidityLogic";
 
 interface PoolDetailPageProps {
   params: {
@@ -34,21 +32,22 @@ interface PoolDetailPageProps {
 }
 
 export default function PoolDetailPage({ params }: PoolDetailPageProps) {
-  const router = useRouter();
   const { pairAddress } = params;
   const chainId = useChainId();
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [percentToRemove, setPercentToRemove] = useState(0);
   const [pool, setPool] = useState<Pool | null>(null);
   const [removingLiquidity, setRemovingLiquidity] = useState(false);
 
   // Get data from stores
   const { isConnected, address } = useAccount();
   const { provider, signer } = useAccountState();
-  const { fetchPoolDetails, setSelectedPool, removeLiquidity } =
+  const { fetchPoolDetails, setSelectedPool, fetchPools, setPercentToRemove } =
     useLiquidityActions();
-  const { selectedPool, isRemovingLiquidity } = useLiqudityState();
+
+  const { removeLiquidity } = useRemoveLiquidityLogic();
+  const { selectedPool, isRemovingLiquidity, percentToRemove } =
+    useLiqudityState();
 
   // Fetch pool details when component mounts
   useEffect(() => {
@@ -69,7 +68,11 @@ export default function PoolDetailPage({ params }: PoolDetailPageProps) {
           setPool(selectedPool);
         } else {
           // Otherwise fetch the pool details
-          const poolDetails = await fetchPoolDetails(provider, pairAddress);
+          const poolDetails = await fetchPoolDetails(
+            provider,
+            pairAddress,
+            chainId
+          );
           if (poolDetails) {
             setPool(poolDetails);
             setSelectedPool(poolDetails);
@@ -92,8 +95,10 @@ export default function PoolDetailPage({ params }: PoolDetailPageProps) {
   }, [
     pairAddress,
     provider,
+    signer,
     isConnected,
     fetchPoolDetails,
+    fetchPools,
     selectedPool,
     setSelectedPool,
   ]);
@@ -105,10 +110,15 @@ export default function PoolDetailPage({ params }: PoolDetailPageProps) {
     try {
       setRemovingLiquidity(true);
       const txHash = await removeLiquidity(signer);
-
+      console.log(txHash);
       if (txHash) {
         // Refresh pool details
-        const updatedPool = await fetchPoolDetails(provider, pairAddress);
+        const updatedPool = await fetchPoolDetails(
+          provider,
+          pairAddress,
+          chainId
+        );
+
         if (updatedPool) {
           setPool(updatedPool);
           setSelectedPool(updatedPool);
@@ -150,7 +160,7 @@ export default function PoolDetailPage({ params }: PoolDetailPageProps) {
         amount1 = parseFloat(pool.reserves1) * removalShare;
       }
       return { amount0, amount1 };
-    }, [address]);
+    }, [percentToRemove]);
 
   const expectedReturns = getExpectedReturns();
   // Format address for display
@@ -192,7 +202,7 @@ export default function PoolDetailPage({ params }: PoolDetailPageProps) {
           <div className="space-b-6 flex flex-row gap-4 w-full">
             <div className="flex flex-col gap-4 w-full">
               {/* Header */}
-              <div className="bg-forground rounded-lg shadow-md p-6">
+              <div className="bg-forground rounded-none shadow-md p-6">
                 <div className="flex flex-col md:flex-row md:justify-between md:items-center gap-4">
                   <div>
                     <h1 className="text-2xl font-bold">{`${pool.token0.symbol}/${pool.token1.symbol}`}</h1>
@@ -207,7 +217,7 @@ export default function PoolDetailPage({ params }: PoolDetailPageProps) {
                       <Button variant={"primary"}>Add Liquidity</Button>
                     </Link>
                     <Link
-                      href={`/swap?inputToken=${pool.token0.address}&outputToken=${pool.token1.address}`}
+                      href={`/swap?currencyIn=${pool.token0.address}&currencyOut=${pool.token1.address}`}
                     >
                       <Button variant={"secondary"}>Swap</Button>
                     </Link>
@@ -215,7 +225,7 @@ export default function PoolDetailPage({ params }: PoolDetailPageProps) {
                 </div>
               </div>
 
-              <div className="bg-forground relative h-[500px] rounded-lg shadow-md p-6">
+              <div className="bg-forground relative h-[500px] rounded-none shadow-md p-6">
                 {/* <h2 className="text-lg font-medium mb-4">Price History</h2> */}
                 {/* <div className="h-64">
                 <PoolChart pairAddress={pool.pairAddress} token0Symbol={pool.token0.symbol} token1Symbol={pool.token1.symbol} />
@@ -226,7 +236,7 @@ export default function PoolDetailPage({ params }: PoolDetailPageProps) {
               {/* Pool statistics */}
               {
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div className="bg-forground rounded-lg shadow-md p-6">
+                  <div className="bg-forground rounded-none shadow-md p-6">
                     <h2 className="text-lg font-medium mb-4">
                       Pool Statistics
                     </h2>
@@ -272,22 +282,20 @@ export default function PoolDetailPage({ params }: PoolDetailPageProps) {
                   </div>
                   {address && (
                     <>
-                      <div className="bg-forground rounded-lg shadow-md p-6">
+                      <div className="bg-forground rounded-none shadow-md p-6">
                         <h2 className="text-lg font-medium mb-4">
                           Your Position
                         </h2>
                         {pool.userLpBalance &&
-                        parseFloat(pool.userLpBalance) > 0 ? (
+                        Number(pool.userLpBalance) > 0 ? (
                           <div className="space-y-3">
                             <div className="flex justify-between">
                               <span className="text-gray-500">Your Share:</span>
                               <span className="font-medium">
                                 {formatPercentage(
-                                  pool.userLpBalance,
-                                  pool.totalSupply
+                                  pool?.userLpBalance,
+                                  pool?.totalSupply
                                 )}
-                                {/* {parseFloat(pool.userLpBalance) /
-                        parseFloat(pool.totalSupply)} */}
                               </span>
                             </div>
                             <div className="flex justify-between">
@@ -322,8 +330,8 @@ export default function PoolDetailPage({ params }: PoolDetailPageProps) {
                               You don't have a position in this pool yet.
                             </p>
                             <Link
-                              href={`/add-liquidity/${pool.token0.address}/${pool.token1.address}`}
-                              className="bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-4 rounded-lg transition"
+                              href={`/add-liquidity/token0=${pool.token0.address}/token1=${pool.token1.address}`}
+                              className="bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-4 rounded-none transition"
                             >
                               Add Liquidity
                             </Link>
@@ -338,9 +346,9 @@ export default function PoolDetailPage({ params }: PoolDetailPageProps) {
               {/* Price chart */}
             </div>
             {
-              <div className="max-w-[500px] w-full flex flex-col ">
+              <div className="max-w-[500px] w-full min-h-[800px] flex flex-col ">
                 {/* Remove liquidity section */}
-                <div className="bg-forground rounded-lg shadow-md p-6">
+                <div className="bg-forground rounded-none shadow-md p-6">
                   <h2 className="text-lg font-medium mb-4">Token Info</h2>
                   <div className="space-y-3">
                     <div>
@@ -348,7 +356,8 @@ export default function PoolDetailPage({ params }: PoolDetailPageProps) {
                         <span className="text-gray-500">
                           {pool.token0.symbol}:
                         </span>
-                        <span className="font-mono">
+                        <span className="font-mono flex gap-1 items-center">
+                          <CopyAddress address={pool.token0.address} />
                           {shortenAddress(pool.token0.address)}
                         </span>
                       </div>
@@ -361,7 +370,8 @@ export default function PoolDetailPage({ params }: PoolDetailPageProps) {
                         <span className="text-gray-500">
                           {pool.token1.symbol}:
                         </span>
-                        <span className="font-mono">
+                        <span className="font-mono flex gap-1 items-center">
+                          <CopyAddress address={pool.token1.address} />
                           {shortenAddress(pool.token1.address)}
                         </span>
                       </div>
@@ -373,7 +383,7 @@ export default function PoolDetailPage({ params }: PoolDetailPageProps) {
                 </div>
                 {address && pool.userLpBalance && (
                   <>
-                    {parseFloat(pool.userLpBalance) > 0 && (
+                    {Number(pool.userLpBalance) > 0 && (
                       <div className="bg-forground  shadow-md mb-3 p-6">
                         <span className="w-full flex items-center justify-between">
                           <h2 className="text-lg font-medium ">
@@ -382,9 +392,12 @@ export default function PoolDetailPage({ params }: PoolDetailPageProps) {
                           <div>{pool.userLpBalance} LP</div>
                         </span>
                         <div className="space-y-4">
-                          <div>
-                            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                              Amount to remove: {percentToRemove}%
+                          <div className="">
+                            <label className="block text-sm py-4 font-medium text-gray-700 dark:text-gray-300 mb-2">
+                              Amount to remove:{" "}
+                              <span className="h-32 w-full flex items-center mx-auto justify-center text-9xl font-black">
+                                {percentToRemove}%
+                              </span>
                             </label>
                             <input
                               type="range"
@@ -395,7 +408,7 @@ export default function PoolDetailPage({ params }: PoolDetailPageProps) {
                               onChange={(e) =>
                                 setPercentToRemove(parseInt(e.target.value))
                               }
-                              className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer dark:bg-gray-700"
+                              className="w-full h-2 bg-gray-200 rounded-none appearance-none cursor-pointer dark:bg-gray-700"
                             />
                             <div className="flex justify-between mt-2">
                               {" "}
@@ -434,7 +447,7 @@ export default function PoolDetailPage({ params }: PoolDetailPageProps) {
                           {address ? (
                             <>
                               {percentToRemove > 0 && (
-                                <div className="p-4 bg-gray-100 dark:bg-gray-700 rounded-lg">
+                                <div className="p-4 bg-forground border-[1px] border-border rounded-none">
                                   <h3 className="text-sm font-medium mb-2">
                                     You will receive:
                                   </h3>
@@ -470,7 +483,6 @@ export default function PoolDetailPage({ params }: PoolDetailPageProps) {
                               >
                                 {isRemovingLiquidity ? (
                                   <div className="flex justify-center items-center">
-                                    <Skeleton className="h-10 w-40 bg-subtitle" />
                                     Removing...
                                   </div>
                                 ) : (

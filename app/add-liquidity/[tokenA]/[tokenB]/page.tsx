@@ -1,21 +1,15 @@
 "use client";
-import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import { ethers } from "ethers";
+import { formatUnits } from "ethers";
 import { useAccount } from "wagmi";
-import { useAccountState } from "@/state/accountStore";
-import { useLiquidityStore } from "@/state/liquidityStore";
+import { useLiqudityState } from "@/state/liquidityStore";
 import TokenInput from "@/components/Pool/TokenInput";
 import { Skeleton } from "@/components/ui/skeleton";
-import { usePriceState, usePriceStore } from "@/state/priceStore";
-// import { useLiquidityStore } from '@/stores/liquidityStore';
-// import { useWalletStore } from '@/stores/walletStore';
-// import { useTokenStore } from '@/stores/tokenStore';
-// import ErrorBoundary from '@/components/common/ErrorBoundary';
-// import LoadingSpinner from '@/components/common/LoadingSpinner';
-// import TokenInput from '@/components/liquidity/TokenInput';
-// import { formatPercent } from '@/utils/formatting';
+import { useAddLiquidityLogic } from "@/hooks/useLiquidityLogic";
+import { SlippageModal } from "@/components/Slippage/SlippageModal";
+import { Button } from "@/components/ui/Button";
+import { useConnectModal } from "@rainbow-me/rainbowkit";
 
 interface AddLiquidityPageProps {
   params: {
@@ -26,188 +20,47 @@ interface AddLiquidityPageProps {
 
 export default function AddLiquidityPage({ params }: AddLiquidityPageProps) {
   const router = useRouter();
-  const { tokenA: tokenAAddress, tokenB: tokenBAddress } = params;
-  const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-  const [expectedLPTokens, setExpectedLPTokens] = useState("0");
-  const [poolShare, setPoolShare] = useState(0);
-  const [slippageTolerance, setSlippageTolerance] = useState(0.5); // Default 0.5%
-  const [deadline, setDeadline] = useState(20); // Default 20 minutes
-
-  // Get data from stores
+  const { tokenA, tokenB } = params;
   const { isConnected, address } = useAccount();
-  const { provider, signer } = useAccountState();
-  //   const { tokenList, prices } = useTokenStore();
-  const { prices } = usePriceState();
+  const { openConnectModal } = useConnectModal();
+  const {
+    isLoading,
+    error,
+
+    tokenAUsdValue,
+    tokenBUsdValue,
+    setSlippage,
+    handleTokenAInput,
+    handleTokenBInput,
+    handleAddLiquidity,
+    handleApproveTokenA,
+    handleApproveTokenB,
+    handleTransaction,
+    setDeadline,
+    expectedLPTokens,
+    poolShare,
+    deadline,
+  } = useAddLiquidityLogic(tokenA, tokenB);
   const {
     selectedTokenA,
     selectedTokenB,
     selectedPool,
+    transactionButtonText,
     tokenAAmount,
+    selectedTokenABalance,
+    selectedTokenBBalance,
+    isUserTokenbalance,
     tokenBAmount,
-    setPairFromAddresses,
-    setTokenAAmount,
-    setTokenBAmount,
-    calculateTokenBAmount,
-    calculateTokenAAmount,
-    calculateExpectedLpTokens,
-    addLiquidity,
+    isApprovingTokenA,
+    isApprovingTokenB,
+    needsApprovalTokenA,
+    needsApprovalTokenB,
     isAddingLiquidity,
-    resetForm,
-  } = useLiquidityStore();
-
-  // Load token pair on component mount
-  useEffect(() => {
-    const loadTokenPair = async () => {
-      try {
-        if (!provider || !isConnected) {
-          setError("Please connect your wallet");
-          setIsLoading(false);
-          return;
-        }
-
-        await setPairFromAddresses(provider, tokenAAddress, tokenBAddress);
-        setIsLoading(false);
-      } catch (err) {
-        console.error("Failed to load token pair:", err);
-        setError("Failed to load token pair. Please try again.");
-        setIsLoading(false);
-      }
-    };
-
-    loadTokenPair();
-
-    // Cleanup on unmount
-    return () => {
-      resetForm();
-    };
-  }, [
-    provider,
-    isConnected,
-    tokenAAddress,
-    tokenBAddress,
-    setPairFromAddresses,
-    resetForm,
-  ]);
-
-  // Calculate expected LP tokens and pool share whenever input amounts change
-  useEffect(() => {
-    const updateLpInfo = async () => {
-      if (!selectedPool || !tokenAAmount || !tokenBAmount || !provider) return;
-
-      try {
-        const lpTokens = await calculateExpectedLpTokens(provider);
-        setExpectedLPTokens(lpTokens);
-
-        // Calculate pool share based on LP tokens
-        if (selectedPool.totalSupply && ethers.parseEther(lpTokens) > 0) {
-          const lpTokensBigInt = ethers.parseEther(lpTokens); // bigint
-          const totalSupplyBigInt = ethers.parseEther(selectedPool.totalSupply); // ensure it's also bigint
-
-          const newShareBigInt =
-            (Number(lpTokensBigInt) * 10000) /
-            Number(totalSupplyBigInt + lpTokensBigInt);
-
-          // Convert to decimal (e.g., 12.34)
-          const newShare = Number(newShareBigInt) / 100;
-          setPoolShare(newShare);
-        } else {
-          setPoolShare(100); // First liquidity provider gets 100%
-        }
-      } catch (err) {
-        console.error("Error calculating LP tokens:", err);
-      }
-    };
-
-    updateLpInfo();
-  }, [
-    tokenAAmount,
-    tokenBAmount,
-    selectedPool,
-    provider,
-    calculateExpectedLpTokens,
-  ]);
-
-  const handleTokenAInput = async (amount: string) => {
-    setTokenAAmount(amount);
-    if (amount && parseFloat(amount) > 0 && selectedPool) {
-      await calculateTokenBAmount(provider!, amount);
-    } else {
-      setTokenBAmount("");
-    }
-  };
-
-  const handleTokenBInput = async (amount: string) => {
-    setTokenBAmount(amount);
-    if (amount && parseFloat(amount) > 0 && selectedPool) {
-      const tokenAValue = await calculateTokenAAmount(provider!, amount);
-      setTokenAAmount(tokenAValue!);
-    } else {
-      setTokenAAmount("");
-    }
-  };
-
-  const handleAddLiquidity = async () => {
-    if (!isConnected || !provider || !address) {
-      setError("Please connect your wallet");
-      return;
-    }
-
-    if (
-      !tokenAAmount ||
-      !tokenBAmount ||
-      parseFloat(tokenAAmount) <= 0 ||
-      parseFloat(tokenBAmount) <= 0
-    ) {
-      setError("Please enter valid amounts");
-      return;
-    }
-
-    try {
-      // Calculate deadline timestamp (current time + deadline minutes)
-      const deadlineTimestamp = Math.floor(Date.now() / 1000) + deadline * 60;
-
-      await addLiquidity(signer);
-
-      // Clear inputs and redirect to pool details
-      resetForm();
-      router.push(`/pool/${selectedPool?.pairAddress}`);
-    } catch (err: any) {
-      console.error("Failed to add liquidity:", err);
-      setError(err.message || "Failed to add liquidity. Please try again.");
-    }
-  };
-
-  // Check if inputs are valid for adding liquidity
-  const isValidInput =
-    tokenAAmount &&
-    tokenBAmount &&
-    parseFloat(tokenAAmount) > 0 &&
-    parseFloat(tokenBAmount) > 0 &&
-    !isAddingLiquidity;
-
-  // Calculate USD values if prices are available
-  const getTokenAUsdValue = () => {
-    if (!selectedTokenA || !tokenAAmount || !prices) return null;
-    const priceKey = `${selectedTokenA.symbol}_USD`;
-    const price = prices[priceKey];
-    if (!price) return null;
-
-    return parseFloat(tokenAAmount) * price;
-  };
-
-  const getTokenBUsdValue = () => {
-    if (!selectedTokenB || !tokenBAmount || !prices) return null;
-    const priceKey = `${selectedTokenB.symbol}_USD`;
-    const price = prices[priceKey];
-    if (!price) return null;
-
-    return parseFloat(tokenBAmount) * price;
-  };
-
-  const tokenAUsdValue = getTokenAUsdValue();
-  const tokenBUsdValue = getTokenBUsdValue();
-
+    expectedLPToken,
+    transactionTokenAButtonText,
+    slippage,
+    transactionTokenBButtonText,
+  } = useLiqudityState();
   if (isLoading) {
     return (
       <div className="flex justify-center items-center h-96">
@@ -232,14 +85,38 @@ export default function AddLiquidityPage({ params }: AddLiquidityPageProps) {
       </div>
     );
   }
-
+  const getButtonProps = () => {
+    if (!isConnected) {
+      return {
+        onClick: openConnectModal,
+        text: "Connect",
+        disabled: false,
+      };
+    } else if (Number(selectedTokenBBalance) === 0) {
+      return {
+        onClick: () => {},
+        text: "Insufficent Balance",
+        disabled: true,
+      };
+    } else if (Number(selectedTokenABalance) === 0) {
+      return {
+        onClick: () => {},
+        text: "Insufficent Balance",
+        disabled: true,
+      };
+    } else {
+      return {
+        onClick: handleTransaction,
+        text: transactionButtonText,
+        disabled: isAddingLiquidity || !tokenAAmount || !tokenBAmount,
+      };
+    }
+  };
+  const buttonProps = getButtonProps();
   return (
     // <ErrorBoundary fallback={<div>Something went wrong. Please try again later.</div>}>
-    <div className="max-w-2xl w-full mx-auto mt-8 p-6 bg-background rounded-xl shadow-md">
-      <div className="flex items-center justify-between mb-6">
-        <h1 className="text-2xl font-bold text-gray-800 dark:text-white">
-          Add Liquidity
-        </h1>
+    <div className="max-w-[500px] w-full mx-auto mt-8 p-6 bg-background rounded-xl flex flex-col gap-5 ">
+      <div>
         <Link
           href="/pool"
           className="text-blue-600 dark:text-blue-400 hover:underline flex items-center"
@@ -259,144 +136,141 @@ export default function AddLiquidityPage({ params }: AddLiquidityPageProps) {
           Back to Pools
         </Link>
       </div>
+      <div className="flex flex-col gap-1">
+        <div className="flex items-center justify-between mb-6">
+          <h1 className="text-2xl font-bold  text-title">Add Liquidity</h1>
+          <SlippageModal
+            setDeadline={setDeadline}
+            setSlippage={setSlippage}
+            slippage={slippage}
+          />
+        </div>
 
-      {error && (
+        {/* {error && (
         <div className="mb-4 p-3 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg text-red-600 dark:text-red-300">
           {error}
-        </div>
-      )}
-
-      <div className="space-y-4">
-        {/* Token A Input */}
-        <TokenInput
-          label="Token A"
-          token={selectedTokenA}
-          value={tokenAAmount}
-          onChange={handleTokenAInput}
-          usdValue={tokenAUsdValue}
-          disabled={isAddingLiquidity}
-        />
-
-        {/* Plus icon between inputs */}
-        <div className="flex justify-center">
-          <div className="bg-gray-100 dark:bg-gray-700 rounded-full p-2">
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              className="h-6 w-6 text-gray-500 dark:text-gray-300"
-              fill="none"
-              viewBox="0 0 24 24"
-              stroke="currentColor"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M12 4v16m8-8H4"
-              />
-            </svg>
           </div>
-        </div>
+          )} */}
 
-        {/* Token B Input */}
-        <TokenInput
-          label="Token B"
-          token={selectedTokenB}
-          value={tokenBAmount}
-          onChange={handleTokenBInput}
-          usdValue={tokenBUsdValue}
-          disabled={isAddingLiquidity}
-        />
+        <div className="space-y-4">
+          {/* Token A Input */}
 
-        {/* Settings */}
-        <div className="mt-6  bg-forground p-4 rounded-lg">
-          <h3 className="text-lg font-medium text-gray-700 dark:text-gray-200 mb-3">
-            Settings
-          </h3>
+          <TokenInput
+            label="Token A"
+            token={selectedTokenA}
+            value={tokenAAmount}
+            onChange={handleTokenAInput}
+            usdValue={tokenAUsdValue}
+            disabled={isAddingLiquidity}
+            tokenBalnce={selectedTokenABalance}
+            isBalanceLoading={isUserTokenbalance}
+          />
+          {address && (
+            <>
+              {Number(tokenAAmount) > Number(selectedTokenABalance) ? (
+                <>
+                  {" "}
+                  <Button
+                    variant="secondary"
+                    className="w-full py-3 cursor-not-allowed text-white font-semibold"
+                  >
+                    InSufficient {selectedTokenA?.symbol} Balance
+                  </Button>
+                </>
+              ) : (
+                <>
+                  {transactionTokenAButtonText &&
+                    tokenAAmount !== "0" &&
+                    needsApprovalTokenA && (
+                      <Button
+                        onClick={handleApproveTokenA}
+                        variant="primary"
+                        disabled={
+                          isApprovingTokenA ||
+                          isAddingLiquidity ||
+                          transactionTokenAButtonText.startsWith("Insufficient")
+                        }
+                        className="w-full py-3 disabled:cursor-not-allowed text-white font-semibold"
+                      >
+                        {transactionTokenAButtonText}
+                      </Button>
+                    )}
+                </>
+              )}
+            </>
+          )}
 
-          <div className="flex justify-between items-center mb-3">
-            <label
-              htmlFor="slippage"
-              className="text-sm text-gray-600 dark:text-gray-300"
-            >
-              Slippage Tolerance
-            </label>
-            <div className="flex items-center space-x-2">
-              <button
-                onClick={() => setSlippageTolerance(0.1)}
-                className={`px-2 py-1 text-xs rounded ${
-                  slippageTolerance === 0.1
-                    ? "bg-blue-500 text-white"
-                    : "bg-gray-200 dark:bg-gray-600 text-gray-700 dark:text-gray-300"
-                }`}
+          {/* Plus icon between inputs */}
+          <div className="flex justify-center">
+            <div className="bg-primary  p-2">
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                className="h-6 w-6 text-white"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
               >
-                0.1%
-              </button>
-              <button
-                onClick={() => setSlippageTolerance(0.5)}
-                className={`px-2 py-1 text-xs rounded ${
-                  slippageTolerance === 0.5
-                    ? "bg-blue-500 text-white"
-                    : "bg-gray-200 dark:bg-gray-600 text-gray-700 dark:text-gray-300"
-                }`}
-              >
-                0.5%
-              </button>
-              <button
-                onClick={() => setSlippageTolerance(1.0)}
-                className={`px-2 py-1 text-xs rounded ${
-                  slippageTolerance === 1.0
-                    ? "bg-blue-500 text-white"
-                    : "bg-gray-200 dark:bg-gray-600 text-gray-700 dark:text-gray-300"
-                }`}
-              >
-                1.0%
-              </button>
-              <input
-                type="number"
-                id="custom-slippage"
-                value={slippageTolerance}
-                onChange={(e) =>
-                  setSlippageTolerance(parseFloat(e.target.value) || 0)
-                }
-                className="w-16 text-right bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded px-2 py-1 text-sm"
-                min="0.1"
-                max="10"
-                step="0.1"
-              />
-              <span className="text-gray-600 dark:text-gray-300">%</span>
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M12 4v16m8-8H4"
+                />
+              </svg>
             </div>
           </div>
 
-          <div className="flex justify-between items-center">
-            <label
-              htmlFor="deadline"
-              className="text-sm text-gray-600 dark:text-gray-300"
-            >
-              Transaction Deadline
-            </label>
-            <div className="flex items-center">
-              <input
-                type="number"
-                id="deadline"
-                value={deadline}
-                onChange={(e) => setDeadline(parseInt(e.target.value) || 10)}
-                className="w-16 text-right bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded px-2 py-1 text-sm"
-                min="1"
-                max="180"
-              />
-              <span className="ml-2 text-gray-600 dark:text-gray-300">
-                minutes
-              </span>
-            </div>
-          </div>
+          {/* Token B Input */}
+          <TokenInput
+            label="Token B"
+            token={selectedTokenB}
+            value={tokenBAmount}
+            onChange={handleTokenBInput}
+            usdValue={tokenBUsdValue}
+            disabled={isAddingLiquidity}
+            tokenBalnce={selectedTokenBBalance}
+            isBalanceLoading={isUserTokenbalance}
+          />
+          {address && (
+            <>
+              {Number(tokenBAmount) > Number(selectedTokenBBalance) ? (
+                <>
+                  {" "}
+                  <Button
+                    variant="secondary"
+                    className="w-full py-3 cursor-not-allowed text-white font-semibold"
+                  >
+                    InSufficient {selectedTokenB?.symbol} Balance
+                  </Button>
+                </>
+              ) : (
+                <>
+                  {transactionTokenBButtonText &&
+                    tokenBAmount !== "0" &&
+                    needsApprovalTokenB && (
+                      <Button
+                        onClick={handleApproveTokenB}
+                        variant="primary"
+                        disabled={
+                          isApprovingTokenB ||
+                          isAddingLiquidity ||
+                          transactionTokenBButtonText.startsWith("Insufficient")
+                        }
+                        className="w-full py-3 disabled:cursor-not-allowed text-white font-semibold"
+                      >
+                        {transactionTokenBButtonText}
+                      </Button>
+                    )}
+                </>
+              )}
+            </>
+          )}
         </div>
 
         {/* Pool information */}
         {selectedPool && (
-          <div className="mt-6 bg-forground p-4 rounded-lg">
-            <h3 className="text-lg font-medium text-gray-700 dark:text-gray-200 mb-3">
-              Pool Information
-            </h3>
+          <div className="mt-6 bg-forground p-4  ">
+            <h3 className="text-lg font-medium  mb-3">Pool Information</h3>
 
             <div className="space-y-3">
               <div className="flex justify-between">
@@ -425,47 +299,40 @@ export default function AddLiquidityPage({ params }: AddLiquidityPageProps) {
                   Expected LP Tokens
                 </span>
                 <span className="text-gray-800 dark:text-gray-100">
-                  {expectedLPTokens}
-                </span>
-              </div>
-
-              <div className="flex justify-between">
-                <span className="text-gray-600 dark:text-gray-300">
-                  Pool Share
-                </span>
-                <span className="text-gray-800 dark:text-gray-100">
-                  {poolShare}
+                  {expectedLPToken}
                 </span>
               </div>
             </div>
           </div>
         )}
 
-        {/* Action Button */}
-        <button
-          onClick={handleAddLiquidity}
-          disabled={!isValidInput || isAddingLiquidity}
-          className={`w-full mt-6 py-3 px-4 rounded-lg font-medium ${
-            isValidInput && !isAddingLiquidity
-              ? "bg-blue-600 hover:bg-blue-700 text-white"
-              : "bg-gray-300 dark:bg-gray-700 text-gray-500 dark:text-gray-400 cursor-not-allowed"
-          }`}
-        >
-          {isAddingLiquidity ? (
-            <div className="flex items-center justify-center">
-              <Skeleton className="h-10 w-40 bg-subtitle" />
-              <span className="ml-2">Adding Liquidity...</span>
-            </div>
-          ) : !isConnected ? (
-            "Connect Wallet"
-          ) : !tokenAAmount || !tokenBAmount ? (
-            "Enter an Amount"
-          ) : (
-            "Add Liquidity"
-          )}
-        </button>
+        {isConnected ? (
+          <Button
+            onClick={handleTransaction}
+            variant={"primary"}
+            disabled={
+              !tokenAAmount ||
+              !tokenBAmount ||
+              isAddingLiquidity ||
+              Number(tokenBAmount) > Number(selectedTokenBBalance) ||
+              Number(tokenAAmount) > Number(selectedTokenABalance)
+            }
+            className="w-full mt-4 py-3 disabled:cursor-not-allowed text-white font-semibold  "
+          >
+            {transactionButtonText}
+          </Button>
+        ) : (
+          <Button
+            variant={"primary"}
+            className="w-full mt-4 py-3  text-title font-semibold  "
+            onClick={openConnectModal}
+          >
+            Connect
+          </Button>
+        )}
       </div>
     </div>
+
     // </ErrorBoundary>
   );
 }

@@ -1,14 +1,26 @@
+"use client";
 import React from "react";
-import { SlippageModal } from "../Slippage/SlippageModal";
 import { SwapWidget } from "./SwapWidget";
-import { usePriceFeed } from "@/hooks/usePriceFeed";
 
+import { TradingViewWidget } from "@/components/Chart/TradingViewWidget";
+import { useSwapState } from "@/state/swapStore";
 type Props = {};
 
 export const SwapComponent = (props: Props) => {
+  const { chartFlag } = useSwapState();
+
   return (
-    <div className="flex w-full flex-col max-w-[424px] mb-2 items-center justify-center ">
-      <SwapWidget />
+    <div className="flex w-full flex-row gap-4  max-w-[1424px] mb-2 items-start justify-center ">
+      <div
+        className={`max-w-[1024px]  w-full h-[400px] ${
+          chartFlag ? "block" : "hidden"
+        } md:min-h-[600px] relative `}
+      >
+        <TradingViewWidget />
+      </div>
+      <div className="w-full max-w-[450px] ">
+        <SwapWidget />
+      </div>
     </div>
   );
 };

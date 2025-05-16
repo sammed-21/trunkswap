@@ -12,12 +12,8 @@ const buttonVariants = cva(
       variant: {
         secondary: "bg-accent border-border rounded-none ",
         primary:
-          "hover:bg-secondary border-border border-[1px] text-white bg-primary rounded-none",
-        white:
-          "bg-white text-black border-textprimary font-semibold text-xl w-fit",
-        Blue: "text-primary-light-blue bg-primary",
-        Pink: "bg-primary-pink text-primary-light-pink",
-        Primary: "bg-primary text-primary",
+          "hover:bg-secondary border-border border-[1px] hover:!text-title !text-white bg-primary rounded-none",
+
         default:
           "bg-primary hover:bg-primary-500 rounded-none text-primary-foreground",
       },

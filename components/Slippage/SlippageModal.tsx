@@ -9,9 +9,17 @@ import { SlippageTolerance } from "./SlippageTolerance";
 import { DeadlineComponent } from "./DeadlineComponent";
 import { useSwapState } from "@/state/swapStore";
 
-type Props = {};
+type Props = {
+  slippage: any;
+  setSlippage: (value: number) => void;
+  setDeadline: (value: number) => void;
+};
 
-export const SlippageModal = (props: Props) => {
+export const SlippageModal = ({
+  slippage,
+  setDeadline,
+  setSlippage,
+}: Props) => {
   return (
     <div>
       <DropdownMenu>
@@ -23,8 +31,8 @@ export const SlippageModal = (props: Props) => {
         <DropdownMenuContent className="max-w-[400px] flex flex-col gap-3 p-4 w-full h-fit relative  ">
           <h1 className="text-textpriamry text-xs">Transaction Settings</h1>
           <div className=" flex flex-col gap-1 w-full rounded-none ">
-            <SlippageTolerance />
-            <DeadlineComponent />
+            <SlippageTolerance slippage={slippage} setSlippage={setSlippage} />
+            <DeadlineComponent setDeadline={setDeadline} />
           </div>
         </DropdownMenuContent>
       </DropdownMenu>

@@ -1,4 +1,4 @@
-import { getDefaultConfig } from "@rainbow-me/rainbowkit";
+import { Chain, getDefaultConfig } from "@rainbow-me/rainbowkit";
 import { arbitrum, arbitrumSepolia, mainnet, sepolia } from "viem/chains";
 import arbitrum_sepolia from "@/public/chains/arbitrum-sepolia.svg";
 import { StaticImport } from "next/dist/shared/lib/get-img-props";
@@ -19,7 +19,7 @@ export const chainMaps: Record<number, any> = {
 export const rpcMap: Record<number, string> = {
   1: "https://eth.llamarpc.com",
   42161: "https://arb1.arbitrum.io/rpc",
-  421614: "wss://arbitrum-sepolia-rpc.publicnode.com",
+  421614: "https://arbitrum-sepolia-rpc.publicnode.com",
   11155111: "https://ethereum-sepolia-rpc.publicnode.com",
 };
 
