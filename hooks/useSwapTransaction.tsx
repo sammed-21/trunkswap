@@ -46,7 +46,6 @@ export function useSwapTransactions() {
     setFee,
     resetSwapState,
   } = useSwapActions();
-
   const { signer, provider, chainId, address } = useAccountState();
   const ROUTER_ADDRESS =
     addressess[getNetworkNameUsingChainId(chainId)].ROUTER_ADDRESS;
@@ -249,18 +248,44 @@ export function useSwapTransactions() {
 
   // Approve token spending
   const approveToken = useCallback(async () => {
-    if (!signer || !currentSellAsset?.address) return;
+    if (!signer || !provider || !currentSellAsset?.address) return;
 
     try {
       setIsApproving(true);
       setTransactionButtonText("Approving...");
+      const userAddress = await signer.getAddress();
+      try {
+        const blockNumber = await provider.getBlockNumber();
+      } catch (rpcError) {
+        return null;
+      }
 
       const tokenContract = new ethers.Contract(
         currentSellAsset.address,
         ERC20_ABI,
         signer
       );
+      const [currentNonce, block, feeData] = await Promise.all([
+        provider.getTransactionCount(userAddress, "latest"),
+        provider.getBlock("latest"),
+        provider.getFeeData(),
+      ]);
 
+      // Set a higher gas limit
+      const gasLimit = BigInt(500000); // Set a high fixed value instead of estimation
+
+      // Create transaction with optimal parameters
+      const txParams = {
+        nonce: currentNonce,
+        gasLimit: gasLimit,
+        // Set gas price slightly higher than current to ensure faster processing
+        gasPrice: feeData.gasPrice
+          ? (feeData.gasPrice * BigInt(11)) / BigInt(10)
+          : undefined,
+      };
+
+      // Add a small delay before sending transaction to ensure blockchain state is updated
+      await new Promise((resolve) => setTimeout(resolve, 2000));
       // Max approval
       // const maxApproval = ethers.MaxUint256;
 
@@ -275,7 +300,8 @@ export function useSwapTransactions() {
         async () => {
           return tokenContract.approve(
             ROUTER_ADDRESS,
-            formatedSellTokenApproval
+            formatedSellTokenApproval,
+            txParams
           );
         },
         "approve",
