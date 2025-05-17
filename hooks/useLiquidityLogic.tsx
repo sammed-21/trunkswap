@@ -553,11 +553,17 @@ export function useAddLiquidityLogic(tokenA: string, tokenB: string) {
   //new
   const approveTokenA = useCallback(
     async (tokenAmountA: string) => {
-      if (!signer || !selectedTokenA?.address) return;
+      if (!signer || !provider || !selectedTokenA?.address) return;
 
       try {
         setIsApprovingTokenA(true);
         setTransactionTokenAButtonText("Approving...");
+        const userAddress = await signer.getAddress();
+        try {
+          const blockNumber = await provider.getBlockNumber();
+        } catch (rpcError) {
+          return null;
+        }
 
         const tokenContract = new ethers.Contract(
           selectedTokenA.address,
@@ -570,6 +576,27 @@ export function useAddLiquidityLogic(tokenA: string, tokenB: string) {
           tokenAmountA,
           selectedTokenA?.decimals
         );
+        const [currentNonce, block, feeData] = await Promise.all([
+          provider.getTransactionCount(userAddress, "latest"),
+          provider.getBlock("latest"),
+          provider.getFeeData(),
+        ]);
+
+        // Set a higher gas limit
+        const gasLimit = BigInt(500000); // Set a high fixed value instead of estimation
+
+        // Create transaction with optimal parameters
+        const txParams = {
+          nonce: currentNonce,
+          gasLimit: gasLimit,
+          // Set gas price slightly higher than current to ensure faster processing
+          gasPrice: feeData.gasPrice
+            ? (feeData.gasPrice * BigInt(11)) / BigInt(10)
+            : undefined,
+        };
+
+        // Add a small delay before sending transaction to ensure blockchain state is updated
+        await new Promise((resolve) => setTimeout(resolve, 2000));
 
         // For better UX, we could approve a large amount (MAX_UINT256)
         // const amountToApprove = ethers.MaxUint256;
@@ -578,7 +605,8 @@ export function useAddLiquidityLogic(tokenA: string, tokenB: string) {
           async () => {
             return tokenContract.approve(
               ROUTER_ADDRESS(chainId),
-              amountToApprove
+              amountToApprove,
+              txParams
             );
           },
           "approve",
@@ -612,12 +640,17 @@ export function useAddLiquidityLogic(tokenA: string, tokenB: string) {
 
   const approveTokenB = useCallback(
     async (tokenAmountB: string) => {
-      if (!signer || !selectedTokenB?.address) return;
+      if (!signer || !provider || !selectedTokenB?.address) return;
 
       try {
         setIsApprovingTokenB(true);
         setTransactionTokenBButtonText("Approving...");
-
+        const userAddress = await signer.getAddress();
+        try {
+          const blockNumber = await provider.getBlockNumber();
+        } catch (rpcError) {
+          return null;
+        }
         const tokenContract = new ethers.Contract(
           selectedTokenB.address,
           ERC20_ABI,
@@ -632,6 +665,27 @@ export function useAddLiquidityLogic(tokenA: string, tokenB: string) {
 
         // For better UX, we could approve a large amount (MAX_UINT256)
         // const amountToApprove = ethers.MaxUint256;
+        const [currentNonce, block, feeData] = await Promise.all([
+          provider.getTransactionCount(userAddress, "latest"),
+          provider.getBlock("latest"),
+          provider.getFeeData(),
+        ]);
+
+        // Set a higher gas limit
+        const gasLimit = BigInt(500000); // Set a high fixed value instead of estimation
+
+        // Create transaction with optimal parameters
+        const txParams = {
+          nonce: currentNonce,
+          gasLimit: gasLimit,
+          // Set gas price slightly higher than current to ensure faster processing
+          gasPrice: feeData.gasPrice
+            ? (feeData.gasPrice * BigInt(11)) / BigInt(10)
+            : undefined,
+        };
+
+        // Add a small delay before sending transaction to ensure blockchain state is updated
+        await new Promise((resolve) => setTimeout(resolve, 2000));
 
         await withToast(
           async () => {
