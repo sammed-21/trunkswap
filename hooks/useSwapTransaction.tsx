@@ -1,4 +1,4 @@
-import { ethers, formatEther, formatUnits } from "ethers";
+import { ethers, formatEther, formatUnits, parseUnits } from "ethers";
 import { useEffect, useState, useCallback } from "react";
 import { useSwapState, useSwapActions } from "@/state/swapStore";
 import { useAccountState } from "@/state/accountStore";
@@ -11,12 +11,13 @@ import { deadlineFormatted } from "@/lib/utils";
 import { getGasEstimation } from "@/services/getEstimatedGas";
 import { getRouterContract } from "@/services/getContracts";
 import { defaultChainId } from "@/lib/constants";
+import { useTxToast } from "./useToast";
 
 // Replace with your actual router address
 
 export function useSwapTransactions() {
   // const { address } = useAccount();
-
+  const { withToast } = useTxToast();
   const {
     currentSellAsset,
     currentBuyAsset,
@@ -45,7 +46,6 @@ export function useSwapTransactions() {
     setFee,
     resetSwapState,
   } = useSwapActions();
-
   const { signer, provider, chainId, address } = useAccountState();
   const ROUTER_ADDRESS =
     addressess[getNetworkNameUsingChainId(chainId)].ROUTER_ADDRESS;
@@ -248,23 +248,71 @@ export function useSwapTransactions() {
 
   // Approve token spending
   const approveToken = useCallback(async () => {
-    if (!signer || !currentSellAsset?.address) return;
+    if (!signer || !provider || !currentSellAsset?.address) return;
 
     try {
       setIsApproving(true);
       setTransactionButtonText("Approving...");
+      const userAddress = await signer.getAddress();
+      try {
+        const blockNumber = await provider.getBlockNumber();
+      } catch (rpcError) {
+        return null;
+      }
 
       const tokenContract = new ethers.Contract(
         currentSellAsset.address,
         ERC20_ABI,
         signer
       );
+      const [currentNonce, block, feeData] = await Promise.all([
+        provider.getTransactionCount(userAddress, "latest"),
+        provider.getBlock("latest"),
+        provider.getFeeData(),
+      ]);
 
+      // Set a higher gas limit
+      const gasLimit = BigInt(500000); // Set a high fixed value instead of estimation
+
+      // Create transaction with optimal parameters
+      const txParams = {
+        nonce: currentNonce,
+        gasLimit: gasLimit,
+        // Set gas price slightly higher than current to ensure faster processing
+        gasPrice: feeData.gasPrice
+          ? (feeData.gasPrice * BigInt(11)) / BigInt(10)
+          : undefined,
+      };
+
+      // Add a small delay before sending transaction to ensure blockchain state is updated
+      await new Promise((resolve) => setTimeout(resolve, 2000));
       // Max approval
-      const maxApproval = ethers.MaxUint256;
+      // const maxApproval = ethers.MaxUint256;
 
-      const tx = await tokenContract.approve(ROUTER_ADDRESS, maxApproval);
-      await tx.wait();
+      // const tx = await tokenContract.approve(ROUTER_ADDRESS, maxApproval);
+
+      let formatedSellTokenApproval = parseUnits(
+        TokenAAmount,
+        currentSellAsset.decimals
+      );
+      // const maxApproval = ethers.MaxUint256;
+      await withToast(
+        async () => {
+          return tokenContract.approve(
+            ROUTER_ADDRESS,
+            formatedSellTokenApproval,
+            txParams
+          );
+        },
+        "approve",
+        {
+          chainId: chainId,
+          meta: {
+            tokenAAmount: TokenAAmount,
+            tokenASymbol: currentSellAsset.symbol,
+          },
+        }
+      );
 
       // Check approval again
       await checkApproval();
@@ -314,23 +362,52 @@ export function useSwapTransactions() {
       // Calculate deadline timestamp
       const deadlineTimestamp = deadlineFormatted(deadline); // deadline in minutes
 
-      // Execute the swap
-      const tx = await routerContract.swapExactTokensForTokens(
-        amountIn,
-        minAmountOut.raw, // Min amount out with slippage
-        [currentSellAsset.address, currentBuyAsset.address],
-        signerAddress,
-        deadlineTimestamp
+      await withToast(
+        async () => {
+          // This function returns the transaction promise
+          return routerContract.swapExactTokensForTokens(
+            amountIn,
+            minAmountOut.raw, // Min amount out with slippage
+            [currentSellAsset.address, currentBuyAsset.address],
+            signerAddress,
+            deadlineTimestamp
+          );
+        },
+        "swap", // Transaction type
+        {
+          // actionLabel:"Swap",
+          chainId: chainId, // Replace with your network's chain ID
+          meta: {
+            tokenAAmount: TokenAAmount,
+            tokenASymbol: `${currentSellAsset.symbol}`,
+            tokenBAmount: TokenBAmount,
+            tokenBSymbol: `${currentBuyAsset.symbol}`,
+            aggregate: "→",
+          },
+          // Optional callbacks
+          onSuccess: async (receipt) => {
+            // Clear form or update UI after successful swap
+            // You could update balances here
+            setTokenBAmount("");
+            setTransactionButtonText("Swap");
+            await updateTokenBalances(address!, provider);
+            resetSwapState();
+          },
+          onError: (error) => {
+            setTransactionButtonText("Swap");
+            // Any additional error handling specific to your app
+          },
+        },
+        // Optional custom title
+        `Swap ${currentSellAsset.symbol} for ${currentBuyAsset.symbol}`
       );
-
-      await tx.wait();
       // Reset fields after successful swap
       setTokenBAmount("");
       setTransactionButtonText("Swap");
       await updateTokenBalances(address!, provider);
       resetSwapState();
     } catch (error) {
-      console.error("Error executing swap:", error);
+      // console.error("Error executing swap:", error);
       setTransactionButtonText("Swap");
     } finally {
       setIsSwapping(false);

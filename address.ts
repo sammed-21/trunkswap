@@ -22,18 +22,18 @@ export const addressess: any = {
 export type SupportedToken = "STX" | "RSTX";
 
 export type TokenInfo = {
-  symbol: SupportedToken;
-  image: string;
-  addresses: Record<number, string>; // token address per chain
-  faucetAddresses: Record<number, string>; // faucet address per chain
+  symbol?: SupportedToken;
+  image?: string;
+  addresses?: Record<number, string>; // token address per chain
+  faucetAddresses?: Record<number, string>; // faucet address per chain
 };
 
-export type TokenCooldowns = Record<SupportedToken, number>;
+export type TokenCooldowns = Record<any, number>;
 
-export const TOKENS: Record<SupportedToken, TokenInfo> = {
+export const TOKENS: Record<string, TokenInfo> = {
   STX: {
     symbol: "STX",
-    image: STX_IMAGE,
+    image: "/tokens/stx.svg",
     addresses: {
       421614: "0x7dE5CEdca10d8b851aD55Be6434c39a86674bb54",
     },
@@ -43,7 +43,7 @@ export const TOKENS: Record<SupportedToken, TokenInfo> = {
   },
   RSTX: {
     symbol: "RSTX",
-    image: RSTX_IMAGE,
+    image: "/tokens/rstx.svg",
     addresses: {
       421614: "0x2BCb93F7D8884410845fa1F8B8Df5df820673be3",
     },
@@ -51,4 +51,10 @@ export const TOKENS: Record<SupportedToken, TokenInfo> = {
       421614: "0x2A71DB352DD6B4630327fc0C3f01fB3cc165EeF5",
     },
   },
+
+  // APXFaucet: {
+  //   faucetAddresses: {
+  //     421614: "0x21c7789d1983A362d64b9EC25FD98E83719182b4",
+  //   },
+  // },
 };

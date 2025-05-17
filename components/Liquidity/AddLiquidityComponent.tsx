@@ -3,7 +3,7 @@ import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { formatUnits } from "ethers";
 import { useAccount } from "wagmi";
-import { useLiqudityState } from "@/state/liquidityStore";
+import { Pool, useLiqudityState } from "@/state/liquidityStore";
 import TokenInput from "@/components/Pool/TokenInput";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useAddLiquidityLogic } from "@/hooks/useLiquidityLogic";
@@ -12,37 +12,23 @@ import { Button } from "@/components/ui/Button";
 import { useConnectModal } from "@rainbow-me/rainbowkit";
 import { formatDigits } from "@/lib/utils";
 import { LoadingScreen } from "@/components/Common/LoadingScreen";
+import { useMemo } from "react";
 
-interface AddLiquidityPageProps {
-  params: {
-    tokenA: string;
-    tokenB: string;
-  };
+interface Props {
+  pool: Pool;
 }
-
-export default function AddLiquidityPage({ params }: AddLiquidityPageProps) {
+const AddLiquidityComponent = ({ pool }: Props) => {
   const router = useRouter();
-  const { tokenA, tokenB } = params;
+  //   const { tokenA, tokenB } = params;
   const { isConnected, address } = useAccount();
   const { openConnectModal } = useConnectModal();
-  const {
-    isLoading,
-    error,
-
-    tokenAUsdValue,
-    tokenBUsdValue,
-    setSlippage,
-    handleTokenAInput,
-    handleTokenBInput,
-    handleAddLiquidity,
-    handleApproveTokenA,
-    handleApproveTokenB,
-    handleTransaction,
-    setDeadline,
-    expectedLPTokens,
-    poolShare,
-    deadline,
-  } = useAddLiquidityLogic(tokenA, tokenB);
+  const tokenAddresses = useMemo(
+    () => ({
+      tokenA: pool.token0.address,
+      tokenB: pool.token1.address,
+    }),
+    [pool.token0.address, pool.token1.address]
+  );
   const {
     selectedTokenA,
     selectedTokenB,
@@ -63,6 +49,23 @@ export default function AddLiquidityPage({ params }: AddLiquidityPageProps) {
     slippage,
     transactionTokenBButtonText,
   } = useLiqudityState();
+  const {
+    isLoading,
+    error,
+    tokenAUsdValue,
+    tokenBUsdValue,
+    setSlippage,
+    handleTokenAInput,
+    handleTokenBInput,
+    handleAddLiquidity,
+    handleApproveTokenA,
+    handleApproveTokenB,
+    handleTransaction,
+    setDeadline,
+    expectedLPTokens,
+    poolShare,
+    deadline,
+  } = useAddLiquidityLogic(tokenAddresses.tokenA, tokenAddresses.tokenB);
   if (isLoading) {
     return (
       <div className="flex justify-center items-center h-96">
@@ -335,7 +338,7 @@ export default function AddLiquidityPage({ params }: AddLiquidityPageProps) {
         )}
       </div>
     </div>
-
-    // </ErrorBoundary>
   );
-}
+};
+
+export default AddLiquidityComponent;

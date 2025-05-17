@@ -5,7 +5,7 @@ import { usePriceFeed } from "@/hooks/usePriceFeed";
 import { FACTORY_ADDRESS } from "@/lib/constants";
 import { getProvider } from "@/services/getProvider";
 import { useAccountState } from "@/state/accountStore";
-import { useLiquidityActions } from "@/state/liquidityStore";
+import { useLiqudityState, useLiquidityActions } from "@/state/liquidityStore";
 import { usePoolActions } from "@/state/poolStore";
 import { usePriceState } from "@/state/priceStore";
 import { useSwapActions, useSwapState } from "@/state/swapStore";
@@ -17,7 +17,7 @@ export const useInitialLoad = () => {
   const { address, isConnected } = useAccount();
   const chainId = useChainId();
   const { fetchPools } = useLiquidityActions();
-
+  const { pools } = useLiqudityState();
   const { updateTokenBalances, fetchAllTokens } = useSwapActions();
 
   const { fetchPriceFlag, prices } = usePriceState();
@@ -25,6 +25,7 @@ export const useInitialLoad = () => {
 
   useEffect(() => {
     if (!provider || !chainId) return;
+
     fetchPools(provider);
   }, [provider, chainId, fetchPriceFlag]);
 

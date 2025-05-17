@@ -5,7 +5,7 @@ import React, { useEffect } from "react";
 import { useAccount } from "wagmi";
 
 export const useTokenInitializer: React.FC = () => {
-  const { setTokens, fetchTokenBalances, fetchAllTokens } = useSwapActions();
+  const { setTokens, fetchAllTokens } = useSwapActions();
   const { address } = useAccount();
   const { provider } = useAccountState();
   useEffect(() => {

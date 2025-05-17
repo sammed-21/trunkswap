@@ -1,7 +1,7 @@
 import { Address, PublicClient, WalletClient, type Hex } from "viem";
 
 import { UsePublicClientReturnType, UseWalletClientReturnType } from "wagmi";
-import { Signer } from "ethers";
+import { Signer, TransactionReceipt } from "ethers";
 import { Provider } from "ethers";
 
 // This interface is subject to change as the API V2 endpoints aren't finalized.
@@ -55,8 +55,8 @@ export interface SwapState {
   tradeDirection: "sell" | "buy";
   tokens: Token[];
   TokenAAmount: string;
-  currentSellAsset: TokenDetail;
-  currentBuyAsset: TokenDetail;
+  currentSellAsset: Token;
+  currentBuyAsset: Token;
   selectorOpen: Boolean;
   slippage: number | string | any;
   deadline: number;
@@ -88,11 +88,11 @@ export interface SwapState {
 }
 export interface Token {
   name: string;
-  address: Address;
+  address: string;
   symbol: string;
   decimals: number;
   chainId: number;
-  logoURI: string;
+  logoURI?: string;
   balance?: string;
   usdValue?: number;
 }
@@ -105,8 +105,8 @@ export interface SwapActions {
   setSelectorOpen: (isOpen: Boolean) => void;
   setTradeDirection: (direction: "sell" | "buy") => void;
   setTokenAAmount: (amount: string) => void;
-  setCurrentBuyAsset: (token: TokenDetail) => void;
-  setCurrentSellAsset: (token: TokenDetail) => void;
+  setCurrentBuyAsset: (token: Token) => void;
+  setCurrentSellAsset: (token: Token) => void;
   setSlippage: (slippage: number) => void;
   setDeadline: (deadline: number) => void;
   setTokenABalance: (tokenBalance: string) => void;
@@ -137,7 +137,11 @@ export interface SwapActions {
   setPrices: (prices: Prices) => void;
   setExceedsBalanceError: (exceedsBalanceError: boolean) => void;
   setChartActiveToken: (chartActiveToken: string) => void;
-
+  fetchTokenBalanceFor: (
+    token: Token,
+    walletAddress: string,
+    provider: Provider
+  ) => Promise<Token>;
   fetchAllTokens: (walletAddress: string, provider: Provider) => void;
 }
 
@@ -168,3 +172,51 @@ export interface AccountInfo {
   resetAccountStore: () => void;
   // setSignerAndProvider: (signer: string, chainId: string | number) => void;
 }
+
+export type PendingTransaction = {
+  id: string;
+  hash: string;
+  type: TransactionType;
+  title: string;
+  chainId: number;
+  meta?: TransactionMeta;
+  status: "pending" | "processing" | "success" | "failed";
+  timestamp: number;
+};
+
+export type TransactionMeta = {
+  tokenAAmount?: string;
+  tokenASymbol?: string;
+  tokenBAmount?: string;
+  tokenBSymbol?: string;
+  aggregate?: string;
+  amount?: string;
+  symbol?: string;
+  iconUrl?: string;
+  recipient?: string;
+};
+
+export type TransactionType =
+  | "swap"
+  | "addLiquidity"
+  | "removeLiquidity"
+  | "approve"
+  | "stake"
+  | "unstake"
+  | "claim"
+  | "bridge"
+  | "faucet"
+  | "other";
+
+// Toast configuration options
+export type TxToastOptions = {
+  actionLabel?: string;
+  onActionClick?: () => void;
+  chainId?: number;
+  meta?: TransactionMeta;
+  onError?: (error: any) => void;
+  onSuccess?: (receipt: TransactionReceipt) => void;
+  // New option to control whether to track the transaction
+  toastDuration?: number;
+  trackTransaction?: boolean;
+};

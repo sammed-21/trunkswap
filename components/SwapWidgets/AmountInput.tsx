@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import TokenSelector from "./TokenSelector"; // Import the TokenSelector component
 import dropdown from "@/public/dropdown.svg";
 import Image from "next/image";
-import { TokenDetail } from "@/lib/types";
+import { Token, TokenDetail } from "@/lib/types";
 import { useAccount } from "wagmi";
 import { Skeleton } from "../ui/skeleton";
 import { formatUSD } from "@/services/priceFeed";
@@ -13,11 +13,11 @@ interface AmountInputProps {
   token: string;
   Amount: string | number;
   walletBalanceAsset: string;
-  currentTokenAsset: TokenDetail;
+  currentTokenAsset: Token;
   setAmount: (amount: string) => void;
   setToken: (token: string) => void;
   loadingBalances: boolean;
-  setCurrentTokenDetal: (token: TokenDetail) => void;
+  setCurrentTokenDetal: (token: Token) => void;
   isLoading?: boolean;
   readOnly?: boolean;
   tokenUsdValue: any;
@@ -50,7 +50,10 @@ const AmountInput: React.FC<AmountInputProps> = ({
 
   //   const { selectorOpen } = useSwapState()
   const handleAmountChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setAmount(e.target.value);
+    const value = e.target.value;
+    // Allow empty, numbers, or float values (e.g. "123", "123.45")
+
+    setAmount(value);
   };
 
   const handleTokenSelect = (selectedToken: any) => {
@@ -101,11 +104,13 @@ const AmountInput: React.FC<AmountInputProps> = ({
               <Skeleton className="w-[100px] h-10 bg-primary" />
             ) : (
               <input
-                type="text"
-                className={`truncate appearance-none dark:text-slate-50 text-gray-900 w-full !ring-0 !outline-none min-h-[40px] h-[40px] py-2 border-0 bg-transparent p-0 py-1 !text-3xl font-medium flex-grow flex-1 !outline-none !ring-0`}
+                type="number"
+                className={`truncate appearance-none dark:text-slate-50 text-gray-900 appearance-none [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-inner-spin-button]:m-0 w-full !ring-0 !outline-none min-h-[40px] h-[40px] py-2 border-0 bg-transparent p-0 py-1 !text-3xl font-medium flex-grow flex-1 !outline-none !ring-0`}
                 // className={`w-full placeholder:text-textprimary   py-2 bg-transparent text-title focus:none border-none text-2xl rounded-none`}
                 placeholder="0.00"
                 value={Amount}
+                pattern="\d*\.?\d*"
+                inputMode="decimal"
                 readOnly={readOnly}
                 onChange={handleAmountChange}
               />
@@ -124,7 +129,7 @@ const AmountInput: React.FC<AmountInputProps> = ({
               onClick={() => setSelectorOpen(true)}
             >
               <Image
-                src={currentTokenAsset?.logoURI}
+                src={currentTokenAsset?.logoURI!}
                 width={20}
                 height={20}
                 alt={"image"}
