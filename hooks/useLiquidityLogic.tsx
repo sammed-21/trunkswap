@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { ethers } from "ethers";
-import { useSwapState } from "@/state/swapStore";
+import { useSwapActions, useSwapState } from "@/state/swapStore";
 import { usePriceState } from "@/state/priceStore";
 import { useAccount, useChainId } from "wagmi";
 import { useAccountState } from "@/state/accountStore";
@@ -16,17 +16,22 @@ function extractAddress(param: string): string {
   const decoded = decodeURIComponent(param); // e.g., "token0=0xABC..."
   return decoded.split("=")[1] ?? "";
 }
+
 export function useAddLiquidityLogic(tokenA: string, tokenB: string) {
-  const router = useRouter();
+  // if (!tokenA || !tokenB) return;
+  const tokenAAddress = useMemo(() => tokenA, [tokenA]);
+  const tokenBAddress = useMemo(() => tokenB, [tokenB]);
+
   const chainId = useChainId();
   const { withToast } = useTxToast();
+  const { updateTokenBalances } = useSwapActions();
 
   const latestTokenARequest = useRef(0);
   const latestTokenBRequest = useRef(0);
-
-  const [tokenAAddress, tokenBAddress] = useMemo(() => {
-    return [extractAddress(tokenA), extractAddress(tokenB)];
-  }, [tokenA, tokenB]);
+  const prevTokenAddresses = useRef({ tokenA: "", tokenB: "" });
+  // const [tokenAAddress1, tokenBAddress1] = useMemo(() => {
+  //   return [extractAddress(tokenA), extractAddress(tokenB)];
+  // }, [tokenA, tokenB]);
 
   const { tokens } = useSwapState();
   const { prices } = usePriceState();
@@ -38,7 +43,10 @@ export function useAddLiquidityLogic(tokenA: string, tokenB: string) {
   const [expectedLPTokens, setExpectedLPTokens] = useState("0");
   const [poolShare, setPoolShare] = useState(0);
 
+  const initialLoadCompleted = useRef(false);
+
   const { fetchPools } = useLiquidityActions();
+
   const {
     setPairFromAddresses,
     setTokenAAmount,
@@ -84,16 +92,28 @@ export function useAddLiquidityLogic(tokenA: string, tokenB: string) {
   } = useLiqudityState();
 
   // Set tokenA and tokenB
+  const { memoizedTokenA, memoizedTokenB } = useMemo(() => {
+    const TokenA = tokens.find((item) => item.address == tokenAAddress);
+    const TokenB = tokens.find((item) => item.address == tokenBAddress);
+    return { memoizedTokenA: TokenA, memoizedTokenB: TokenB };
+  }, [tokens, tokenAAddress, tokenBAddress]);
+
   useEffect(() => {
-    let TokenA = tokens.find((item) => item.address == tokenAAddress);
-    let TokenB = tokens.find((item) => item.address == tokenBAddress);
-    if (!TokenA || !TokenB) return;
-    setTokenA(TokenA);
-    setTokenB(TokenB);
-  }, [tokenAAddress, tokenBAddress]);
+    if (!memoizedTokenA || !memoizedTokenB) return;
+    setTokenA(memoizedTokenA);
+    setTokenB(memoizedTokenB);
+  }, [memoizedTokenA, memoizedTokenB]);
 
   // Load token pair
   useEffect(() => {
+    if (
+      initialLoadCompleted.current &&
+      prevTokenAddresses.current.tokenA === tokenAAddress &&
+      prevTokenAddresses.current.tokenB === tokenBAddress
+    ) {
+      return;
+    }
+
     const loadTokenPair = async () => {
       let defaultProvider: ethers.Provider = !provider
         ? getProvider(chainId)
@@ -111,13 +131,11 @@ export function useAddLiquidityLogic(tokenA: string, tokenB: string) {
           chainId
         );
 
-        let TokenA = tokens.find((item) => item.address == tokenAAddress);
-        let TokenB = tokens.find((item) => item.address == tokenBAddress);
-        if (!TokenA || !TokenB) return;
-
-        setTokenA(TokenA);
-        setTokenB(TokenB);
-
+        prevTokenAddresses.current = {
+          tokenA: tokenAAddress,
+          tokenB: tokenBAddress,
+        };
+        initialLoadCompleted.current = true;
         setIsLoading(false);
       } catch (err) {
         console.error("Failed to load token pair:", err);
@@ -127,14 +145,15 @@ export function useAddLiquidityLogic(tokenA: string, tokenB: string) {
     };
 
     loadTokenPair();
+  }, [provider, memoizedTokenA, memoizedTokenB, , chainId]);
 
-    return () => {
-      resetForm();
-    };
-  }, [provider, tokenAAddress, tokenBAddress]);
   useEffect(() => {
-    resetForm();
-  }, [isDisconnected]);
+    if (isDisconnected) {
+      resetForm();
+      initialLoadCompleted.current = false;
+    }
+  }, [isDisconnected, resetForm]);
+
   // Fetch balances
   useEffect(() => {
     async function init() {
@@ -142,43 +161,39 @@ export function useAddLiquidityLogic(tokenA: string, tokenB: string) {
       await getUserBalances(address);
     }
     init();
-  }, [address, signer, selectedTokenABalance, selectedTokenBBalance]);
+  }, [address, signer, getUserBalances, provider]);
 
   // LP info
-  useEffect(() => {
-    const updateLpInfo = async () => {
-      if (
-        !selectedPool ||
-        !tokenAAmount ||
-        !tokenBAmount ||
-        !provider ||
-        !address
-      )
-        return;
+  const updateLpInfo = useCallback(async () => {
+    if (
+      !selectedPool ||
+      !tokenAAmount ||
+      !tokenBAmount ||
+      !provider ||
+      !address
+    )
+      return;
 
-      try {
-        const lpTokens = await calculateExpectedLpTokens(provider);
-        setExpectedLPTokens(lpTokens);
+    try {
+      const lpTokens = await calculateExpectedLpTokens(provider);
+      setExpectedLPTokens(lpTokens);
 
-        if (selectedPool.totalSupply && ethers.parseEther(lpTokens) > 0) {
-          const lpTokensBigInt = ethers.parseEther(lpTokens);
-          const totalSupplyBigInt = selectedPool.totalSupply;
+      if (selectedPool.totalSupply && ethers.parseEther(lpTokens) > 0) {
+        const lpTokensBigInt = ethers.parseEther(lpTokens);
+        const totalSupplyBigInt = selectedPool.totalSupply;
 
-          const newShareBigInt =
-            (Number(lpTokensBigInt) * 10000) /
-            Number(totalSupplyBigInt + lpTokensBigInt);
+        const newShareBigInt =
+          (Number(lpTokensBigInt) * 10000) /
+          Number(totalSupplyBigInt + lpTokensBigInt);
 
-          const newShare = Number(newShareBigInt) / 100;
-          setPoolShare(newShare);
-        } else {
-          setPoolShare(100);
-        }
-      } catch (err) {
-        console.error("Error calculating LP tokens:", err);
+        const newShare = Number(newShareBigInt) / 100;
+        setPoolShare(newShare);
+      } else {
+        setPoolShare(100);
       }
-    };
-
-    updateLpInfo();
+    } catch (err) {
+      console.error("Error calculating LP tokens:", err);
+    }
   }, [
     tokenAAmount,
     tokenBAmount,
@@ -187,21 +202,9 @@ export function useAddLiquidityLogic(tokenA: string, tokenB: string) {
     provider,
     calculateExpectedLpTokens,
   ]);
-
-  //   const handleTokenAInput = async (amount: string) => {
-  //     setTokenAAmount(amount);
-
-  //     try {
-  //       if (amount && parseFloat(amount) > 0 && selectedPool) {
-  //         const tokenBValue = await calculateTokenBAmount(provider!, amount);
-  //         setTokenBAmount(tokenBValue!);
-  //       } else {
-  //         setTokenBAmount("");
-  //       }
-  //     } catch (error) {
-  //       console.log(error);
-  //     }
-  //   };
+  useEffect(() => {
+    updateLpInfo();
+  }, [updateLpInfo]);
 
   const handleTokenAInput = async (amount: string) => {
     setTokenAAmount(amount);
@@ -239,227 +242,6 @@ export function useAddLiquidityLogic(tokenA: string, tokenB: string) {
       console.log(error);
     }
   };
-  //   const checkApprovalTokenA = useCallback(async () => {
-  //     if (!signer || !selectedTokenA?.address) {
-  //       setNeedsApprovalTokenA(false);
-  //       setTransactionTokenAButtonText("");
-  //       return;
-  //     }
-
-  //     try {
-  //       const tokenContract = new ethers.Contract(
-  //         selectedTokenA.address,
-  //         ERC20_ABI,
-  //         signer
-  //       );
-
-  //       const signerAddress = await signer.getAddress();
-
-  //       const allowance = await tokenContract.allowance(
-  //         signerAddress,
-  //         ROUTER_ADDRESS(chainId)
-  //       );
-
-  //       const amountWei = ethers.parseUnits(
-  //         tokenAAmount || "0",
-  //         selectedTokenA.decimals
-  //       );
-
-  //       const balanceEnough = selectedTokenABalance >= tokenAAmount;
-  //       const allowanceEnough = allowance >= amountWei;
-
-  //       if (!balanceEnough) {
-  //         setNeedsApprovalTokenA(false);
-  //         setTransactionTokenAButtonText(
-  //           `Insufficient Balance ${selectedTokenA?.symbol}`
-  //         );
-  //       } else if (!allowanceEnough) {
-  //         setNeedsApprovalTokenA(true);
-  //         setTransactionTokenAButtonText(`Approve ${selectedTokenA?.symbol}`);
-  //       } else {
-  //         setNeedsApprovalTokenA(false);
-  //         setTransactionTokenAButtonText("");
-  //       }
-  //     } catch (error) {
-  //       console.error("Error checking approval:", error);
-  //       setNeedsApprovalTokenA(false);
-  //       setTransactionTokenAButtonText("");
-  //     }
-  //   }, [
-  //     selectedTokenA,
-  //     tokenAAmount,
-  //     selectedTokenABalance,
-  //     signer,
-  //     chainId,
-  //     setNeedsApprovalTokenA,
-  //     setTransactionTokenAButtonText,
-  //   ]);
-
-  //   //check token B approval
-
-  //   const checkApprovalTokenB = useCallback(async () => {
-  //     if (!signer || !selectedTokenB?.address) {
-  //       setNeedsApprovalTokenB(false);
-  //       setTransactionTokenBButtonText("");
-  //       return;
-  //     }
-
-  //     try {
-  //       const tokenContract = new ethers.Contract(
-  //         selectedTokenB.address,
-  //         ERC20_ABI,
-  //         signer
-  //       );
-
-  //       const signerAddress = await signer.getAddress();
-
-  //       const allowance = await tokenContract.allowance(
-  //         signerAddress,
-  //         ROUTER_ADDRESS(chainId)
-  //       );
-
-  //       const amountWei = ethers.parseUnits(
-  //         tokenBAmount || "0",
-  //         selectedTokenB.decimals
-  //       );
-
-  //       const balanceEnough =
-  //         Number(selectedTokenBBalance) >= Number(tokenBAmount);
-  //       const allowanceEnough = allowance >= amountWei;
-
-  //       if (!balanceEnough) {
-  //         setNeedsApprovalTokenB(false);
-  //         setTransactionTokenBButtonText(
-  //           `Insufficient Balance ${selectedTokenB?.symbol}`
-  //         );
-  //       } else if (!allowanceEnough) {
-  //         setNeedsApprovalTokenB(true);
-  //         setTransactionTokenBButtonText(`Approve ${selectedTokenB?.symbol}`);
-  //       } else {
-  //         setNeedsApprovalTokenB(false);
-  //         setTransactionTokenBButtonText("");
-  //       }
-  //     } catch (error) {
-  //       console.error("Error checking approval:", error);
-  //       setNeedsApprovalTokenB(false);
-  //       setTransactionTokenBButtonText("");
-  //     }
-  //   }, [
-  //     selectedTokenB,
-  //     tokenBAmount,
-  //     selectedTokenBBalance,
-  //     signer,
-  //     chainId,
-  //     setNeedsApprovalTokenB,
-  //     setTransactionTokenBButtonText,
-  //   ]);
-
-  //   const handleAddLiquidity = async () => {
-  //     if (!provider) {
-  //       setError("No Provider");
-  //       return;
-  //     }
-  //     if (!isConnected || !address) {
-  //     }
-
-  //     if (
-  //       !tokenAAmount ||
-  //       !tokenBAmount ||
-  //       parseFloat(tokenAAmount) <= 0 ||
-  //       parseFloat(tokenBAmount) <= 0
-  //     ) {
-  //       setError("Please enter valid amounts");
-  //       return;
-  //     }
-
-  //     try {
-  //       const deadlineTimestamp = Math.floor(Date.now() / 1000) + deadline * 60;
-
-  //       if (!provider) return null;
-  //       if (
-  //         !selectedTokenA ||
-  //         !selectedTokenB ||
-  //         !tokenAAmount ||
-  //         !tokenBAmount
-  //       ) {
-  //         console.log({ error: "Please enter valid token amounts" });
-  //         return null;
-  //       }
-
-  //       try {
-  //         setisAddingLiquidity(true);
-
-  //         const routerContract = new ethers.Contract(
-  //           ROUTER_ADDRESS(chainId),
-  //           ROUTER_ABI,
-  //           signer
-  //         );
-
-  //         // Approve tokens if needed
-  //         const tokenAContract = new ethers.Contract(
-  //           selectedTokenA.address,
-  //           ERC20_ABI,
-  //           signer
-  //         );
-  //         const tokenBContract = new ethers.Contract(
-  //           selectedTokenB.address,
-  //           ERC20_ABI,
-  //           signer
-  //         );
-
-  //         const userAddress = await signer.getAddress();
-
-  //         const amountA = ethers.parseUnits(
-  //           tokenAAmount,
-  //           selectedTokenA.decimals
-  //         );
-  //         const amountB = ethers.parseUnits(
-  //           tokenBAmount,
-  //           selectedTokenB.decimals
-  //         );
-
-  //         // Calculate minimum amounts (with 0.5% slippage)
-  //         const amountAMin = (Number(amountA) * 995) / 1000;
-  //         const amountBMin = (Number(amountB) * 995) / 1000;
-
-  //         // Deadline 20 minutes from now
-  //         // const deadline = Math.floor(Date.now() / 1000) + 20 * 60;
-
-  //         // Add liquidity
-  //         const tx = await routerContract.addLiquidity.staticCall(
-  //           selectedTokenA.address,
-  //           selectedTokenB.address,
-  //           amountA,
-  //           amountB,
-  //           amountAMin,
-  //           amountBMin,
-  //           userAddress,
-  //           deadlineTimestamp,
-  //           { gasLimit: 3000000 }
-  //         );
-  //         const receipt = await tx.wait();
-
-  //         // Reset form after successful transaction
-  //         resetForm();
-
-  //         // Refresh pools
-  //         await fetchPools(provider);
-
-  //         setisAddingLiquidity(false);
-  //         return receipt.transactionHash;
-  //       } catch (error) {
-  //         console.error("Error adding liquidity:", error);
-  //         setisAddingLiquidity(false);
-  //         return null;
-  //       }
-
-  //       resetForm();
-  //       router.push(`/pool/${selectedPool?.pairAddress}`);
-  //     } catch (err: any) {
-  //       console.error("Failed to add liquidity:", err);
-  //       setError(err.message || "Failed to add liquidity. Please try again.");
-  //     }
-  //   };
 
   // Fixed checkApprovalTokenA function
   const checkApprovalTokenA = useCallback(async () => {
@@ -593,10 +375,13 @@ export function useAddLiquidityLogic(tokenA: string, tokenB: string) {
     setTransactionTokenBButtonText,
   ]);
 
-  // Fixed handleAddLiquidity function
   const handleAddLiquidity = async () => {
     if (!provider) {
       setError("No Provider");
+      return;
+    }
+    if (!signer) {
+      setError("No Signer");
       return;
     }
 
@@ -619,6 +404,16 @@ export function useAddLiquidityLogic(tokenA: string, tokenB: string) {
       setisAddingLiquidity(true);
       setTransactionButtonText("Adding Liquidity...");
 
+      // Check RPC node health first
+      try {
+        const blockNumber = await provider.getBlockNumber();
+      } catch (rpcError) {
+        setError("RPC endpoint may be unstable. Please try again later.");
+        setisAddingLiquidity(false);
+        setTransactionButtonText("Add Liquidity");
+        return null;
+      }
+
       const deadlineTimestamp = Math.floor(Date.now() / 1000) + deadline * 60;
 
       if (!selectedTokenA || !selectedTokenB) {
@@ -635,86 +430,121 @@ export function useAddLiquidityLogic(tokenA: string, tokenB: string) {
 
       const userAddress = await signer.getAddress();
 
-      const amountA = ethers.parseUnits(tokenAAmount, selectedTokenA.decimals);
-      const amountB = ethers.parseUnits(tokenBAmount, selectedTokenB.decimals);
+      const amountA = BigInt(
+        ethers.parseUnits(tokenAAmount, selectedTokenA.decimals)
+      );
+      const amountB = BigInt(
+        ethers.parseUnits(tokenBAmount, selectedTokenB.decimals)
+      );
 
       // Calculate minimum amounts based on slippage tolerance
       const slippageFactor = (100 - slippage) / 100;
       const amountAMin = BigInt(Math.floor(Number(amountA) * slippageFactor));
       const amountBMin = BigInt(Math.floor(Number(amountB) * slippageFactor));
 
-      // FIXED: Removed staticCall to actually execute the transaction
-      // const tx = await routerContract.addLiquidity(
-      //   selectedTokenA.address,
-      //   selectedTokenB.address,
-      //   amountA,
-      //   amountB,
-      //   amountAMin,
-      //   amountBMin,
-      //   userAddress,
-      //   deadlineTimestamp,
-      //   { gasLimit: 3000000 }
-      // );
-      await withToast(
-        async () => {
-          // This function returns the transaction promise
-          return routerContract.addLiquidity(
-            selectedTokenA.address,
-            selectedTokenB.address,
-            amountA,
-            amountB,
-            amountAMin,
-            amountBMin,
-            userAddress,
-            deadlineTimestamp,
-            { gasLimit: 3000000 }
+      // Get latest nonce, block and gas prices for optimal transaction settings
+      const [currentNonce, block, feeData] = await Promise.all([
+        provider.getTransactionCount(userAddress, "latest"),
+        provider.getBlock("latest"),
+        provider.getFeeData(),
+      ]);
+
+      // Set a higher gas limit
+      const gasLimit = BigInt(500000); // Set a high fixed value instead of estimation
+
+      // Create transaction with optimal parameters
+      const txParams = {
+        nonce: currentNonce,
+        gasLimit: gasLimit,
+        // Set gas price slightly higher than current to ensure faster processing
+        gasPrice: feeData.gasPrice
+          ? (feeData.gasPrice * BigInt(11)) / BigInt(10)
+          : undefined,
+      };
+
+      // Add a small delay before sending transaction to ensure blockchain state is updated
+      await new Promise((resolve) => setTimeout(resolve, 2000));
+
+      try {
+        await withToast(
+          async () => {
+            // Create and send the transaction with optimized parameters
+            return routerContract.addLiquidity(
+              selectedTokenA.address,
+              selectedTokenB.address,
+              amountA,
+              amountB,
+              amountAMin,
+              amountBMin,
+              userAddress,
+              deadlineTimestamp,
+              txParams
+            );
+          },
+          "addLiquidity",
+          {
+            chainId: chainId,
+            meta: {
+              tokenAAmount: tokenAAmount,
+              tokenASymbol: selectedTokenA.symbol,
+              tokenBAmount: tokenBAmount,
+              tokenBSymbol: selectedTokenB.symbol,
+              aggregate: "+",
+            },
+            onSuccess: async (receipt: any) => {
+              setTokenBAmount("");
+              setTransactionButtonText("Add Liquidity");
+              await updateTokenBalances(address, provider);
+              // await fetchPools(provider)
+              await getUserBalances(address);
+            },
+            onError: (error) => {
+              console.error("Transaction error details:", error);
+              setTransactionButtonText("Add Liquidity");
+            },
+          },
+          `Liquidity ${selectedTokenA.symbol} + ${selectedTokenB.symbol}`
+        );
+      } catch (txError: any) {
+        console.error("Transaction failed:", txError);
+
+        // Enhanced error handling with more specific messages
+        if (txError.message && txError.message.includes("user rejected")) {
+          setError("Transaction was rejected by user");
+        } else if (
+          txError.message &&
+          txError.message.includes("insufficient funds")
+        ) {
+          setError("Insufficient funds for transaction");
+        } else if (txError.message && txError.message.includes("nonce")) {
+          setError(
+            "Transaction nonce issue. Please wait a moment and try again"
           );
-        },
-        "addLiquidity", // Transaction type
-        {
-          // actionLabel:"Swap",
-          chainId: chainId, // Replace with your network's chain ID
-          meta: {
-            tokenAAmount: tokenAAmount,
-            tokenASymbol: `${selectedTokenA.symbol}`,
-            tokenBAmount: tokenBAmount,
-            tokenBSymbol: `${selectedTokenB.symbol}`,
-            aggregate: "+",
-          },
-          // Optional callbacks
-          onSuccess: async (receipt) => {
-            // Clear form or update UI after successful swap
-            // You could update balances here
-            setTokenBAmount("");
-            setTransactionButtonText("Add Liquidity");
-            await getUserBalances(address);
-          },
-          onError: (error) => {
-            setTransactionButtonText("Swap");
-            // Any additional error handling specific to your app
-          },
-        },
-        // Optional custom title
-        `Liquidity ${selectedTokenA.symbol} +  ${selectedTokenB.symbol}`
-      );
-      // const receipt = await tx.wait();
+        } else {
+          setError(`Transaction failed: ${txError.message || "Unknown error"}`);
+        }
 
-      // Reset form after successful transaction
+        setisAddingLiquidity(false);
+        setTransactionButtonText("Add Liquidity");
+        return null;
+      }
+
       resetForm();
-
-      // Refresh pools
       await getUserBalances(address);
       await fetchPools(provider);
-
       setisAddingLiquidity(false);
-      setTransactionButtonText("");
-
-      //   router.push(`/pool/${selectedPool?.pairAddress}`);
-
-      // return receipt.transactionHash;
     } catch (err: any) {
       console.error("Failed to add liquidity:", err);
-      setError(err.message || "Failed to add liquidity. Please try again.");
+
+      // Try to extract more meaningful error information
+      let errorMessage = "Failed to add liquidity. Please try again.";
+      if (err.error && err.error.message) {
+        errorMessage = err.error.message;
+      } else if (err.message) {
+        errorMessage = err.message;
+      }
+
+      setError(errorMessage);
       setisAddingLiquidity(false);
       setTransactionButtonText("Add Liquidity");
       return null;
@@ -838,98 +668,6 @@ export function useAddLiquidityLogic(tokenA: string, tokenB: string) {
       checkApprovalTokenB,
     ]
   );
-
-  //old
-  //   const approveTokenB = useCallback(
-  //     async (tokenAmountB: any) => {
-  //
-
-  //       if (!signer || !selectedTokenB?.address) return;
-
-  //       try {
-  //         setIsApprovingTokenB(true);
-  //         setTransactionTokenBButtonText("Approving...");
-
-  //         const tokenContract = new ethers.Contract(
-  //           selectedTokenB.address,
-  //           ERC20_ABI,
-  //           signer
-  //         );
-
-  //         // Max approval
-  //         const amountToApprove = ethers.parseUnits(
-  //           tokenAmountB,
-  //           selectedTokenB?.decimals
-  //         );
-
-  //         const tx = await tokenContract.approve(
-  //           ROUTER_ADDRESS(chainId),
-  //           amountToApprove
-  //         );
-  //         await tx.wait();
-
-  //         // Check approval again
-  //         await checkApprovalTokenB();
-  //       } catch (error) {
-  //         console.error("Error approving token:", error);
-  //         setTransactionTokenBButtonText("Approve");
-  //       } finally {
-  //         setIsApprovingTokenB(false);
-  //       }
-  //     },
-  //     [
-  //       selectedTokenB,
-  //       signer,
-  //       setIsApprovingTokenB,
-  //       setTransactionTokenBButtonText,
-  //       checkApprovalTokenB,
-  //     ]
-  //   );
-
-  //   const approveTokenA = useCallback(
-  //     async (tokenAmountA: any) => {
-  //       if (!signer || !selectedTokenA?.address) return;
-
-  //       try {
-  //         setIsApprovingTokenA(true);
-  //         setTransactionTokenAButtonText("Approving...");
-
-  //         const tokenContract = new ethers.Contract(
-  //           selectedTokenA.address,
-  //           ERC20_ABI,
-  //           signer
-  //         );
-
-  //         // Max approval
-
-  //         const amountToApprove = ethers.parseUnits(
-  //           tokenAmountA,
-  //           selectedTokenA?.decimals
-  //         );
-
-  //         const tx = await tokenContract.approve(
-  //           ROUTER_ADDRESS(chainId),
-  //           amountToApprove
-  //         );
-  //         await tx.wait();
-
-  //         // Check approval again
-  //         await checkApprovalTokenA();
-  //       } catch (error) {
-  //         console.error("Error approving token:", error);
-  //         setTransactionTokenAButtonText("Approve");
-  //       } finally {
-  //         setIsApprovingTokenA(false);
-  //       }
-  //     },
-  //     [
-  //       selectedTokenB,
-  //       signer,
-  //       setIsApprovingTokenA,
-  //       setTransactionTokenAButtonText,
-  //       checkApprovalTokenA,
-  //     ]
-  //   );
 
   const tokenAUsdValue = useMemo(() => {
     if (!selectedTokenA || !tokenAAmount || !prices) return null;

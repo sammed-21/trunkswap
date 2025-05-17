@@ -253,7 +253,7 @@ export const SwapWidget = (props: Props) => {
               width={20}
               height={20}
               alt="rotate"
-              className={` dark:invert  transition-transform duration-300  ${
+              className={`  invert transition-transform duration-300  ${
                 isRotated ? "rotate-180" : "rotate-0"
               }`}
             />

@@ -1,6 +1,7 @@
 import React, { useCallback, useState } from "react";
 import toast from "react-hot-toast";
 import { Copy, Check } from "lucide-react"; // assuming you're using lucide-react icons
+import { shortenAddress } from "@/lib/utils";
 
 type Props = {
   address?: string;
@@ -34,6 +35,7 @@ export const CopyAddress = ({ address }: Props) => {
       ) : (
         <Copy className="mr-2 h-4 w-4" />
       )}
+      {shortenAddress(address!)}
     </div>
   );
 };

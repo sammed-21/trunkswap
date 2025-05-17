@@ -62,6 +62,7 @@ export interface LiquidityState {
   percentToRemove: number;
   transactionButtonText: string;
   transactionTokenAButtonText: string;
+  transactionRemoveLiquidityText: string;
   transactionTokenBButtonText: string;
   isLoading: boolean;
   expectedLPToken: string;
@@ -77,12 +78,14 @@ export interface LiquidityState {
   isApprovingTokenA: boolean;
   needsApprovalTokenB: boolean;
   isApprovingTokenB: boolean;
+  needsApprovalLP: boolean;
 
   // Loading states
   isUserTokenbalance: boolean;
   isLoadingPools: boolean;
   isAddingLiquidity: boolean;
   isRemovingLiquidity: boolean;
+  isLpApproving: boolean;
 }
 export interface LiquidityActions {
   // Actions
@@ -102,11 +105,16 @@ export interface LiquidityActions {
   getUserBalances: (userAdddress: string) => Promise<any>;
   // setNeedsApproval: (needsApproval: boolean) => void;
   // setIsApproving: (isApproving: boolean) => void;
+  setIsLpApproving: (isLpApproving: boolean) => void;
   setNeedsApprovalTokenA: (needsApprovalTokenA: boolean) => void;
+  setTransactionRemoveLiquidityText: (
+    transactionRemoveLiquidityText: string
+  ) => void;
   setTransactionTokenAButtonText: (transactionTokenAButtonText: string) => void;
   setTransactionTokenBButtonText: (transactionTokenBButtonText: string) => void;
   setIsApprovingTokenA: (needsApprovalTokenA: boolean) => void;
   setNeedsApprovalTokenB: (needsApprovalTokenB: boolean) => void;
+  setNeedsApprovalLP: (needsApprovalLP: boolean) => void;
   setIsApprovingTokenB: (needsApprovalTokenB: boolean) => void;
   setError: (error: string) => void;
   // Pool operations
@@ -169,19 +177,21 @@ export const useLiquidityStore = create<LiquidityState & LiquidityActions>(
     percentToRemove: 0,
     isLoading: false,
     error: null,
-
+    isLpApproving: false,
     totalPool: 0,
     totalTvl: 0,
     expectedLPToken: "0",
     tokenAUsdValue: 0,
     tokenBUsdValue: 0,
     // needsApproval: false,
+    transactionRemoveLiquidityText: "Remove Liquidity",
     // isApproving: false,
     needsApprovalTokenA: false,
     isApprovingTokenA: false,
     needsApprovalTokenB: false,
-    isApprovingTokenB: false,
 
+    isApprovingTokenB: false,
+    needsApprovalLP: false,
     isLoadingPools: false,
     isUserTokenbalance: false,
     isAddingLiquidity: false,
@@ -207,9 +217,13 @@ export const useLiquidityStore = create<LiquidityState & LiquidityActions>(
     // Input handling
     // setNeedsApproval: (needsApproval: boolean) => set({ needsApproval }),
     // setIsApproving: (isApproving: boolean) => set({ isApproving }),
+    setIsLpApproving: (isLpApproving: boolean) => set({ isLpApproving }),
     setDeadline: (value: number) => set({ deadline: value }),
     setIsRemovingLiquidity: (isRemovingLiquidity: boolean) =>
       set({ isRemovingLiquidity }),
+    setTransactionRemoveLiquidityText: (
+      transactionRemoveLiquidityText: string
+    ) => set({ transactionRemoveLiquidityText }),
     setSlippage: (value: number) => set({ slippage: value }),
     setTransactionTokenAButtonText: (transactionTokenAButtonText: string) =>
       set({ transactionTokenAButtonText }),
@@ -223,6 +237,7 @@ export const useLiquidityStore = create<LiquidityState & LiquidityActions>(
       set({ needsApprovalTokenA }),
     setNeedsApprovalTokenB: (needsApprovalTokenB: boolean) =>
       set({ needsApprovalTokenB }),
+    setNeedsApprovalLP: (needsApprovalLP: boolean) => set({ needsApprovalLP }),
     setIsApprovingTokenB: (needsApprovalTokenB: boolean) =>
       set({ needsApprovalTokenB }),
     setTokenAAmount: (amount: string) => set({ tokenAAmount: amount }),
@@ -249,6 +264,7 @@ export const useLiquidityStore = create<LiquidityState & LiquidityActions>(
         isApprovingTokenB: false,
         transactionTokenBButtonText: "",
         transactionTokenAButtonText: "",
+        transactionRemoveLiquidityText: "Remove Liquidity",
         needsApprovalTokenA: false,
         needsApprovalTokenB: false,
 
@@ -931,9 +947,12 @@ export const useLiqudityState = () =>
       needsApprovalTokenA: state.needsApprovalTokenA,
       isApprovingTokenA: state.isApprovingTokenA,
       needsApprovalTokenB: state.needsApprovalTokenB,
+      needsApprovalLP: state.needsApprovalLP,
       isApprovingTokenB: state.isApprovingTokenB,
       deadline: state.deadline,
       slippage: state.slippage,
+      isLpApproving: state.isLpApproving,
+      transactionRemoveLiquidityText: state.transactionRemoveLiquidityText,
     }))
   );
 
@@ -950,6 +969,7 @@ export const useLiquidityActions = () =>
       setTokenAAmount: state.setTokenAAmount,
       setTokenBAmount: state.setTokenBAmount,
       setLpTokenAmount: state.setLpTokenAmount,
+      setIsLpApproving: state.setIsLpApproving,
       setPercentToRemove: state.setPercentToRemove,
       setSelectedPool: state.setSelectedPool,
       fetchPools: state.fetchPools,
@@ -959,6 +979,8 @@ export const useLiquidityActions = () =>
       setError: state.setError,
       // addLiquidity: state.addLiquidity,
       setIsRemovingLiquidity: state.setIsRemovingLiquidity,
+      setTransactionRemoveLiquidityText:
+        state.setTransactionRemoveLiquidityText,
       // removeLiquidity: state.removeLiquidity,
       resetForm: state.resetForm,
       setPairFromAddresses: state.setPairFromAddresses,
@@ -971,6 +993,7 @@ export const useLiquidityActions = () =>
       setNeedsApprovalTokenA: state.setNeedsApprovalTokenA,
       setIsApprovingTokenA: state.setIsApprovingTokenA,
       setNeedsApprovalTokenB: state.setNeedsApprovalTokenB,
+      setNeedsApprovalLP: state.setNeedsApprovalLP,
       setIsApprovingTokenB: state.setIsApprovingTokenB,
       setisAddingLiquidity: state.setisAddingLiquidity,
       setDeadline: state.setDeadline,

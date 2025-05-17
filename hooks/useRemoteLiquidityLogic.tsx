@@ -1,4 +1,3 @@
-import { ERC20_ABI } from "@/abi/ERC20ABI";
 import { PAIR_ABI } from "@/abi/PAIR_ABI";
 import { ROUTER_ABI } from "@/abi/ROUTER_ABI";
 import { ROUTER_ADDRESS } from "@/lib/constants";
@@ -6,19 +5,51 @@ import { deadlineFormatted } from "@/lib/utils";
 import { useAccountStore } from "@/state/accountStore";
 import { useLiqudityState, useLiquidityActions } from "@/state/liquidityStore";
 import { ethers, formatUnits, Signer } from "ethers";
-import React from "react";
 import { useTxToast } from "./useToast";
+import { useAccount } from "wagmi";
+import { useCallback, useEffect, useState } from "react";
+import { useSwapActions } from "@/state/swapStore";
 
 export function useRemoveLiquidityLogic() {
   const { withToast } = useTxToast();
-  const { selectedPool, percentToRemove, deadline } = useLiqudityState();
-  const { setIsRemovingLiquidity, setError, fetchPools, resetForm } =
-    useLiquidityActions();
+  const { isConnected } = useAccount();
+  const [actionToPerform, setActionToPerform] = useState<
+    "approve" | "remove" | null
+  >(null);
+  const { selectedPool, percentToRemove, deadline, needsApprovalLP } =
+    useLiqudityState();
+  const {
+    setIsRemovingLiquidity,
+    setError,
+    fetchPools,
+    setIsLpApproving,
+    setTransactionRemoveLiquidityText,
+    resetForm,
+    setNeedsApprovalLP,
+    getUserBalances,
+  } = useLiquidityActions();
+  const { updateTokenBalances } = useSwapActions();
 
   const { chainId, address, provider, signer } = useAccountStore.getState();
 
   const removeLiquidity = async (signer: Signer) => {
-    const userAddress = address;
+    if (!provider) {
+      setError("No Provider");
+      return;
+    }
+    if (!signer) {
+      setError("No Signer");
+      return;
+    }
+    const userAddress = signer.getAddress();
+    if (!userAddress) {
+      setError("No UserAddress");
+      return;
+    }
+    if (!isConnected || !address) {
+      setError("Please connect your wallet");
+      return;
+    }
 
     let routerAddress = ROUTER_ADDRESS(chainId);
     // const provider = useAccountStore.getState().provider;
@@ -30,6 +61,14 @@ export function useRemoveLiquidityLogic() {
 
     try {
       setIsRemovingLiquidity(true);
+      try {
+        const blockNumber = await provider.getBlockNumber();
+      } catch (rpcError) {
+        setError("RPC endpoint may be unstable. Please try again later.");
+        setIsRemovingLiquidity(false);
+        // setTransactionButtonText("Add Liquidity");
+        return null;
+      }
 
       const routerContract = new ethers.Contract(
         routerAddress,
@@ -41,6 +80,22 @@ export function useRemoveLiquidityLogic() {
         PAIR_ABI,
         signer
       );
+      //get latest nonce
+      const [currentNonce, block, feeData] = await Promise.all([
+        provider.getTransactionCount(userAddress, "latest"),
+        provider.getBlock("latest"),
+        provider.getFeeData(),
+      ]);
+
+      const gasLimit = BigInt(500000);
+
+      const txParams = {
+        nonce: currentNonce,
+        gasLimit: gasLimit,
+        gasPrice: feeData.gasPrice
+          ? (feeData.gasPrice * BigInt(11)) / BigInt(10)
+          : undefined,
+      };
 
       // Calculate LP tokens to remove
 
@@ -58,25 +113,25 @@ export function useRemoveLiquidityLogic() {
       }
 
       // Approve LP tokens if needed
-      const allowance = await pairContract.allowance(
-        userAddress,
-        routerAddress
-      );
-      if (allowance < lpToRemove) {
-        const approveTx = await withToast(
-          async () => {
-            return pairContract.approve(routerAddress, lpToRemove);
-          },
-          "approve",
-          {
-            chainId: chainId,
-            meta: {
-              tokenAAmount: formatUnits(lpToRemove, 18),
-              tokenASymbol: "lp",
-            },
-          }
-        );
-      }
+      // const allowance = await pairContract.allowance(
+      //   userAddress,
+      //   routerAddress
+      // );
+      // if (allowance < lpToRemove) {
+      //   const approveTx = await withToast(
+      //     async () => {
+      //       return pairContract.approve(routerAddress, lpToRemove);
+      //     },
+      //     "approve",
+      //     {
+      //       chainId: chainId,
+      //       meta: {
+      //         tokenAAmount: formatUnits(lpToRemove, 18),
+      //         tokenASymbol: "lp",
+      //       },
+      //     }
+      //   );
+      // }
 
       // Calculate minimum amounts (with 0.5% slippage)
       const reserves = await pairContract.getReserves();
@@ -108,6 +163,7 @@ export function useRemoveLiquidityLogic() {
       //   deadlines,
       //   { gasLimit: 3000000 }
       // );
+      // await new Promise((resolve) => setTimeout(resolve, 2000));
 
       const deadlineTimestamp = deadlineFormatted(deadline); // deadline in minutes
 
@@ -122,7 +178,7 @@ export function useRemoveLiquidityLogic() {
             amount1Min,
             userAddress,
             deadlineTimestamp,
-            { gasLimit: 3000000 }
+            txParams
           );
         },
         "removeLiquidity", // Transaction type
@@ -131,7 +187,7 @@ export function useRemoveLiquidityLogic() {
           chainId: chainId, // Replace with your network's chain ID
           meta: {
             tokenAAmount: formatUnits(lpToRemove, 18),
-            // tokenASymbol: `${selectedTokenA.symbol}`,
+            tokenASymbol: `LP`,
             // tokenBAmount: tokenBAmount,
             // tokenBSymbol: `${selectedTokenB.symbol}`,
             // aggregate: "+",
@@ -140,6 +196,9 @@ export function useRemoveLiquidityLogic() {
           onSuccess: async (receipt) => {
             // Clear form or update UI after successful swap
             resetForm();
+            setTransactionRemoveLiquidityText("Remove Liquidity");
+            await getUserBalances(address);
+            await updateTokenBalances(address!, provider);
 
             // Refresh pools
             await fetchPools(provider!);
@@ -157,7 +216,7 @@ export function useRemoveLiquidityLogic() {
           },
         }
         // Optional custom title
-        // `Swap ${currentSellAsset.symbol} for ${currentBuyAsset.symbol}`
+        // `Remove ${currentSellAsset.symbol} for ${currentBuyAsset.symbol}`
       );
 
       // const receipt = await tx.wait();
@@ -174,6 +233,208 @@ export function useRemoveLiquidityLogic() {
       return null;
     }
   };
+  const ApproveLP = async (signer: Signer) => {
+    if (!selectedPool || percentToRemove <= 0 || percentToRemove > 100) {
+      setError("Invalid pool or removal amount");
+      return false;
+    }
+    if (!provider) {
+      setError("No Provider");
+      return;
+    }
 
-  return { removeLiquidity };
+    try {
+      const userAddress = await signer.getAddress();
+      const pairContract = new ethers.Contract(
+        selectedPool.pairAddress,
+        PAIR_ABI,
+        signer
+      );
+
+      // Calculate LP tokens to remove
+      const userLpBalanceBN = ethers.parseUnits(
+        selectedPool?.userLpBalance!,
+        18
+      );
+      const lpToRemove =
+        (userLpBalanceBN * BigInt(Math.floor(percentToRemove))) / BigInt(100);
+
+      if (lpToRemove === BigInt(0)) {
+        setError("You don't have any liquidity to remove.");
+        return false;
+      }
+
+      // Check allowance
+      const routerAddress = ROUTER_ADDRESS(chainId);
+      const allowance = await pairContract.allowance(
+        userAddress,
+        routerAddress
+      );
+
+      if (allowance < lpToRemove) {
+        setIsLpApproving(true);
+        setTransactionRemoveLiquidityText("Approve LP");
+
+        // Get optimized transaction parameters
+        const [currentNonce, feeData] = await Promise.all([
+          provider.getTransactionCount(userAddress, "latest"),
+          provider.getFeeData(),
+        ]);
+
+        const txParams = {
+          nonce: currentNonce,
+          gasLimit: BigInt(300000),
+          gasPrice: feeData.gasPrice
+            ? (feeData.gasPrice * BigInt(11)) / BigInt(10)
+            : undefined,
+        };
+
+        // Execute approval with toast
+        await withToast(
+          async () => {
+            return pairContract.approve(routerAddress, lpToRemove, txParams);
+          },
+          "approve",
+          {
+            chainId: chainId,
+            meta: {
+              tokenAAmount: formatUnits(lpToRemove, 18),
+              tokenASymbol: "LP",
+            },
+            onSuccess: () => {
+              setIsLpApproving(false);
+              setTransactionRemoveLiquidityText("Remove Liquidity");
+            },
+            onError: (error) => {
+              setIsLpApproving(false);
+              setError("Approval failed: " + error.message);
+            },
+          },
+          "Approve LP Token "
+        );
+
+        // Wait for the approval to be mined and confirmed (important)
+        await new Promise((resolve) => setTimeout(resolve, 5000));
+
+        // Double-check the allowance again to ensure it's updated
+        const newAllowance = await pairContract.allowance(
+          userAddress,
+          routerAddress
+        );
+        return newAllowance >= lpToRemove;
+      } else {
+        // Already approved
+        setIsLpApproving(true);
+        return true;
+      }
+    } catch (error: any) {
+      console.error("Error checking/approving LP tokens:", error);
+      setError("Failed to approve LP tokens: " + error.message);
+      setIsLpApproving(false);
+      return false;
+    }
+  };
+  const checkNeedApprovalLP = async (signer: Signer) => {
+    if (!selectedPool || percentToRemove <= 0 || percentToRemove > 100) {
+      setError("Invalid pool or removal amount");
+      setActionToPerform(null);
+      return;
+    }
+
+    if (!provider) {
+      setError("No Provider");
+      setActionToPerform(null);
+      return;
+    }
+
+    try {
+      const userAddress = await signer.getAddress();
+      const pairContract = new ethers.Contract(
+        selectedPool.pairAddress,
+        PAIR_ABI,
+        signer
+      );
+
+      // Calculate LP tokens to remove
+      const userLpBalanceBN = ethers.parseUnits(
+        selectedPool?.userLpBalance!,
+        18
+      );
+      if (BigInt(userLpBalanceBN) === BigInt(0)) {
+        setNeedsApprovalLP(false);
+        setTransactionRemoveLiquidityText("Insufficient Balance");
+      }
+      const lpToRemove =
+        (BigInt(userLpBalanceBN) * BigInt(Math.floor(percentToRemove))) /
+        BigInt(100);
+      if (lpToRemove === BigInt(0)) {
+        setError("You don't have any liquidity to remove.");
+        setActionToPerform(null);
+        return;
+      }
+
+      // Check allowance
+      const routerAddress = ROUTER_ADDRESS(chainId);
+      const allowance = await pairContract.allowance(
+        userAddress,
+        routerAddress
+      );
+
+      if (BigInt(allowance) < BigInt(lpToRemove)) {
+        setNeedsApprovalLP(true);
+        setTransactionRemoveLiquidityText("Approve LP");
+        setActionToPerform("approve");
+      } else {
+        setNeedsApprovalLP(false);
+        setTransactionRemoveLiquidityText("Remove Liquidity");
+        setActionToPerform("remove");
+      }
+    } catch (error: any) {
+      console.error("Error checking/approving LP tokens:", error);
+      setError("Failed to approve LP tokens: " + error.message);
+      setNeedsApprovalLP(false);
+      return false;
+    }
+  };
+
+  useEffect(() => {
+    const needApprovalLP = async () => {
+      if (signer && percentToRemove > 1) {
+        await checkNeedApprovalLP(signer);
+      }
+    };
+
+    needApprovalLP();
+  }, [signer, percentToRemove]);
+
+  const handleApproveLP = useCallback(async () => {
+    if (needsApprovalLP) {
+      await ApproveLP(signer);
+    }
+  }, [needsApprovalLP]);
+
+  const handleTransaction = async () => {
+    if (!provider || !signer || !isConnected || !actionToPerform) return;
+
+    try {
+      if (actionToPerform === "approve") {
+        setIsLpApproving(true);
+        setTransactionRemoveLiquidityText("Approving LP...");
+        await ApproveLP(signer);
+        setIsLpApproving(false);
+
+        // Re-check approval after approve
+        await checkNeedApprovalLP(signer);
+      } else if (actionToPerform === "remove") {
+        await removeLiquidity(signer); // assumes internal loading states
+      }
+    } catch (err) {
+      console.error("Transaction error:", err);
+      setIsLpApproving(false);
+      setIsRemovingLiquidity(false);
+      setTransactionRemoveLiquidityText("Remove Liquidity");
+    }
+  };
+
+  return { removeLiquidity, ApproveLP, handleApproveLP, handleTransaction };
 }

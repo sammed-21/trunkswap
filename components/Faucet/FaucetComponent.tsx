@@ -78,6 +78,13 @@ export const FaucetComponent = () => {
       toast.error("Token not supported on this network");
       return;
     }
+
+    try {
+      const blockNumber = await provider.getBlockNumber();
+    } catch (rpcError) {
+      return null;
+    }
+
     const tokenContract = getErc20Contract(tokenAddress, signer);
     const faucetContract = getFaucetContract(faucetAddress, signer);
 
@@ -99,12 +106,33 @@ export const FaucetComponent = () => {
       );
       return;
     }
+    const [currentNonce, block, feeData] = await Promise.all([
+      provider.getTransactionCount(address, "latest"),
+      provider.getBlock("latest"),
+      provider.getFeeData(),
+    ]);
+
+    // Set a higher gas limit
+    const gasLimit = BigInt(500000); // Set a high fixed value instead of estimation
+
+    // Create transaction with optimal parameters
+    const txParams = {
+      nonce: currentNonce,
+      gasLimit: gasLimit,
+      // Set gas price slightly higher than current to ensure faster processing
+      gasPrice: feeData.gasPrice
+        ? (feeData.gasPrice * BigInt(11)) / BigInt(10)
+        : undefined,
+    };
+
+    // Add a small delay before sending transaction to ensure blockchain state is updated
+    await new Promise((resolve) => setTimeout(resolve, 2000));
 
     setIsLoading(true);
     try {
       const tx = await withToast(
         async () => {
-          return faucetContract.requestTokens();
+          return faucetContract.requestTokens(txParams);
         },
         "faucet",
         {
@@ -113,13 +141,14 @@ export const FaucetComponent = () => {
             tokenAAmount: faucetAmount,
             tokenASymbol: symbol,
           },
+          onSuccess: async (receipt: any) => {
+            await addContractToMetamask(symbol, tokenAddress);
+            await checkCooldown(symbol, faucetAddress);
+            await updateTokenBalances(String(address), provider);
+            fetchAllTokens(address.toString(), provider);
+          },
         }
       );
-
-      await addContractToMetamask(symbol, tokenAddress);
-      await checkCooldown(symbol, faucetAddress);
-      await updateTokenBalances(String(address), provider);
-      fetchAllTokens(address.toString(), provider);
     } catch (error: any) {
       toast.error(`Error:Transaction failed}`);
       console.error("Transaction error:", error);
