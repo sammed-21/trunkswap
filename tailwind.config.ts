@@ -15,6 +15,7 @@ const config: Config = {
         primary: "var(--primary)",
         "primary-dark": "var(--primary-dark)",
         secondary: "var(--secondary)",
+        hover: "var(--hover)",
         accent: "var(--accent)",
         "error-primary": "var(--error-primary)",
         "error-secondary": "var(--error-secondary)",

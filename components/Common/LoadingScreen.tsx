@@ -1,9 +1,11 @@
 import Image from "next/image";
 import React from "react";
 import Gif from "@/public/trunkswap.gif";
-type Props = {};
+type Props = {
+  title?: string;
+};
 
-export const LoadingScreen = (props: Props) => {
+export const LoadingScreen = ({ title }: Props) => {
   return (
     <div className="w-full flex-col min-h-[400px]  flex items-center justify-center mx-auto">
       <Image
@@ -14,7 +16,7 @@ export const LoadingScreen = (props: Props) => {
         alt="gif"
       />
 
-      <h1 className="text-title"> loading....</h1>
+      <h1 className="text-title"> {title ? title : "loading...."}</h1>
     </div>
   );
 };

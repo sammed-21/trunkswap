@@ -34,9 +34,9 @@ export default function TokenInput({
         <div className="flex items-center bg-white dark:bg-forground border-none border-none-gray-200 dark:border-none-gray-700 rounded-none  py-2 min-w-[120px]">
           {token ? (
             <div className="flex items-center">
-              {token.logoURI && (
+              {token.symbol && (
                 <Image
-                  src={token.logoURI}
+                  src={`/tokens/${token.symbol.toLowerCase()}.svg`}
                   alt={token.symbol}
                   className="w-6 h-6 mr-2 rounded-full"
                   width={24}
@@ -75,7 +75,7 @@ export default function TokenInput({
             onChange={(e) => onChange(e.target.value)}
             placeholder="0.0"
             disabled={disabled}
-            className={`truncate appearance-none dark:text-slate-50 text-gray-900 w-full !ring-0 !outline-none min-h-[40px] h-[40px] py-2 border-0 bg-transparent p-0 py-1 !text-3xl font-medium flex-grow flex-1 !outline-none !ring-0 ${
+            className={`truncate appearance-none dark:text-slate-50   text-gray-900 w-full !ring-0 !outline-none min-h-[40px] h-[40px] py-2 border-0 bg-transparent p-0 py-1 !text-3xl font-medium flex-grow flex-1 !outline-none !ring-0 ${
               disabled ? "opacity-60 cursor-not-allowed" : ""
             }`}
           />

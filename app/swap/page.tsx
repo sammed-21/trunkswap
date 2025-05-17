@@ -10,7 +10,7 @@ export default function Home() {
         </div>
       }
     >
-      <div className="w-full relative h-full mx-auto py-10  gap-4 flex flex-col md:flex-row  items-start justify-center">
+      <div className="w-full px-4 relative h-full mx-auto py-10  gap-4 flex flex-col md:flex-row  items-start justify-center">
         <SwapComponent />
       </div>
     </Suspense>

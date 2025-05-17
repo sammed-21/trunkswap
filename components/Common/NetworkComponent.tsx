@@ -24,7 +24,7 @@ export const NetworkComponent = () => {
       <DropdownMenuTrigger asChild>
         <Button
           variant="outline"
-          className="gap-4 flex flex-row  bg-accent border-border text-title px-3 py-1 "
+          className="gap-4 flex flex-row  bg-accent border-border text-title md:px-3 py-1 "
         >
           {chains && (
             <Image
@@ -37,7 +37,7 @@ export const NetworkComponent = () => {
               className="rounded-full"
             />
           )}
-          {chains[0].name}
+          <span className="hidden px-3 lg:block">{chains[0].name}</span>
         </Button>
       </DropdownMenuTrigger>
 

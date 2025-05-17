@@ -2,6 +2,7 @@
 import { useSwapActions, useSwapState } from "@/state/swapStore";
 import { useTheme } from "next-themes";
 import React, { useEffect, useMemo, useRef, useState } from "react";
+import { FaBackward, FaForward } from "react-icons/fa6";
 
 const unsupportedTokens = ["RSTX", "STX"]; // Add other dummy tokens here
 const fallbackToken = "USDC"; // Or use "ETH"
@@ -13,7 +14,7 @@ interface props {
 export const TradingViewWidget = (props: props) => {
   const container = useRef<HTMLDivElement | null>(null);
   const swapState = useSwapState();
-  const { setChartActiveToken } = useSwapActions();
+  const { setChartActiveToken, setChartFlag } = useSwapActions();
   const { theme } = useTheme();
   const [loading, setLoading] = useState<boolean>(true);
 
@@ -108,24 +109,36 @@ export const TradingViewWidget = (props: props) => {
           {effectiveTokens.TokenB}
         </span>
       </div> */}
-      <div className="flex py-3 px-4 border-t-[1px] border-x-[1px] border-border bg-forground gap-2">
-        {[effectiveTokens.TokenA, effectiveTokens.TokenB].map((tokenSymbol) => {
-          const isActive = effectiveTokens.chartActiveToken === tokenSymbol;
+      <div className="flex py-3 px-4 border-t-[1px] border-x-[1px] border-border justify-between w-full bg-forground gap-2">
+        <div>
+          {[effectiveTokens.TokenA, effectiveTokens.TokenB].map(
+            (tokenSymbol) => {
+              const isActive = effectiveTokens.chartActiveToken === tokenSymbol;
 
-          return (
-            <span
-              key={tokenSymbol}
-              className={`p-2 cursor-pointer transition border-[1px] ${
-                isActive
-                  ? "bg-primary text-white border-primary"
-                  : "bg-accent text-lightgray dark:text-white border-border"
-              }`}
-              onClick={() => setChartActiveToken(tokenSymbol)}
-            >
-              {tokenSymbol}
-            </span>
-          );
-        })}
+              return (
+                <span
+                  key={tokenSymbol}
+                  className={`p-2 cursor-pointer transition border-[1px] ${
+                    isActive
+                      ? "bg-primary text-white border-primary"
+                      : "bg-accent text-lightgray dark:text-white border-border"
+                  }`}
+                  onClick={() => setChartActiveToken(tokenSymbol)}
+                >
+                  {tokenSymbol}
+                </span>
+              );
+            }
+          )}
+        </div>
+        <div
+          className="lg:hidden"
+          onClick={() => setChartFlag(swapState.chartFlag ? false : true)}
+        >
+          <h1 className="text-ms cursor-pointer flex items-center gap-1 text-title font-medium">
+            back to Swap <FaForward />
+          </h1>
+        </div>
       </div>
 
       {/* Loader while chart is loading */}

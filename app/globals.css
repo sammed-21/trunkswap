@@ -16,6 +16,7 @@
   --textprimary: #1e1e1e; /* Deep gray/black */
   --subtitle: #6c727f; /* Soft readable gray */
   --lightgray: #f1f3f5; /* Light UI background gray */
+  --hover: #dcdfe3;
 
   --headingbackground: #eef1f4; /* For header sections */
   --title: #121212; /* Headings */
@@ -35,6 +36,7 @@
   --subtitle: #a4a6ab; /* Dimmed gray for secondary text */
   --lightgray: #2b2e33; /* Dark neutral for UIs */
   --error-secondary: #3d2130;
+  --hover: #121212;
   --error-primary: #a72e3b;
   --headingbackground: #1c1e22; /* Navigation/header background */
   --title: #ffffff; /* Pure white for titles */

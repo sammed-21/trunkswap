@@ -13,7 +13,8 @@ const buttonVariants = cva(
         secondary: "bg-accent border-border rounded-none ",
         primary:
           "hover:bg-secondary border-border border-[1px] hover:!text-title !text-white bg-primary rounded-none",
-
+        transparent:
+          "bg-transaparent border-border hover:border-primary border-[1px]",
         default:
           "bg-primary hover:bg-primary-500 rounded-none text-primary-foreground",
       },

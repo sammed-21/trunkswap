@@ -11,6 +11,7 @@ import {
 import { useTransactionStore } from "@/state/transactionStore";
 import { getExplorerUrl } from "@/hooks/useToast";
 import Image from "next/image";
+import { formatDigits } from "@/lib/utils";
 // import { getExplorerUrl } from "@/lib/hooks/useTxToast";
 
 export function PendingTransactions() {
@@ -37,7 +38,6 @@ export function PendingTransactions() {
   // ]);
   const [isOpen, setIsOpen] = useState(false);
   const pendingCount = pendingTransactions.length;
-  // console.log({ pendingTransactions });
 
   // Auto-close if no pending transactions
   useEffect(() => {
@@ -106,7 +106,7 @@ export function PendingTransactions() {
                   <div className="mb-1 flex items-center gap-1 text-sm text-title">
                     {tx.meta.tokenAAmount && (
                       <>
-                        <span>{tx.meta.tokenAAmount}</span>
+                        <span>{formatDigits(tx.meta.tokenAAmount)}</span>
                         <Image
                           src={`/tokens/${tx.meta?.tokenASymbol?.toLowerCase()}.svg`}
                           alt={tx.meta.tokenASymbol || "token symbol"}
@@ -120,7 +120,7 @@ export function PendingTransactions() {
                     {tx.meta.aggregate}
                     {tx.meta.tokenBAmount && (
                       <>
-                        <span>{tx.meta.tokenBAmount}</span>
+                        <span>{formatDigits(tx.meta.tokenBAmount)}</span>
                         <Image
                           src={`/tokens/${tx.meta?.tokenBSymbol?.toLowerCase()}.svg`}
                           alt={tx.meta.tokenBSymbol || "token symbol"}
