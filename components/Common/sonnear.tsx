@@ -7,7 +7,7 @@ export function SonnerDemo() {
   return (
     <Button
       variant="primary"
-      className="border-none rounded-none bg-forground"
+      className="border-none rounded-lg bg-forground"
       style={{
         border: "none",
         borderRadius: "none",

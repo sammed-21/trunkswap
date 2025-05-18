@@ -207,7 +207,7 @@ export const SwapWidget = (props: Props) => {
         />
       </div>
       <div className="flex w-full  justify-between">
-        <h2 className="text-lg font-bold text-white bg-primary w-fit px-2 py-1 rounded-none ">
+        <h2 className="text-lg font-bold text-white bg-primary w-fit px-2 py-1 rounded-lg ">
           Swap
         </h2>
         <div className="flex flex-row gap-2 items-center">

@@ -8,9 +8,9 @@ export const PoolPositionsList = () => {
   // Loading state
   if (isLoading) {
     return (
-      <div className="p-6 border rounded-none shadow-sm">
+      <div className="p-6 border rounded-lg shadow-sm">
         <div className="flex flex-col items-center justify-center py-8">
-          <div className="w-12 h-12 border-t-4 border-blue-500 border-solid rounded-none animate-spin"></div>
+          <div className="w-12 h-12 border-t-4 border-blue-500 border-solid rounded-lg animate-spin"></div>
           <p className="mt-4 text-gray-600">Loading....</p>
         </div>
       </div>
@@ -20,7 +20,7 @@ export const PoolPositionsList = () => {
   // Error state
   if (error) {
     return (
-      <div className="p-6 border border-red-200 bg-red-50 rounded-none">
+      <div className="p-6 border border-red-200 bg-red-50 rounded-lg">
         <h3 className="text-lg font-medium text-red-800">
           Error loading positions
         </h3>
@@ -38,7 +38,7 @@ export const PoolPositionsList = () => {
   // Not connected
   // if (!isConnected) {
   //   return (
-  //     <div className="p-6 border rounded-none">
+  //     <div className="p-6 border rounded-lg">
   //       <div className="flex flex-col items-center justify-center py-8">
   //         <svg
   //           className="w-16 h-16 text-gray-400"
@@ -65,7 +65,7 @@ export const PoolPositionsList = () => {
   // No positions
   if (userPositions.length === 0) {
     return (
-      <div className="p-6 border rounded-none">
+      <div className="p-6 border rounded-lg">
         <div className="flex flex-col items-center justify-center py-8">
           <svg
             className="w-16 h-16 text-gray-400"
@@ -108,7 +108,7 @@ export const PoolPositionsList = () => {
       {userPositions.map((position) => (
         <div
           key={position.pairAddress}
-          className="p-4 border rounded-none hover:shadow-md transition-shadow"
+          className="p-4 border rounded-lg hover:shadow-md transition-shadow"
         >
           <div className="flex justify-between items-center">
             <div>

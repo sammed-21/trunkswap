@@ -46,7 +46,7 @@ export const QuoteDetails: React.FC<QuoteDetailsProps> = ({
 
           <span>
             {" "}
-            <Skeleton className="w-[100px] h-[20px] rounded-none" />
+            <Skeleton className="w-[100px] h-[20px] rounded-lg" />
           </span>
         </div>
         <div className="flex justify-between text-sm">
@@ -54,7 +54,7 @@ export const QuoteDetails: React.FC<QuoteDetailsProps> = ({
 
           <span>
             {" "}
-            <Skeleton className="w-[100px] h-[20px] rounded-none" />
+            <Skeleton className="w-[100px] h-[20px] rounded-lg" />
           </span>
         </div>
         <div className="flex justify-between text-sm">
@@ -62,7 +62,7 @@ export const QuoteDetails: React.FC<QuoteDetailsProps> = ({
 
           <span>
             {" "}
-            <Skeleton className="w-[100px] h-[20px] rounded-none" />
+            <Skeleton className="w-[100px] h-[20px] rounded-lg" />
           </span>
         </div>
         <div className="flex justify-between text-sm">
@@ -70,7 +70,7 @@ export const QuoteDetails: React.FC<QuoteDetailsProps> = ({
 
           <span>
             {" "}
-            <Skeleton className="w-[100px] h-[20px] rounded-none" />
+            <Skeleton className="w-[100px] h-[20px] rounded-lg" />
           </span>
         </div>
         <div className="flex justify-between text-sm">
@@ -78,7 +78,7 @@ export const QuoteDetails: React.FC<QuoteDetailsProps> = ({
 
           <span>
             {" "}
-            <Skeleton className="w-[100px] h-[20px] rounded-none" />
+            <Skeleton className="w-[100px] h-[20px] rounded-lg" />
           </span>
         </div>
         <div className="flex justify-between text-sm">
@@ -86,7 +86,7 @@ export const QuoteDetails: React.FC<QuoteDetailsProps> = ({
 
           <span>
             {" "}
-            <Skeleton className="w-[100px] h-[20px] rounded-none" />
+            <Skeleton className="w-[100px] h-[20px] rounded-lg" />
           </span>
         </div>
         <div className="flex justify-between text-sm">
@@ -94,7 +94,7 @@ export const QuoteDetails: React.FC<QuoteDetailsProps> = ({
 
           <span>
             {" "}
-            <Skeleton className="w-[100px] h-[20px] rounded-none" />
+            <Skeleton className="w-[100px] h-[20px] rounded-lg" />
           </span>
         </div>
       </div>

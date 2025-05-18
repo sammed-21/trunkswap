@@ -26,7 +26,7 @@ export const SlippageTolerance = ({ slippage, setSlippage }: Props) => {
   return (
     <div className="w-full mb-2 h-full relative">
       <Tabs
-        defaultValue="0.1"
+        defaultValue="1"
         className="w-full"
         onValueChange={handleValueChange}
       >
@@ -38,24 +38,24 @@ export const SlippageTolerance = ({ slippage, setSlippage }: Props) => {
             content="Your transaction will revert if the price changes more than the slippage percentage."
           />
         </div>
-        <TabsList className="flex px-0 w-ful h-full flex-row gap-1">
+        <TabsList className="flex px-1 mt-3 w-ful h-full bg-forground flex-row gap-1">
           <TabsTrigger
             value="1"
-            className="data-[state=active]:bg-primary-dark w-[150px]  flex flex-row justify-between text-lg h-10 border-[1px] border-border data-[state=active]:text-white"
+            className="data-[state=active]:bg-background  min-w-[50px] max-w-[140px] flex flex-row justify-between text-lg h-10 border-[1px] border-border data-[state=active]:text-white"
           >
             <input
               type="string"
               value={customSlippage}
               onChange={handleCustomChange}
               placeholder="0.00"
-              className="w-6 bg-transparent flex justify-start items-start outline-none border-none text-right"
+              className="min-w-4 bg-transparent flex justify-start items-start outline-none border-none text-title text-right"
               onClick={(e) => e.stopPropagation()} // so clicking input doesn't re-trigger Tabs
             />
             <span>%</span>
           </TabsTrigger>
           <TabsTrigger
             value={DefaultSlippage}
-            className="data-[state=active]:bg-primary text-lg h-10 w-20 border-[1px] data-[state=active]:border-primary border-border data-[state=active]:text-white"
+            className="data-[state=active]:bg-background  text-lg h-10 w-20 border-[1px]   border-border data-[state=active]:text-title"
           >
             Auto
           </TabsTrigger>

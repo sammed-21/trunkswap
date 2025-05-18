@@ -30,7 +30,7 @@ export const SlippageModal = ({
         </DropdownMenuTrigger>
         <DropdownMenuContent className="max-w-[400px] flex flex-col gap-3 p-4 w-full h-fit relative  ">
           <h1 className="text-textpriamry text-xs">Transaction Settings</h1>
-          <div className=" flex flex-col gap-1 w-full rounded-none ">
+          <div className=" flex flex-col gap-1 w-full rounded-lg ">
             <SlippageTolerance slippage={slippage} setSlippage={setSlippage} />
             <DeadlineComponent setDeadline={setDeadline} />
           </div>

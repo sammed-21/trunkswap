@@ -63,7 +63,7 @@ const TokenConversion: React.FC<TokenConversionProps> = ({
           >
             <GoArrowSwitch size={20} />
           </button>
-          <div className="text-sm font-medium flex items-center gap-2">
+          <div className="text-sm font-semibold flex items-center gap-2">
             <span>1 {displayFrom}</span>
             <Image
               src={MAINNET_TOKENS_BY_SYMBOL[displayFrom.toLowerCase()].logoURI}
@@ -87,7 +87,7 @@ const TokenConversion: React.FC<TokenConversionProps> = ({
       ) : (
         <>
           <div className="flex items-center gap-2">
-            <Skeleton className="w-[100px] h-[20px] rounded-none" />
+            <Skeleton className="w-[100px] h-[20px] rounded-lg" />
           </div>
         </>
       )}
