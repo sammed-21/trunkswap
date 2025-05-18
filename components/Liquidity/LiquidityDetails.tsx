@@ -18,7 +18,7 @@ export const LiquidityDetails = ({
 }: Props) => {
   return (
     <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-      <div className="bg-forground rounded-none shadow-md col-span-1 p-6">
+      <div className="bg-forground rounded-lg shadow-md col-span-1 p-6">
         <h2 className="text-lg font-medium mb-4">Pool Statistics</h2>
         <div className="space-y-3">
           <div className="flex justify-between">
@@ -56,7 +56,7 @@ export const LiquidityDetails = ({
       </div>
       {address && (
         <>
-          <div className="bg-forground rounded-none shadow-md p-6">
+          <div className="bg-forground rounded-lg shadow-md p-6">
             <h2 className="text-lg font-medium mb-4">Your Position</h2>
             {pool.userLpBalance && Number(pool.userLpBalance) > 0 ? (
               <div className="space-y-3">
@@ -98,7 +98,7 @@ export const LiquidityDetails = ({
           </div>
         </>
       )}
-      <div className="bg-forground rounded-none shadow-md p-6">
+      <div className="bg-forground rounded-lg shadow-md p-6">
         <h2 className="text-lg font-medium mb-4">Token Info</h2>
         <div className="space-y-3">
           <div>

@@ -29,9 +29,9 @@ export default function TokenInput({
   const { address } = useAccountState();
 
   return (
-    <div className="bg-forground border-[1px] border-primary p-4 rounded-none">
+    <div className="bg-forground border-[1px] border-primary p-4 rounded-lg">
       <div className="flex justify-between mb-2">
-        <div className="flex items-center bg-white dark:bg-forground border-none border-none-gray-200 dark:border-none-gray-700 rounded-none  py-2 min-w-[120px]">
+        <div className="flex items-center bg-white dark:bg-forground border-none border-none-gray-200 dark:border-none-gray-700 rounded-lg  py-2 min-w-[120px]">
           {token ? (
             <div className="flex items-center">
               {token.symbol && (

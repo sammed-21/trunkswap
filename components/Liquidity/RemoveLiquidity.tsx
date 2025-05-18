@@ -62,7 +62,7 @@ export const RemoveLiquidity = ({ pool }: Props) => {
     <div>
       {" "}
       {/* {Number(pool.userLpBalance) > 0 && ( */}
-      <div className="bg-forground  shadow-md mb-3 p-6">
+      <div className="bg-forground rounded-lg shadow-md mb-3 p-6">
         <span className="w-full flex items-center justify-between">
           <h2 className="text-lg font-medium ">Remove Liquidity</h2>
           <div>{formatDigits(pool.userLpBalance)} LP</div>
@@ -82,7 +82,7 @@ export const RemoveLiquidity = ({ pool }: Props) => {
               step="1"
               value={percentToRemove}
               onChange={(e) => setPercentToRemove(parseInt(e.target.value))}
-              className="w-full h-2 bg-gray-200 rounded-none appearance-none cursor-pointer dark:bg-gray-700"
+              className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer dark:bg-gray-700"
             />
             <div className="flex justify-between mt-2">
               {" "}
@@ -121,7 +121,7 @@ export const RemoveLiquidity = ({ pool }: Props) => {
           {address ? (
             <>
               {percentToRemove > 0 && (
-                <div className="p-4 bg-forground border-[1px] border-border rounded-none">
+                <div className="p-4 bg-forground border-[1px] border-border rounded-lg">
                   <h3 className="text-sm font-medium mb-2">
                     You will receive:
                   </h3>

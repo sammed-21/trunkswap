@@ -32,7 +32,7 @@ export const Navbar = () => {
   useInitialLoad();
 
   return (
-    <nav className="h-20 border-b-[1px] text-title bg-background  backdrop-filter backdrop-blur-lg bg-opacity-30 border-border px-4  rounded-none  justify-between flex items-center  w-full font-semibold ">
+    <nav className="h-20 border-b-[1px] text-title bg-background  backdrop-filter backdrop-blur-lg bg-opacity-30 border-border px-4  rounded-lg  justify-between flex items-center  w-full font-semibold ">
       <div className="flex gap-3 space-x-2 items-center justify-start">
         <Link
           href="/"

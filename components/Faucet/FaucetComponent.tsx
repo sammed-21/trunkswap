@@ -220,7 +220,7 @@ export const FaucetComponent = () => {
 
   if (!address) {
     return (
-      <div className="bg-muted p-6 border border-border max-w-md mx-auto shadow-md text-center">
+      <div className="bg-muted p-6 rounded-lg border border-border max-w-md mx-auto shadow-md text-center">
         <p className="mb-4">Connect your wallet to access the faucet</p>
         <ConnectWallet />
       </div>
@@ -228,7 +228,7 @@ export const FaucetComponent = () => {
   }
 
   return (
-    <div className="bg-forground p-6 border border-border max-w-3xl w-full h-fit mx-auto shadow-md">
+    <div className="bg-forground p-6 border border-border max-w-3xl w-full h-fit mx-auto rounded-lg shadow-md">
       <table className="w-full">
         <thead>
           <tr className="text-left border-b border-border">

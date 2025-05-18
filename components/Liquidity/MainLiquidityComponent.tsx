@@ -104,11 +104,14 @@ export const MainLiquidityComponent = ({ pool }: Props) => {
         <TabsTrigger value="Deposit">Deposit</TabsTrigger>
         <TabsTrigger value="Withdraw">Withdraw</TabsTrigger>
       </TabsList>
-      <TabsContent value="Deposit">
+      <TabsContent value="Deposit" className="mt-6">
         {/* <AddLiquidityComponent pool={pool} /> */}
         <div className="flex flex-col gap-1">
           <div className="flex items-center justify-between mb-6">
-            <h1 className="text-2xl font-bold  text-title">Add Liquidity</h1>
+            <span className="flex items-start justify-start flex-col  ">
+              <h1 className="text-2xl font-bold  text-title">Add Liquidity</h1>
+              <p>Provide liquidity to receive LP tokens.</p>
+            </span>
             <SlippageModal
               setDeadline={setDeadline}
               setSlippage={setSlippage}
@@ -245,7 +248,7 @@ export const MainLiquidityComponent = ({ pool }: Props) => {
 
           {/* Pool information */}
           {selectedPool && (
-            <div className="mt-6 bg-forground p-4  ">
+            <div className="mt-6 rounded-lg bg-forground p-4  ">
               <h3 className="text-lg font-medium  mb-3">Pool Information</h3>
 
               <div className="space-y-3">

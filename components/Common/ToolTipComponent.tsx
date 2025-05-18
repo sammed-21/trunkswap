@@ -21,7 +21,7 @@ export const ToolTipComponent = ({ title, subTitle, content }: Props) => {
           <FaCircleExclamation />
         </TooltipTrigger>
         <TooltipContent className="p-2">
-          <div className="relative p-4  shadow-primary rounded-none  max-w-[300px] shadow-[0_0_10px_rgba(6, 70, 231, 0.303)]  bg-gradient-to-br from-forground to-forground backdrop-blur-md  border border-white/10 ">
+          <div className="relative p-4  shadow-primary rounded-lg  max-w-[300px] shadow-[0_0_10px_rgba(6, 70, 231, 0.303)]  bg-gradient-to-br from-forground to-forground backdrop-blur-md  border border-white/10 ">
             <div className="flex items-center gap-3 mb-2">
               <div className="flex items-center justify-center w-8 h-8 rounded-full bg-primary">
                 <FaCircleExclamation />
