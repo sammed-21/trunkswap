@@ -69,7 +69,7 @@ const AmountInput: React.FC<AmountInputProps> = ({
         exceedsBalanceError && isConnected
           ? "bg-error-secondary border-error-primary"
           : "border-primary bg-forground "
-      }  border-[1px]  shadow-md w-full max-w-md relative`}
+      }  border-[1px]  shadow-md w-full rounded-lg max-w-md relative`}
     >
       <div className="mb-4">
         <div className="flex justify-between items-center">
@@ -81,7 +81,7 @@ const AmountInput: React.FC<AmountInputProps> = ({
             <>
               {loadingBalances ? (
                 <div className="">
-                  <Skeleton className="w-[100px] h-[23px] rounded-none" />{" "}
+                  <Skeleton className="w-[100px] h-[23px] rounded-lg" />{" "}
                 </div>
               ) : (
                 <span
@@ -106,7 +106,7 @@ const AmountInput: React.FC<AmountInputProps> = ({
               <input
                 type="number"
                 className={`truncate appearance-none dark:text-slate-50 text-gray-900 appearance-none [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-inner-spin-button]:m-0 w-full !ring-0 !outline-none min-h-[40px] h-[40px] py-2 border-0 bg-transparent p-0 py-1 !text-3xl font-medium flex-grow flex-1 !outline-none !ring-0`}
-                // className={`w-full placeholder:text-textprimary   py-2 bg-transparent text-title focus:none border-none text-2xl rounded-none`}
+                // className={`w-full placeholder:text-textprimary   py-2 bg-transparent text-title focus:none border-none text-2xl rounded-lg`}
                 placeholder="0.00"
                 value={Amount}
                 pattern="\d*\.?\d*"

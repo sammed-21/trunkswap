@@ -3,6 +3,7 @@ import { useSwapActions, useSwapState } from "@/state/swapStore";
 import { useTheme } from "next-themes";
 import React, { useEffect, useMemo, useRef, useState } from "react";
 import { FaBackward, FaForward } from "react-icons/fa6";
+import { Tabs, TabsList } from "../ui/tabs";
 
 const unsupportedTokens = ["RSTX", "STX"]; // Add other dummy tokens here
 const fallbackToken = "USDC"; // Or use "ETH"
@@ -91,7 +92,7 @@ export const TradingViewWidget = (props: props) => {
           className={`p-2   cursor-pointer transition ${
             effectiveTokens.chartActiveToken === effectiveTokens.TokenA
               ? "bg-primary text-white"
-              : "bg-accent text-white border-bordder rounded-none"
+              : "bg-accent text-white border-bordder rounded-lg"
           }`}
           onClick={() => setChartActiveToken(effectiveTokens.TokenA)}
         >
@@ -102,35 +103,38 @@ export const TradingViewWidget = (props: props) => {
           className={`p-2   cursor-pointer transition ${
             effectiveTokens.chartActiveToken === effectiveTokens.TokenB
               ? "bg-primary text-white"
-              : "bg-accent text-white border-bordder rounded-none"
+              : "bg-accent text-white border-bordder rounded-lg"
           }`}
           onClick={() => setChartActiveToken(effectiveTokens.TokenB)}
         >
           {effectiveTokens.TokenB}
         </span>
       </div> */}
-      <div className="flex py-3 px-4 border-t-[1px] border-x-[1px] border-border justify-between w-full bg-forground gap-2">
-        <div>
-          {[effectiveTokens.TokenA, effectiveTokens.TokenB].map(
-            (tokenSymbol) => {
-              const isActive = effectiveTokens.chartActiveToken === tokenSymbol;
+      <div className="flex py-3 px-4 border-t-[1px] border-x-[1px] rounded-t-lg border-border justify-between w-full bg-forground gap-2">
+        <Tabs>
+          <TabsList className="grid w-full grid-cols-2">
+            {[effectiveTokens.TokenA, effectiveTokens.TokenB].map(
+              (tokenSymbol) => {
+                const isActive =
+                  effectiveTokens.chartActiveToken === tokenSymbol;
 
-              return (
-                <span
-                  key={tokenSymbol}
-                  className={`p-2 cursor-pointer transition border-[1px] ${
-                    isActive
-                      ? "bg-primary text-white border-primary"
-                      : "bg-accent text-lightgray dark:text-white border-border"
-                  }`}
-                  onClick={() => setChartActiveToken(tokenSymbol)}
-                >
-                  {tokenSymbol}
-                </span>
-              );
-            }
-          )}
-        </div>
+                return (
+                  <span
+                    key={tokenSymbol}
+                    className={`px-4 col-span-1 cursor-pointer transition rounded-lg ${
+                      isActive
+                        ? "bg-background   border-primary"
+                        : "bg-accent   border-border"
+                    }`}
+                    onClick={() => setChartActiveToken(tokenSymbol)}
+                  >
+                    {tokenSymbol}
+                  </span>
+                );
+              }
+            )}
+          </TabsList>
+        </Tabs>
         <div
           className="lg:hidden"
           onClick={() => setChartFlag(swapState.chartFlag ? false : true)}

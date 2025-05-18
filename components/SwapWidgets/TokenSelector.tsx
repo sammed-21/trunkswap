@@ -71,7 +71,7 @@ const TokenSelector: React.FC<TokenSelectorProps> = ({
           <span className="text-title font-medium text-xl">Select Token</span>
           <button
             onClick={closeModal}
-            className="text-title bg-accent  rounded-none p-2"
+            className="text-title bg-accent  rounded-lg p-2"
           >
             ESC
           </button>
@@ -83,7 +83,7 @@ const TokenSelector: React.FC<TokenSelectorProps> = ({
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             placeholder="Search tokens..."
-            className="w-full p-2 bg-accent text-title rounded-none"
+            className="w-full p-2 bg-accent text-title rounded-lg"
           />
         </div>
         <div className="space-y-4 z-50">
@@ -94,7 +94,7 @@ const TokenSelector: React.FC<TokenSelectorProps> = ({
               return (
                 <div
                   key={token.address}
-                  className={`flex justify-between items-center p-4 border-none rounded-none ${
+                  className={`flex justify-between items-center p-4 border-none rounded-lg ${
                     disabled
                       ? "bg-primary text-white cursor-not-allowed"
                       : "cursor-pointer hover:bg-accent"

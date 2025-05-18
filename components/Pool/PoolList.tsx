@@ -1,26 +1,14 @@
 "use client";
-import { usePoolState } from "@/state/poolStore";
-import React, { useEffect, useState } from "react";
+import React, { useState } from "react";
 import { PoolRow, PoolRowHeading } from "./PoolRow";
-import { Button } from "../ui/Button";
-import { IoMdAdd } from "react-icons/io";
 import { Pool, useLiquidityStore } from "@/state/liquidityStore";
 import { Skeleton } from "../ui/skeleton";
 import { useRouter } from "next/navigation";
-import { useAccountState } from "@/state/accountStore";
 import { LoadingScreen } from "../Common/LoadingScreen";
 
 export const PoolList = () => {
-  // const { pools, isLoading } = usePoolState();
-  const { provider } = useAccountState();
   const router = useRouter();
-  const {
-    pools,
-    fetchPools,
-    isLoadingPools,
-    error: poolsError,
-    setSelectedPool,
-  } = useLiquidityStore();
+  const { pools, isLoadingPools, setSelectedPool } = useLiquidityStore();
   const [searchQuery, setSearchQuery] = useState<string>("");
 
   if (!pools?.length)
@@ -47,10 +35,6 @@ export const PoolList = () => {
   const handleAddLiqudity = (pool: Pool) => {
     setSelectedPool(pool);
     router.push(`/pool/${pool.pairAddress!}`);
-    // router.push(
-    //   `/add-liquidity/token0=${pool?.token0?.address}/token1=${pool?.token1?.address}`
-    //   // `/add-liquidity/token0=${pool?.token0?.address}/token1=${pool?.token1?.address}`
-    // );
   };
 
   return (
@@ -67,19 +51,10 @@ export const PoolList = () => {
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               placeholder="Search Pair"
-              className="w-full  max-w-[300px] p-1  bg-forground border-border border-[1px] text-white rounded-none"
+              className="w-full  max-w-[300px] p-1  bg-forground border-border border-[1px] text-white rounded-lg"
             />
-            {/* <div>
-              <Button
-                className="text-lg font-medium"
-                size={"sm"}
-                variant={"white"}
-              >
-                <IoMdAdd /> Create Pair
-              </Button>
-            </div> */}
           </div>
-          <div className="flex border-[1px] border-border   bg-forground overflow-x-auto flex-col w-full ">
+          <div className="flex border-[1px] border-border rounded-lg  bg-forground overflow-x-auto flex-col w-full ">
             <div className="border-b-[1px] min-w-[800px] w-full border-border">
               <PoolRowHeading />
             </div>
@@ -89,7 +64,7 @@ export const PoolList = () => {
               filteredTokens.map((p, key) => (
                 <div
                   key={key}
-                  className="border-b-[1px]  min-w-[800px] w-full  border-border  "
+                  className="border-b-[1px] rounded-lg min-w-[800px] w-full  border-border  "
                 >
                   <PoolRow
                     key={p.pairAddress}

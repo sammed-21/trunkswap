@@ -173,7 +173,7 @@ export default function PoolDetailPage({ params }: PoolDetailPageProps) {
           <div className="space-b-6 flex-4 flex flex-col-reverse lg:flex-row gap-4 w-full">
             <div className="flex flex-col gap-4 w-full">
               {/* Header */}
-              <div className="bg-forground rounded-none   lg:fex shadow-md flex flex-row  justify-between items-center gap-4 p-6">
+              <div className="bg-forground rounded-lg   lg:fex shadow-md flex flex-row  justify-between items-center gap-4 p-6">
                 <div>
                   <h1 className="text-2xl font-bold">{`${pool.token0.symbol}/${pool.token1.symbol}`}</h1>
                   <p className="text-gray-500 text-sm mt-1">
@@ -189,7 +189,7 @@ export default function PoolDetailPage({ params }: PoolDetailPageProps) {
                 </div>
               </div>
 
-              <div className="bg-forground flex-2 relative h-[500px] rounded-none shadow-md p-6">
+              <div className="bg-forground flex-2 relative h-[500px] rounded-lg shadow-md p-6">
                 <TradingViewWidget />
               </div>
               <div className=" block lg:hidden max-w-[500px] flex-3 w-full min-h-[800px] max-lg:mx-auto   ">
