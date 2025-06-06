@@ -139,7 +139,7 @@ export const FaucetComponent = () => {
           chainId: chainId,
           meta: {
             tokenAAmount: faucetAmount,
-            tokenASymbol: symbol,
+            token0Symbol: symbol,
           },
           onSuccess: async (receipt: any) => {
             await addContractToMetamask(symbol, tokenAddress);

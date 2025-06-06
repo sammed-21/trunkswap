@@ -33,7 +33,7 @@ https://trunkswap.vercel.app/swap
 ### Smart Contract Flow
 
 1. Approve tokens
-2. Call `addLiquidity(tokenA, tokenB, amountA, amountB)`
+2. Call `addLiquidity(token0, token1, amountA, amountB)`
 3. Receive LP tokens
 
 ---
@@ -50,7 +50,7 @@ https://trunkswap.vercel.app/swap
 ### Smart Contract Flow
 
 1. Approve LP tokens
-2. Call `removeLiquidity(tokenA, tokenB, lpAmount)`
+2. Call `removeLiquidity(token0, token1, lpAmount)`
 3. Receive original tokens proportionally
 
 ---

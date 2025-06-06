@@ -16,7 +16,10 @@ export default function PoolPage() {
           <TabsTrigger value="my-liquidity">My Liquidity</TabsTrigger> */}
         </TabsList>
 
-        <TabsContent value="pools" className="  w-full ">
+        <TabsContent
+          value="pools"
+          className=" flex flex-col justify-center gap-5 w-full "
+        >
           <PoolListHead />
           <div className="w-full flex  flex-col justify-center">
             <PoolList />

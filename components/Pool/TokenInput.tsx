@@ -4,6 +4,7 @@ import { useAccountState } from "@/state/accountStore";
 import { Skeleton } from "../ui/skeleton";
 import Image from "next/image";
 import { Button } from "../ui/Button";
+import { formatDigits } from "@/lib/utils";
 
 interface TokenInputProps {
   label: string;
@@ -12,6 +13,7 @@ interface TokenInputProps {
   onChange: (value: string) => void;
   usdValue: number | null;
   disabled?: boolean;
+  isLoading: boolean;
   tokenBalnce: string;
   isBalanceLoading: boolean;
 }
@@ -20,6 +22,7 @@ export default function TokenInput({
   label,
   token,
   value,
+  isLoading,
   onChange,
   usdValue,
   disabled = false,
@@ -29,46 +32,9 @@ export default function TokenInput({
   const { address } = useAccountState();
 
   return (
-    <div className="bg-forground border-[1px] border-primary p-4 rounded-lg">
-      <div className="flex justify-between mb-2">
-        <div className="flex items-center bg-white dark:bg-forground border-none border-none-gray-200 dark:border-none-gray-700 rounded-lg  py-2 min-w-[120px]">
-          {token ? (
-            <div className="flex items-center">
-              {token.symbol && (
-                <Image
-                  src={`/tokens/${token.symbol.toLowerCase()}.svg`}
-                  alt={token.symbol}
-                  className="w-6 h-6 mr-2 rounded-full"
-                  width={24}
-                  height={24}
-                />
-              )}
-              <span className="font-medium text-gray-900 dark:text-white">
-                {token.symbol}
-              </span>
-            </div>
-          ) : (
-            <span className="text-gray-400 dark:text-gray-500">
-              Select token
-            </span>
-          )}
-        </div>
-        {address && token && (
-          <div className="flex items-center text-sm">
-            {isBalanceLoading ? (
-              <Skeleton className="h-5 bg-fuchsia-950 w-20" />
-            ) : (
-              <span className="text-gray-500 dark:text-gray-400 mr-1">
-                Balance: {!token.balance ? tokenBalnce : token.balance}{" "}
-                {token.symbol}
-              </span>
-            )}
-          </div>
-        )}
-      </div>
-
-      <div className="flex items-start space-x-3">
-        <div className="flex-0 w-full items-start text-start">
+    <div className="bg-forground border-[1px] border-primary hover:border-accent hover:bg-background  p-4 rounded-lg">
+      <div className="flex  items-start space-x-3">
+        <div className="flex-0 flex flex-col gap-3 w-full items-start text-start">
           <input
             type="text"
             value={value}
@@ -79,9 +45,9 @@ export default function TokenInput({
               disabled ? "opacity-60 cursor-not-allowed" : ""
             }`}
           />
-
+          <span>${usdValue ? usdValue : 0}</span>
           {/* Percentage buttons */}
-          {address && tokenBalnce && !isBalanceLoading && (
+          {/* {address && tokenBalnce && !isBalanceLoading && (
             <div className="flex justify-end mt-2 space-x-2">
               {[25, 50, 75, 100].map((percent) => {
                 const percentageValue = (
@@ -108,7 +74,51 @@ export default function TokenInput({
                 );
               })}
             </div>
-          )}
+          )} */}
+        </div>
+        <div className=" gap-3 min-w-fit flex flex-col items-end justify-end">
+          <Button
+            variant={"transparent"}
+            className=" justify-between gap-1 px-2  my-2 w-fit relative hover:border-none flex py-2 bg-background dark:text-title text-title items-center "
+          >
+            {token ? (
+              <div className="flex items-center">
+                {token.symbol && (
+                  <Image
+                    src={`/tokens/${token.symbol.toLowerCase()}.svg`}
+                    alt={token.symbol}
+                    className="w-6 h-6 mr-2 rounded-full"
+                    width={24}
+                    height={24}
+                  />
+                )}
+                <span className="font-medium text-gray-900 dark:text-white">
+                  {token.symbol}
+                </span>
+              </div>
+            ) : (
+              <span className="text-gray-400 dark:text-gray-500">
+                Select token
+              </span>
+            )}
+          </Button>
+          <div className="flex  justify-between w-full  mb-2">
+            {address && token && (
+              <div className="flex items-center text-sm">
+                {isBalanceLoading ? (
+                  <Skeleton className="h-5   w-20" />
+                ) : (
+                  <span className="text-gray-500 flex w-full dark:text-gray-400 mr-1">
+                    Balance:{" "}
+                    {!token.balance
+                      ? formatDigits(tokenBalnce)
+                      : formatDigits(token.balance)}{" "}
+                    {token.symbol}
+                  </span>
+                )}
+              </div>
+            )}
+          </div>
         </div>
       </div>
     </div>

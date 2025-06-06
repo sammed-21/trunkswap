@@ -9,7 +9,7 @@ import { useLiqudityState, useLiquidityActions } from "@/state/liquidityStore";
 import { usePoolActions } from "@/state/poolStore";
 import { usePriceState } from "@/state/priceStore";
 import { useSwapActions, useSwapState } from "@/state/swapStore";
-import { useEffect } from "react";
+import { memo, useEffect } from "react";
 import { useAccount, useChainId } from "wagmi";
 // import { WalletInit } from "@/services/WalletInit"; // changed from useWalletInit
 

@@ -10,6 +10,7 @@ const config: Config = {
     extend: {
       animation: {
         spin: "spin 0.5s linear infinite",
+        aurora: "aurora 60s linear infinite",
       },
       colors: {
         primary: "var(--primary)",
@@ -30,6 +31,16 @@ const config: Config = {
       },
       backgroundImage: {
         gradient: "linear-gradient(90deg, #0bd790, #0ea7bf)",
+      },
+      keyframes: {
+        aurora: {
+          from: {
+            backgroundPosition: "50% 50%, 50% 50%",
+          },
+          to: {
+            backgroundPosition: "350% 50%, 350% 50%",
+          },
+        },
       },
     },
   },

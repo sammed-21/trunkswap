@@ -15,14 +15,14 @@ import { LoadingScreen } from "@/components/Common/LoadingScreen";
 
 interface AddLiquidityPageProps {
   params: {
-    tokenA: string;
-    tokenB: string;
+    token0: string;
+    token1: string;
   };
 }
 
 export default function AddLiquidityPage({ params }: AddLiquidityPageProps) {
   const router = useRouter();
-  const { tokenA, tokenB } = params;
+  const { token0, token1 } = params;
   const { isConnected, address } = useAccount();
   const { openConnectModal } = useConnectModal();
   const {
@@ -42,10 +42,10 @@ export default function AddLiquidityPage({ params }: AddLiquidityPageProps) {
     expectedLPTokens,
     poolShare,
     deadline,
-  } = useAddLiquidityLogic(tokenA, tokenB);
+  } = useAddLiquidityLogic(token0, token1);
   const {
-    selectedTokenA,
-    selectedTokenB,
+    selectedToken0,
+    selectedToken1,
     selectedPool,
     transactionButtonText,
     tokenAAmount,
@@ -72,7 +72,7 @@ export default function AddLiquidityPage({ params }: AddLiquidityPageProps) {
     );
   }
 
-  if (error && !selectedTokenA && !selectedTokenB) {
+  if (error && !selectedToken0 && !selectedToken1) {
     return (
       <div className="bg-red-50 dark:bg-red-900/20 p-6 rounded-xl shadow-sm">
         <h2 className="text-xl font-semibold text-red-700 dark:text-red-400 mb-2">
@@ -160,7 +160,8 @@ export default function AddLiquidityPage({ params }: AddLiquidityPageProps) {
 
           <TokenInput
             label="Token A"
-            token={selectedTokenA}
+            token={selectedToken0}
+            isLoading={false}
             value={tokenAAmount}
             onChange={handleTokenAInput}
             usdValue={tokenAUsdValue}
@@ -177,7 +178,7 @@ export default function AddLiquidityPage({ params }: AddLiquidityPageProps) {
                     variant="secondary"
                     className="w-full py-3 cursor-not-allowed text-white font-semibold"
                   >
-                    InSufficient {selectedTokenA?.symbol} Balance
+                    InSufficient {selectedToken0?.symbol} Balance
                   </Button>
                 </>
               ) : (
@@ -226,9 +227,10 @@ export default function AddLiquidityPage({ params }: AddLiquidityPageProps) {
           {/* Token B Input */}
           <TokenInput
             label="Token B"
-            token={selectedTokenB}
+            token={selectedToken1}
             value={tokenBAmount}
             onChange={handleTokenBInput}
+            isLoading={false}
             usdValue={tokenBUsdValue}
             disabled={isAddingLiquidity}
             tokenBalnce={selectedTokenBBalance}
@@ -243,7 +245,7 @@ export default function AddLiquidityPage({ params }: AddLiquidityPageProps) {
                     variant="secondary"
                     className="w-full py-3 cursor-not-allowed text-white font-semibold"
                   >
-                    InSufficient {selectedTokenB?.symbol} Balance
+                    InSufficient {selectedToken1?.symbol} Balance
                   </Button>
                 </>
               ) : (

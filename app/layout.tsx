@@ -8,8 +8,9 @@ import NextTopLoader from "nextjs-toploader";
 import { ThemeProvider } from "@/components/ui/theme-provider";
 import { GoogleAnalytics } from "@next/third-parties/google";
 import React from "react";
-import { Toaster } from "sonner";
 import { PendingTransactions } from "@/components/Common/PendingTransactions";
+import { Toaster } from "react-hot-toast";
+import { Footer } from "@/components/Footer/Footer";
 
 const geistSans = localFont({
   src: "./fonts/GeistVF.woff",
@@ -54,7 +55,9 @@ export default function RootLayout({
             <Providers>
               {/* <div className="absolute top-0 bottom-0 left-0 bg-[#0d53bb] light:bg-[#0d53bb]/20 rounded-lg blur-[300px] w-[22rem] h-[32rem] -z-10"></div> */}
               <Navbar />
-              {children}
+              <div className="min-h-screen w-full h-full relative">
+                {children}
+              </div>
 
               {/* <div className="absolute right-0 top-0  bg-[#0d0dbb] light:bg-[#0d0dbb]/20 rounded-lg blur-[300px] w-[22rem] h-[32rem] -z-10"></div> */}
               <NextTopLoader
@@ -72,8 +75,14 @@ export default function RootLayout({
                 zIndex={1600}
                 showAtBottom={false}
               />
+              <Toaster
+                position="bottom-right"
+                containerClassName=""
+                gutter={3}
+              />
               <PendingTransactions />
             </Providers>
+            <Footer />
           </div>
         </ThemeProvider>
       </body>

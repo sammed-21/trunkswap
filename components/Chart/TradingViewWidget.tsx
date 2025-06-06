@@ -8,8 +8,8 @@ import { Tabs, TabsList } from "../ui/tabs";
 const unsupportedTokens = ["RSTX", "STX"]; // Add other dummy tokens here
 const fallbackToken = "USDC"; // Or use "ETH"
 interface props {
-  TokenA?: string;
-  TokenB?: string;
+  token0?: string;
+  token1?: string;
   chartActiveToken?: string;
 }
 export const TradingViewWidget = (props: props) => {
@@ -21,8 +21,8 @@ export const TradingViewWidget = (props: props) => {
 
   const effectiveTokens = useMemo(() => {
     return {
-      TokenA: props.TokenA ?? swapState.TokenA,
-      TokenB: props.TokenB ?? swapState.TokenB,
+      token0: props.token0 ?? swapState.token0,
+      token1: props.token1 ?? swapState.token1,
       chartActiveToken: props.chartActiveToken ?? swapState.chartActiveToken,
     };
   }, [props, swapState]);
@@ -37,7 +37,7 @@ export const TradingViewWidget = (props: props) => {
   const fullSymbol = `${getSymbol(effectiveTokens.chartActiveToken)}USD`;
 
   // const container = useRef<HTMLDivElement | null>(null);
-  // const { TokenA, TokenB, chartActiveToken } = useSwapState();
+  // const { token0, token1, chartActiveToken } = useSwapState();
   // const { setChartActiveToken } = useSwapActions();
   // const { theme } = useTheme();
   // const [loading, setLoading] = useState<boolean>(true);
@@ -69,7 +69,7 @@ export const TradingViewWidget = (props: props) => {
       symbol: fullSymbol,
       interval: "D",
       timezone: "Etc/UTC",
-      theme: theme,
+      theme: theme ? theme : "dark",
 
       style: "1",
       locale: "en",
@@ -79,8 +79,8 @@ export const TradingViewWidget = (props: props) => {
     container.current.appendChild(script);
   }, [
     effectiveTokens.chartActiveToken,
-    effectiveTokens.TokenA,
-    effectiveTokens.TokenB,
+    effectiveTokens.token0,
+    effectiveTokens.token1,
     theme,
   ]);
 
@@ -88,32 +88,32 @@ export const TradingViewWidget = (props: props) => {
     <div className="w-full h-full flex flex-col ">
       {/* <div className="flex py-3 px-4 border-t-[1px] border-x-[1px] border-border bg-forground flex-row gap-2">
         <span
-          key={effectiveTokens.TokenA}
+          key={effectiveTokens.token0}
           className={`p-2   cursor-pointer transition ${
-            effectiveTokens.chartActiveToken === effectiveTokens.TokenA
+            effectiveTokens.chartActiveToken === effectiveTokens.token0
               ? "bg-primary text-white"
               : "bg-accent text-white border-bordder rounded-lg"
           }`}
-          onClick={() => setChartActiveToken(effectiveTokens.TokenA)}
+          onClick={() => setChartActiveToken(effectiveTokens.token0)}
         >
-          {effectiveTokens.TokenA}
+          {effectiveTokens.token0}
         </span>
         <span
-          key={effectiveTokens.TokenB}
+          key={effectiveTokens.token1}
           className={`p-2   cursor-pointer transition ${
-            effectiveTokens.chartActiveToken === effectiveTokens.TokenB
+            effectiveTokens.chartActiveToken === effectiveTokens.token1
               ? "bg-primary text-white"
               : "bg-accent text-white border-bordder rounded-lg"
           }`}
-          onClick={() => setChartActiveToken(effectiveTokens.TokenB)}
+          onClick={() => setChartActiveToken(effectiveTokens.token1)}
         >
-          {effectiveTokens.TokenB}
+          {effectiveTokens.token1}
         </span>
       </div> */}
       <div className="flex py-3 px-4 border-t-[1px] border-x-[1px] rounded-t-lg border-border justify-between w-full bg-forground gap-2">
         <Tabs>
           <TabsList className="grid w-full grid-cols-2">
-            {[effectiveTokens.TokenA, effectiveTokens.TokenB].map(
+            {[effectiveTokens.token0, effectiveTokens.token1].map(
               (tokenSymbol) => {
                 const isActive =
                   effectiveTokens.chartActiveToken === tokenSymbol;
@@ -123,8 +123,8 @@ export const TradingViewWidget = (props: props) => {
                     key={tokenSymbol}
                     className={`px-4 col-span-1 cursor-pointer transition rounded-lg ${
                       isActive
-                        ? "bg-background   border-primary"
-                        : "bg-accent   border-border"
+                        ? "bg-background border-primary"
+                        : "bg-accent border-border"
                     }`}
                     onClick={() => setChartActiveToken(tokenSymbol)}
                   >

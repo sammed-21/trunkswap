@@ -1,5 +1,9 @@
 "use client";
-import { Pool, useLiqudityState } from "@/state/liquidityStore";
+import {
+  Pool,
+  useLiqudityState,
+  useLiquidityActions,
+} from "@/state/liquidityStore";
 
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useRouter } from "next/navigation";
@@ -19,25 +23,31 @@ import { useMemo } from "react";
 
 import AddLiquidityComponent from "./AddLiquidityComponent";
 import { RemoveLiquidity } from "./RemoveLiquidity";
+import { usePriceState } from "@/state/priceStore";
+import AmountInput from "../SwapWidgets/AmountInput";
+import TokenConversion from "@/services/TokenConversion";
+import { AnimatedTooltip } from "../ui/animated-tooltip";
 type Props = {
   pool: Pool;
 };
 
 export const MainLiquidityComponent = ({ pool }: Props) => {
   const router = useRouter();
-  //   const { tokenA, tokenB } = params;
+  //   const { token0, token1 } = params;
   const { isConnected, address } = useAccount();
   const { openConnectModal } = useConnectModal();
+  const { prices } = usePriceState();
   const tokenAddresses = useMemo(
     () => ({
-      tokenA: pool.token0.address,
-      tokenB: pool.token1.address,
+      token0: pool.token0.address,
+      token1: pool.token1.address,
     }),
     [pool.token0.address, pool.token1.address]
   );
+
   const {
-    selectedTokenA,
-    selectedTokenB,
+    selectedToken0,
+    selectedToken1,
     selectedPool,
     transactionButtonText,
     tokenAAmount,
@@ -54,7 +64,9 @@ export const MainLiquidityComponent = ({ pool }: Props) => {
     transactionTokenAButtonText,
     slippage,
     transactionTokenBButtonText,
+    defaultLiquidityTag,
   } = useLiqudityState();
+
   const {
     isLoading,
     error,
@@ -71,17 +83,17 @@ export const MainLiquidityComponent = ({ pool }: Props) => {
     expectedLPTokens,
     poolShare,
     deadline,
-  } = useAddLiquidityLogic(tokenAddresses.tokenA, tokenAddresses.tokenB);
-  if (isLoading) {
-    return (
-      <div className="flex justify-center items-center h-96">
-        {/* <Skeleton className="h-10 w-40 bg-subtitle" /> */}
-        <LoadingScreen />
-      </div>
-    );
-  }
+  } = useAddLiquidityLogic(tokenAddresses.token0, tokenAddresses.token1);
+  // if (isLoading) {
+  //   return (
+  //     <div className="flex justify-center items-center h-96">
+  //       {/* <Skeleton className="h-10 w-40 bg-subtitle" /> */}
+  //       <LoadingScreen />
+  //     </div>
+  //   );
+  // }
 
-  if (error && !selectedTokenA && !selectedTokenB) {
+  if (error && !selectedToken0 && !selectedToken1) {
     return (
       <div className="bg-red-50 dark:bg-red-900/20 p-6 rounded-xl shadow-sm">
         <h2 className="text-xl font-semibold text-red-700 dark:text-red-400 mb-2">
@@ -99,12 +111,27 @@ export const MainLiquidityComponent = ({ pool }: Props) => {
   }
 
   return (
-    <Tabs defaultValue="Deposit" className="w-full md:w-[500px]">
+    <Tabs defaultValue={defaultLiquidityTag} className="w-full md:w-[500px]">
       <TabsList className="grid w-full grid-cols-2">
-        <TabsTrigger value="Deposit">Deposit</TabsTrigger>
-        <TabsTrigger value="Withdraw">Withdraw</TabsTrigger>
+        <TabsTrigger value="Add">Add</TabsTrigger>
+        <TabsTrigger value="Remove">Remove</TabsTrigger>
       </TabsList>
-      <TabsContent value="Deposit" className="mt-6">
+      {selectedToken0 && selectedToken1 && (
+        <>
+          <div className=" border-[1px] h-fit p-3 rounded-md border-border my-2">
+            <TokenConversion
+              prices={prices}
+              from={selectedToken0?.symbol}
+              to={selectedToken1?.symbol}
+              isLoading={false}
+              className="flex flex-col    h-fit justify-start rounded-md items-start"
+            >
+              {selectedToken0.symbol}/{selectedToken1.symbol}
+            </TokenConversion>
+          </div>
+        </>
+      )}
+      <TabsContent value="Add" className="mt-6">
         {/* <AddLiquidityComponent pool={pool} /> */}
         <div className="flex flex-col gap-1">
           <div className="flex items-center justify-between mb-6">
@@ -130,7 +157,8 @@ export const MainLiquidityComponent = ({ pool }: Props) => {
 
             <TokenInput
               label="Token A"
-              token={selectedTokenA}
+              token={selectedToken0}
+              isLoading={isLoading}
               value={tokenAAmount}
               onChange={handleTokenAInput}
               usdValue={tokenAUsdValue}
@@ -138,7 +166,7 @@ export const MainLiquidityComponent = ({ pool }: Props) => {
               tokenBalnce={selectedTokenABalance}
               isBalanceLoading={isUserTokenbalance}
             />
-            {address && (
+            {address && Number(tokenAAmount) != parseFloat("0") && (
               <>
                 {Number(tokenAAmount) > Number(selectedTokenABalance) ||
                 (Number(selectedTokenABalance) && Number(tokenAAmount)) == 0 ? (
@@ -148,7 +176,7 @@ export const MainLiquidityComponent = ({ pool }: Props) => {
                       variant="secondary"
                       className="w-full py-3 cursor-not-allowed text-white font-semibold"
                     >
-                      InSufficient {selectedTokenA?.symbol} Balance
+                      InSufficient {selectedToken0?.symbol} Balance
                     </Button>
                   </>
                 ) : (
@@ -199,7 +227,8 @@ export const MainLiquidityComponent = ({ pool }: Props) => {
             {/* Token B Input */}
             <TokenInput
               label="Token B"
-              token={selectedTokenB}
+              token={selectedToken1}
+              isLoading={isLoading}
               value={tokenBAmount}
               onChange={handleTokenBInput}
               usdValue={tokenBUsdValue}
@@ -207,7 +236,7 @@ export const MainLiquidityComponent = ({ pool }: Props) => {
               tokenBalnce={selectedTokenBBalance}
               isBalanceLoading={isUserTokenbalance}
             />
-            {address && (
+            {address && Number(tokenBAmount) != parseFloat("0") && (
               <>
                 {Number(tokenBAmount) > Number(selectedTokenBBalance) ||
                 (Number(selectedTokenBBalance) && Number(tokenBAmount)) == 0 ? (
@@ -217,7 +246,7 @@ export const MainLiquidityComponent = ({ pool }: Props) => {
                       variant="secondary"
                       className="w-full py-3 cursor-not-allowed text-white font-semibold"
                     >
-                      InSufficient {selectedTokenB?.symbol} Balance
+                      InSufficient {selectedToken1?.symbol} Balance
                     </Button>
                   </>
                 ) : (
@@ -311,7 +340,7 @@ export const MainLiquidityComponent = ({ pool }: Props) => {
           )}
         </div>
       </TabsContent>
-      <TabsContent value="Withdraw">
+      <TabsContent value="Remove">
         <RemoveLiquidity pool={pool} />
       </TabsContent>
     </Tabs>
