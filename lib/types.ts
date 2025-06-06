@@ -6,8 +6,8 @@ import { Provider } from "ethers";
 
 // This interface is subject to change as the API V2 endpoints aren't finalized.
 export interface PriceResponse {
-  TokenA: string;
-  TokenB: string;
+  token0: string;
+  token1: string;
   TokenAAmount: string;
   TokenBAmount: string;
   grossTokenAAmount: string;
@@ -49,8 +49,8 @@ export interface SwapState {
   tokensWithBalances: Token[];
   chartActiveToken: string;
   isWalletConnected: any;
-  TokenB: string;
-  TokenA: string;
+  token1: string;
+  token0: string;
   TokenBAmount: string;
   tradeDirection: "sell" | "buy";
   tokens: Token[];
@@ -95,12 +95,13 @@ export interface Token {
   logoURI?: string;
   balance?: string;
   usdValue?: number;
+  isNative?: boolean;
 }
 export interface SwapActions {
   setChartFlag: (chartFlag: boolean) => void;
   setTokens: (tokens: Token[]) => void;
-  setTokenB: (token: string) => void;
-  setTokenA: (token: string) => void;
+  setToken1: (token: string) => void;
+  setToken0: (token: string) => void;
   setTokenBAmount: (amount: string) => void;
   setSelectorOpen: (isOpen: Boolean) => void;
   setTradeDirection: (direction: "sell" | "buy") => void;
@@ -118,7 +119,6 @@ export interface SwapActions {
   setNeedsApproval: (needsApproval: boolean) => void;
   setIsApproving: (isApproving: boolean) => void;
   setMinAmountOut: (minAmountOut: { raw: bigint; formatted: string }) => void;
-  fetchTokenBalances: (walletAddress: string, provider: any) => Promise<void>;
   updateTokenBalances: (address: string, provider: any) => Promise<void>;
   setTransactionButtonText: (transactoinButtonText: string) => void;
   setQuoteAmount: (quoteAmount: string | null) => void;
@@ -140,7 +140,8 @@ export interface SwapActions {
   fetchTokenBalanceFor: (
     token: Token,
     walletAddress: string,
-    provider: Provider
+    provider: Provider,
+    chainId: number
   ) => Promise<Token>;
   fetchAllTokens: (walletAddress: string, provider: Provider) => void;
 }
@@ -186,9 +187,9 @@ export type PendingTransaction = {
 
 export type TransactionMeta = {
   tokenAAmount?: string;
-  tokenASymbol?: string;
+  token0Symbol?: string;
   tokenBAmount?: string;
-  tokenBSymbol?: string;
+  token1Symbol?: string;
   aggregate?: string;
   amount?: string;
   symbol?: string;
@@ -220,3 +221,9 @@ export type TxToastOptions = {
   toastDuration?: number;
   trackTransaction?: boolean;
 };
+
+export interface ParseResult {
+  success: boolean;
+  value?: bigint; // Optional because it might not exist on error
+  error?: string;
+}

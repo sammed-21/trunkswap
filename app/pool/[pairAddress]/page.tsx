@@ -31,6 +31,9 @@ import { MainLiquidityComponent } from "@/components/Liquidity/MainLiquidityComp
 import { Breadcrumb } from "@/components/ui/breadcrumb";
 import { BreadcrumbDemo } from "@/components/Common/BreadCrumbComponent";
 import { LiquidityDetails } from "@/components/Liquidity/LiquidityDetails";
+import { FaBackward, FaBackwardFast } from "react-icons/fa6";
+import { StepBack } from "lucide-react";
+import { IoMdArrowBack } from "react-icons/io";
 
 interface PoolDetailPageProps {
   params: {
@@ -56,8 +59,8 @@ export default function PoolDetailPage({ params }: PoolDetailPageProps) {
     useRemoveLiquidityLogic();
   const {
     selectedPool,
-    selectedTokenA,
-    selectedTokenB,
+    selectedToken0,
+    selectedToken1,
     isRemovingLiquidity,
     percentToRemove,
     isLpApproving,
@@ -153,9 +156,13 @@ export default function PoolDetailPage({ params }: PoolDetailPageProps) {
   return (
     <div className="flex flex-col  gap-4 px-3 mb-10 w-full mx-auto justify-center items-start ">
       <div className="flex-1 flex items-center  max-w-[1440px] py-6  w-full justify-start mx-auto  ">
-        {selectedTokenA && selectedTokenB && (
-          <BreadcrumbDemo symbol0={selectedTokenA} symbol1={selectedTokenB} />
-        )}
+        {/* {selectedToken0 && selectedToken1 && (
+          <BreadcrumbDemo symbol0={selectedToken0} symbol1={selectedToken1} />
+        )} */}
+        <Link href={"/pool"} className="flex gap-2 items-center">
+          <IoMdArrowBack />
+          Back
+        </Link>
       </div>
       <div className=" flex gap-4 max-w-[1440px] justify-center w-full mx-auto">
         {/* Navigation */}

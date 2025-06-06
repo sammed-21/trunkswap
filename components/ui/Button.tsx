@@ -12,7 +12,7 @@ const buttonVariants = cva(
       variant: {
         secondary: "bg-accent border-border rounded-lg ",
         primary:
-          "hover:bg-secondary border-border border-[1px] hover:!text-title !text-white bg-primary rounded-lg",
+          "hover:bg-primary-dark border-border border-[1px] hover:!text-title !text-white bg-primary rounded-lg",
         transparent:
           "bg-transaparent border-border hover:border-primary border-[1px]",
         default:
@@ -47,13 +47,13 @@ const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
     return (
       <Comp
         className={cn(
-          `${!props.disabled ? "cursor-pointer" : "cursor-not-allowed"}`,
+          `${!props.disabled ? "cursor-pointer" : "cursor-not-allowed"}  `,
           buttonVariants({ variant, size, className })
         )}
         ref={ref}
         {...props}
       >
-        <div className="flex items-center justify-center">
+        <div className="flex items-center justify-center  ">
           {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
           {props.children}
         </div>

@@ -1,21 +1,22 @@
-import { ethers } from "ethers";
+import { isWETHAddress } from "@/lib/constants";
+import { ethers, formatEther } from "ethers";
 
 export async function fetchTokenBalance(
   tokenAddress: string,
   walletAddress: string,
-  provider: any,
-  decimals: number = 18
+  provider: ethers.Provider,
+  decimals: number = 18,
+  chainId?: number
 ): Promise<string> {
   // For native ETH
-  if (tokenAddress === "0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE") {
-    const balance = await provider.request({
-      method: "eth_getBalance",
-      params: [walletAddress, "latest"],
-    });
-    const formattedBalance = formatBalance(balance, decimals);
+  if (
+    tokenAddress === "0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE" ||
+    isWETHAddress(tokenAddress, chainId!)
+  ) {
+    const balance = await provider.getBalance(walletAddress);
+    const formattedBalance = formatEther(balance);
     return formattedBalance;
   }
-
   // For ERC20 tokens
   try {
     // Minimal ERC20 ABI for balanceOf function

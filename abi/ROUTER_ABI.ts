@@ -32,12 +32,12 @@ export const ROUTER_ABI = [
     inputs: [
       {
         internalType: "address",
-        name: "tokenA",
+        name: "token0",
         type: "address",
       },
       {
         internalType: "address",
-        name: "tokenB",
+        name: "token1",
         type: "address",
       },
       {
@@ -298,12 +298,12 @@ export const ROUTER_ABI = [
     inputs: [
       {
         internalType: "address",
-        name: "tokenA",
+        name: "token0",
         type: "address",
       },
       {
         internalType: "address",
-        name: "tokenB",
+        name: "token1",
         type: "address",
       },
       {
@@ -578,12 +578,12 @@ export const ROUTER_ABI = [
     inputs: [
       {
         internalType: "address",
-        name: "tokenA",
+        name: "token0",
         type: "address",
       },
       {
         internalType: "address",
-        name: "tokenB",
+        name: "token1",
         type: "address",
       },
       {

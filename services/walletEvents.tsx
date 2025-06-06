@@ -1,8 +1,7 @@
 "use client";
-
 import { useAccount, useChainId, useWalletClient } from "wagmi";
 import { useAccountActions, useAccountState } from "@/state/accountStore";
-import { chainMaps, config } from "@/wagmi/config";
+import { chainMaps, config, localhost } from "@/wagmi/config";
 import { createPublicClient, http } from "viem";
 import { ethers, JsonRpcProvider } from "ethers";
 import { useCallback, useEffect } from "react";
@@ -16,8 +15,9 @@ import { useFaucetStore } from "@/state/faucetStore";
 
 // Your fallback URLs and chain mapping
 
-const chainMap = {
+const chainMap: Record<number, any> = {
   ...chainMaps,
+  31337: localhost,
   421614: {
     id: 421614,
     name: "Arbitrum Sepolia",
@@ -32,7 +32,6 @@ const chainMap = {
       public: { http: [fallbackUrls[421614]] },
     },
   },
-  // Add other chains as needed
 };
 
 // Factory address for fetching pool data
@@ -41,6 +40,7 @@ export const WalletInit = ({ children }: Props) => {
   const { data: walletClient } = useWalletClient();
   const { address, isConnected, isDisconnected } = useAccount();
   const chainId = useChainId();
+
   let walletSigner: ethers.Signer | null;
 
   const resetFaucetState = useFaucetStore((state) => state.resetFaucetState);
@@ -68,14 +68,15 @@ export const WalletInit = ({ children }: Props) => {
   const { clearPoolStore } = usePoolActions();
 
   let FACTORY_ADDRESS =
-    addressess[getNetworkNameUsingChainId(421614)].FACTORY_ADDRESS;
+    addressess[getNetworkNameUsingChainId(defaultChainId)].FACTORY_ADDRESS;
   // Helper function to initialize provider
   const initializeProvider = async (currentChainId: number) => {
     try {
-      const chain = chainMaps[currentChainId] || chainMap[421614]; // Default to Arbitrum Sepolia
+      const chain = chainMaps[currentChainId] || chainMap[defaultChainId]; // Default to Arbitrum Sepolia
 
       // Always create a provider regardless of wallet connection
-      const rpcUrl = fallbackUrls[currentChainId] || fallbackUrls[421614];
+      const rpcUrl =
+        fallbackUrls[currentChainId] || fallbackUrls[defaultChainId];
 
       FACTORY_ADDRESS =
         addressess[getNetworkNameUsingChainId(currentChainId)].FACTORY_ADDRESS;
@@ -93,10 +94,6 @@ export const WalletInit = ({ children }: Props) => {
       setViemClient(viemClient);
 
       setInitialized(true);
-      // if(ethersProvider){
-
-      //   fetchPoolData()
-      // }
     } catch (error) {
       console.error("Failed to initialize provider:", error);
       // Set a fallback provider

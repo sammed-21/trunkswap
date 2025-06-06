@@ -1,7 +1,7 @@
 import { Prices } from "@/lib/types";
 import { ethers, Contract } from "ethers";
 
-export type Symbol = "ETH" | "WETH" | "USDC" | "STX" | "RSTX";
+export type Symbol = "ETH" | "WETH" | "USDC" | "STX" | "RSTX" | "USDT" | "DAI";
 
 interface PriceFeedsByChain {
   [chainId: number]: {
@@ -35,6 +35,10 @@ const PRICE_FEED_ABI = [
 // 👇 Add feeds per chain
 const CHAINLINK_FEEDS: PriceFeedsByChain = {
   421614: {
+    ETH_USD: "0xd30e2101a97dcbAeBCBC04F14C3f624E67A35165",
+    USDC_USD: "0x0153002d20B96532C639313c2d54c3dA09109309",
+  },
+  31337: {
     ETH_USD: "0xd30e2101a97dcbAeBCBC04F14C3f624E67A35165",
     USDC_USD: "0x0153002d20B96532C639313c2d54c3dA09109309",
   },

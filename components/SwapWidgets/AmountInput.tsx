@@ -8,6 +8,8 @@ import { Skeleton } from "../ui/skeleton";
 import { formatUSD } from "@/services/priceFeed";
 import { FormatUsd } from "../Common/FormatUsd";
 import { useAccountState } from "@/state/accountStore";
+import { Button } from "../ui/Button";
+import { cn } from "@/lib/utils";
 interface AmountInputProps {
   title: string;
   token: string;
@@ -24,6 +26,7 @@ interface AmountInputProps {
   exceedsBalanceError?: boolean;
   isConnected?: boolean;
   setTokenBalance: (balance: string) => void;
+  className: string;
 }
 
 const AmountInput: React.FC<AmountInputProps> = ({
@@ -42,6 +45,7 @@ const AmountInput: React.FC<AmountInputProps> = ({
   exceedsBalanceError,
   setTokenBalance,
   isConnected,
+  className,
 }) => {
   const [selectorOpen, setSelectorOpen] = useState<boolean>(false);
   //   const { setSelectorOpen } = useSwapActions();
@@ -65,13 +69,16 @@ const AmountInput: React.FC<AmountInputProps> = ({
 
   return (
     <div
-      className={`p-4 ${
-        exceedsBalanceError && isConnected
-          ? "bg-error-secondary border-error-primary"
-          : "border-primary bg-forground "
-      }  border-[1px]  shadow-md w-full rounded-lg max-w-md relative`}
+      className={cn(
+        `p-4 ${
+          exceedsBalanceError && isConnected
+            ? "bg-error-secondary border-error-primary"
+            : "border-primary bg-forground hover:border-accent"
+        }  border-[1px]  hover:bg-background hover:border-accent shadow-md  w-full rounded-lg max-w-md relative`,
+        className
+      )}
     >
-      <div className="mb-4">
+      <div className="mb-4   ">
         <div className="flex justify-between items-center">
           <label className="block text-sm font-medium text-subtitle">
             {title}
@@ -98,13 +105,13 @@ const AmountInput: React.FC<AmountInputProps> = ({
             </>
           )}
         </div>
-        <div className="relative  w-full justify-between flex items-center gap-3">
-          <div className="w-full max-w-[70%]">
+        <div className="relative   w-full justify-between flex items-center gap-3">
+          <div className="w-ful  max-w-[70%]">
             {isLoading ? (
               <Skeleton className="w-[100px] h-10 bg-primary" />
             ) : (
               <input
-                type="number"
+                type="text"
                 className={`truncate appearance-none dark:text-slate-50 text-gray-900 appearance-none [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-inner-spin-button]:m-0 w-full !ring-0 !outline-none min-h-[40px] h-[40px] py-2 border-0 bg-transparent p-0 py-1 !text-3xl font-medium flex-grow flex-1 !outline-none !ring-0`}
                 // className={`w-full placeholder:text-textprimary   py-2 bg-transparent text-title focus:none border-none text-2xl rounded-lg`}
                 placeholder="0.00"
@@ -124,12 +131,17 @@ const AmountInput: React.FC<AmountInputProps> = ({
             </span>
           </div>
           <div className="w-full max-w-[30%] pr-2 pl-2 flex justify-end">
-            <button
+            <Button
+              variant={"transparent"}
               className=" justify-between gap-1 px-2   w-full relative flex py-2 bg-background dark:text-title text-title items-center "
               onClick={() => setSelectorOpen(true)}
             >
               <Image
-                src={currentTokenAsset?.logoURI!}
+                src={
+                  currentTokenAsset?.logoURI
+                    ? currentTokenAsset?.logoURI
+                    : `/tokens/${currentTokenAsset.symbol.toLowerCase()}.svg`
+                }
                 width={20}
                 height={20}
                 alt={"image"}
@@ -142,7 +154,7 @@ const AmountInput: React.FC<AmountInputProps> = ({
                 height={20}
                 alt={"image"}
               />{" "}
-            </button>
+            </Button>
           </div>
         </div>
       </div>

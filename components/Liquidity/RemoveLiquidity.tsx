@@ -86,36 +86,41 @@ export const RemoveLiquidity = ({ pool }: Props) => {
             />
             <div className="flex justify-between mt-2">
               {" "}
-              <button
+              <Button
+                variant={"transparent"}
                 className="text-xs px-2 py-1 bg-gray-200 dark:bg-gray-700 rounded"
                 onClick={() => setPercentToRemove(0)}
               >
                 0%
-              </button>
-              <button
+              </Button>
+              <Button
+                variant={"transparent"}
                 className="text-xs px-2 py-1 bg-gray-200 dark:bg-gray-700 rounded"
                 onClick={() => setPercentToRemove(25)}
               >
                 25%
-              </button>
-              <button
+              </Button>
+              <Button
+                variant={"transparent"}
                 className="text-xs px-2 py-1 bg-gray-200 dark:bg-gray-700 rounded"
                 onClick={() => setPercentToRemove(50)}
               >
                 50%
-              </button>
-              <button
+              </Button>
+              <Button
+                variant={"transparent"}
                 className="text-xs px-2 py-1 bg-gray-200 dark:bg-gray-700 rounded"
                 onClick={() => setPercentToRemove(75)}
               >
                 75%
-              </button>
-              <button
+              </Button>
+              <Button
+                variant={"transparent"}
                 className="text-xs px-2 py-1 bg-gray-200 dark:bg-gray-700 rounded"
                 onClick={() => setPercentToRemove(100)}
               >
                 100%
-              </button>
+              </Button>
             </div>
           </div>
           {address ? (

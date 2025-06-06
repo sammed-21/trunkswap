@@ -14,51 +14,51 @@ import { Button } from "../ui/Button";
 import { chainIcons } from "@/wagmi/config";
 
 export const NetworkComponent = () => {
-  const { chains, switchChain } = useSwitchChain();
-  const chainId = useChainId();
+  const chainId = useChainId(); // current active chainId
+  const chains = useChains(); // list of supported chains
+  const { switchChain } = useSwitchChain();
 
-  if (!chains) return null;
+  const activeChain = chains.find((c) => c.id === chainId);
+
+  if (!chains || !activeChain) return null;
+
+  const sortedChains = [activeChain, ...chains.filter((c) => c.id !== chainId)];
 
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
         <Button
           variant="outline"
-          className="gap-4 flex flex-row  bg-accent border-border text-title md:px-3 py-1 "
+          className="gap-4 flex flex-row bg-accent border-border text-title md:px-3 py-1"
         >
-          {chains && (
-            <Image
-              //   src={"https://cryptologos.cc/logos/arbitrum-arb-logo.svg"}
-              src={chainIcons[chains[0].id]}
-              alt={chains[0].name}
-              width={20}
-              height={20}
-              priority
-              className="rounded-full"
-            />
-          )}
-          <span className="hidden px-3 lg:block">{chains[0].name}</span>
+          <Image
+            src={chainIcons[activeChain.id]}
+            alt={activeChain.name}
+            width={20}
+            height={20}
+            priority
+            className="rounded-full"
+          />
+          <span className="hidden px-3 lg:block">{activeChain.name}</span>
         </Button>
       </DropdownMenuTrigger>
 
       <DropdownMenuContent className="bg-[--foreground] border-[--border] text-[--textprimary]">
-        {chains.map((x) => (
+        {sortedChains.map((x) => (
           <DropdownMenuItem
             key={x.id}
-            onClick={() => switchChain}
-            disabled={x.id == chainId}
+            onClick={() => switchChain({ chainId: x.id })}
+            disabled={x.id === chainId}
             className="flex items-center justify-between"
           >
             <div className="flex items-center gap-2">
-              {x && (
-                <Image
-                  src={chainIcons[x.id]}
-                  alt={x.name}
-                  width={16}
-                  height={16}
-                  className="rounded-full"
-                />
-              )}
+              <Image
+                src={chainIcons[x.id]}
+                alt={x.name}
+                width={16}
+                height={16}
+                className="rounded-full"
+              />
               <span>{x.name}</span>
             </div>
             {x.id === chainId && <Check className="h-4 w-4 text-green-500" />}
