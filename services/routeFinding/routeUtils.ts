@@ -38,7 +38,6 @@ export const buildPairGraph = (poolData: PoolDetails[]) => {
       };
     }
   });
-  console.log(pairGraph, tokenMap, "this is the buildPirGraph");
 
   return { pairGraph, tokenMap };
 };
@@ -195,7 +194,6 @@ export const canTrade = (
   if (isETHVariant(tokenA) && isETHVariant(tokenB)) return true;
 
   const { pairGraph } = buildPairGraph(poolData);
-  console.log({ pairGraph });
   return hasMultiHopRoute(tokenA.address, tokenB.address, pairGraph);
 };
 
