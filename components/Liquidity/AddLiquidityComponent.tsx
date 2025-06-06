@@ -19,19 +19,19 @@ interface Props {
 }
 const AddLiquidityComponent = ({ pool }: Props) => {
   const router = useRouter();
-  //   const { tokenA, tokenB } = params;
+  //   const { token0, token1 } = params;
   const { isConnected, address } = useAccount();
   const { openConnectModal } = useConnectModal();
   const tokenAddresses = useMemo(
     () => ({
-      tokenA: pool.token0.address,
-      tokenB: pool.token1.address,
+      token0: pool.token0.address,
+      token1: pool.token1.address,
     }),
     [pool.token0.address, pool.token1.address]
   );
   const {
-    selectedTokenA,
-    selectedTokenB,
+    selectedToken0,
+    selectedToken1,
     selectedPool,
     transactionButtonText,
     tokenAAmount,
@@ -65,7 +65,7 @@ const AddLiquidityComponent = ({ pool }: Props) => {
     expectedLPTokens,
     poolShare,
     deadline,
-  } = useAddLiquidityLogic(tokenAddresses.tokenA, tokenAddresses.tokenB);
+  } = useAddLiquidityLogic(tokenAddresses.token0, tokenAddresses.token1);
   if (isLoading) {
     return (
       <div className="flex justify-center items-center h-96">
@@ -75,7 +75,7 @@ const AddLiquidityComponent = ({ pool }: Props) => {
     );
   }
 
-  if (error && !selectedTokenA && !selectedTokenB) {
+  if (error && !selectedToken0 && !selectedToken1) {
     return (
       <div className="bg-red-50 dark:bg-red-900/20 p-6 rounded-xl shadow-sm">
         <h2 className="text-xl font-semibold text-red-700 dark:text-red-400 mb-2">
@@ -163,11 +163,12 @@ const AddLiquidityComponent = ({ pool }: Props) => {
 
           <TokenInput
             label="Token A"
-            token={selectedTokenA}
+            token={selectedToken0}
             value={tokenAAmount}
             onChange={handleTokenAInput}
             usdValue={tokenAUsdValue}
             disabled={isAddingLiquidity}
+            isLoading={isLoading}
             tokenBalnce={selectedTokenABalance}
             isBalanceLoading={isUserTokenbalance}
           />
@@ -180,7 +181,7 @@ const AddLiquidityComponent = ({ pool }: Props) => {
                     variant="secondary"
                     className="w-full py-3 cursor-not-allowed text-white font-semibold"
                   >
-                    InSufficient {selectedTokenA?.symbol} Balance
+                    InSufficient {selectedToken0?.symbol} Balance
                   </Button>
                 </>
               ) : (
@@ -229,9 +230,10 @@ const AddLiquidityComponent = ({ pool }: Props) => {
           {/* Token B Input */}
           <TokenInput
             label="Token B"
-            token={selectedTokenB}
+            token={selectedToken1}
             value={tokenBAmount}
             onChange={handleTokenBInput}
+            isLoading={isLoading}
             usdValue={tokenBUsdValue}
             disabled={isAddingLiquidity}
             tokenBalnce={selectedTokenBBalance}
@@ -246,7 +248,7 @@ const AddLiquidityComponent = ({ pool }: Props) => {
                     variant="secondary"
                     className="w-full py-3 cursor-not-allowed text-white font-semibold"
                   >
-                    InSufficient {selectedTokenB?.symbol} Balance
+                    InSufficient {selectedToken1?.symbol} Balance
                   </Button>
                 </>
               ) : (

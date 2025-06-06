@@ -1,6 +1,7 @@
 import { useAccountState } from "@/state/accountStore";
 import { usePoolState } from "@/state/poolStore";
 import React from "react";
+import { Button } from "../ui/Button";
 
 export const PoolPositionsList = () => {
   const { userPositions, isLoading, error } = usePoolState();
@@ -25,12 +26,13 @@ export const PoolPositionsList = () => {
           Error loading positions
         </h3>
         <p className="mt-2 text-sm text-red-600">{error}</p>
-        <button
+        <Button
+          variant={"transparent"}
           className="mt-4 px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700"
           onClick={() => window.location.reload()}
         >
           Retry
-        </button>
+        </Button>
       </div>
     );
   }
@@ -87,14 +89,15 @@ export const PoolPositionsList = () => {
             You haven't added liquidity to any pools on{" "}
             {chainId === 421614 ? "Arbitrum Sepolia" : "this network"} yet
           </p>
-          <button
+          <Button
+            variant={"transparent"}
             className="mt-4 px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
             onClick={() => {
               /* Navigate to add liquidity page */
             }}
           >
             Add Liquidity
-          </button>
+          </Button>
         </div>
       </div>
     );
@@ -139,12 +142,18 @@ export const PoolPositionsList = () => {
           </div>
 
           <div className="mt-4 flex space-x-2">
-            <button className="px-3 py-1 text-sm bg-blue-600 text-white rounded hover:bg-blue-700">
+            <Button
+              variant={"transparent"}
+              className="px-3 py-1 text-sm bg-blue-600 text-white rounded hover:bg-blue-700"
+            >
               Add
-            </button>
-            <button className="px-3 py-1 text-sm bg-red-600 text-white rounded hover:bg-red-700">
+            </Button>
+            <Button
+              variant={"transparent"}
+              className="px-3 py-1 text-sm bg-red-600 text-white rounded hover:bg-red-700"
+            >
               Remove
-            </button>
+            </Button>
           </div>
         </div>
       ))}

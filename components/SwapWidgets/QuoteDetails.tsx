@@ -40,7 +40,7 @@ export const QuoteDetails: React.FC<QuoteDetailsProps> = ({
 }) => {
   if (isLoading) {
     return (
-      <div className="px-4 shadow-sm transaction duration-500 translate-y-0 h-fit max-w-[448px] w-full space-y-2">
+      <div className=" shadow-sm transaction duration-500 translate-y-0 h-fit max-w-[448px] w-full space-y-2">
         <div className="flex justify-between text-sm">
           <span className="text-subtitle">Price Impact</span>
 
@@ -101,7 +101,7 @@ export const QuoteDetails: React.FC<QuoteDetailsProps> = ({
     );
   }
   return (
-    <div className="px-4 shadow-sm transaction duration-500 translate-y-0 h-fit max-w-[448px] w-full space-y-2">
+    <div className=" shadow-sm transaction duration-500 translate-y-0 h-fit max-w-[448px] w-full space-y-2">
       <div className="flex justify-between text-sm">
         <span className="text-subtitle">Price Impact</span>
         <span

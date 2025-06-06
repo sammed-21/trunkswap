@@ -8,8 +8,8 @@ import NextTopLoader from "nextjs-toploader";
 import { ThemeProvider } from "@/components/ui/theme-provider";
 import { GoogleAnalytics } from "@next/third-parties/google";
 import React from "react";
-import { Toaster } from "sonner";
 import { PendingTransactions } from "@/components/Common/PendingTransactions";
+import { Toaster } from "react-hot-toast";
 
 const geistSans = localFont({
   src: "./fonts/GeistVF.woff",
@@ -71,6 +71,11 @@ export default function RootLayout({
                 <div class="spinner" role="spinner"><div class="spinner-icon"></div></div>'
                 zIndex={1600}
                 showAtBottom={false}
+              />
+              <Toaster
+                position="bottom-right"
+                containerClassName=""
+                gutter={3}
               />
               <PendingTransactions />
             </Providers>

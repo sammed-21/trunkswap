@@ -40,8 +40,8 @@ export const SwapWidget = (props: Props) => {
 
   const [isRotated, setIsRotated] = useState<boolean>(false);
   const {
-    TokenA,
-    TokenB,
+    token0,
+    token1,
     tokens,
     TokenAAmount,
     currentBuyAsset,
@@ -68,8 +68,8 @@ export const SwapWidget = (props: Props) => {
   } = useSwapState();
 
   const {
-    setTokenB,
-    setTokenA,
+    setToken1,
+    setToken0,
     setTokenAAmount,
     setTokenBAmount,
     setCurrentSellAsset,
@@ -96,8 +96,8 @@ export const SwapWidget = (props: Props) => {
     setIsRotated((prev) => !prev);
     setTokenABalance(tokenBBalance);
     setTokenBBalance(tokenABalance);
-    setTokenA(TokenB);
-    setTokenB(TokenA);
+    setToken0(token1);
+    setToken1(token0);
     setTokenAAmount("");
     setTokenBAmount("");
     setTokenBUsdValue(null);
@@ -135,7 +135,7 @@ export const SwapWidget = (props: Props) => {
       if (tokenIn) {
         const foundToken = findTokenByAddress(tokenIn);
         if (foundToken) {
-          setTokenA(foundToken?.symbol);
+          setToken0(foundToken?.symbol);
           setCurrentSellAsset(foundToken);
           setChartActiveToken(foundToken?.symbol?.toUpperCase());
           if (foundToken.balance) {
@@ -148,7 +148,7 @@ export const SwapWidget = (props: Props) => {
         const foundToken = findTokenByAddress(tokenOut);
 
         if (foundToken) {
-          setTokenB(foundToken.symbol);
+          setToken1(foundToken.symbol);
           setCurrentBuyAsset(foundToken);
 
           if (foundToken.balance) {
@@ -202,8 +202,8 @@ export const SwapWidget = (props: Props) => {
         <TokenConversion
           prices={prices}
           isLoading={isLoading}
-          from={TokenA}
-          to={TokenB}
+          from={token0}
+          to={token1}
         />
       </div>
       <div className="flex w-full  justify-between">
@@ -234,15 +234,16 @@ export const SwapWidget = (props: Props) => {
             loadingBalances={loadingBalances}
             walletBalanceAsset={tokenABalance} // Replace with actual balance
             setCurrentTokenDetal={setCurrentSellAsset}
-            token={TokenA}
+            token={token0}
             currentTokenAsset={currentSellAsset}
             Amount={TokenAAmount}
             tokenUsdValue={TokenAUsdValue}
             setAmount={setTokenAAmount}
-            setToken={setTokenA}
+            setToken={setToken0}
             exceedsBalanceError={exceedsBalanceError}
             isConnected={isConnected}
             setTokenBalance={setTokenABalance}
+            className=""
           />
           <div
             onClick={handleToggleTradeDirection}
@@ -262,10 +263,11 @@ export const SwapWidget = (props: Props) => {
           <AmountInput
             title="You're Buying"
             loadingBalances={loadingBalances}
+            className="bg-background border-border"
             setAmount={setTokenBAmount}
-            setToken={setTokenB}
+            setToken={setToken1}
             walletBalanceAsset={tokenBBalance} // Replace with actual balance
-            token={TokenB}
+            token={token1}
             Amount={TokenBAmount}
             currentTokenAsset={currentBuyAsset}
             tokenUsdValue={TokenBUsdValue}
@@ -274,7 +276,7 @@ export const SwapWidget = (props: Props) => {
             readOnly={true}
             setTokenBalance={setTokenBBalance}
             // setAmount={setTokenBAmount}
-            // setToken={setTokenB}
+            // setToken={setToken1}
           />
         </div>
         {isConnected ? (

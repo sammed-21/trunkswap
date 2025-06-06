@@ -12,6 +12,7 @@ import { useTransactionStore } from "@/state/transactionStore";
 import { getExplorerUrl } from "@/hooks/useToast";
 import Image from "next/image";
 import { formatDigits } from "@/lib/utils";
+import { Button } from "../ui/Button";
 // import { getExplorerUrl } from "@/lib/hooks/useTxToast";
 
 export function PendingTransactions() {
@@ -25,9 +26,9 @@ export function PendingTransactions() {
   //   timestamp: 1747383179382,
   //   meta: {
   //     tokenAAmount: "1",
-  //     tokenASymbol: "RSTX",
+  //     token0Symbol: "RSTX",
   //     tokenBAmount: "1.3291",
-  //     tokenBSymbol: "STX",
+  //     token1Symbol: "STX",
   //     aggregate: "→",
   //   },
   // };
@@ -51,32 +52,34 @@ export function PendingTransactions() {
   return (
     <div className="fixed bottom-4 right-4 z-50">
       {/* Transaction indicator button */}
-      <button
+      <Button
+        variant={"transparent"}
         onClick={() => setIsOpen(!isOpen)}
         className="flex items-center gap-2 bg-forground px-4 py-2  shadow-lg border border-gray-200 dark:border-gray-700"
       >
-        <span className="relative flex h-3 w-3">
+        <span className="relative flex mr-3 h-3 w-3">
           <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-blue-400 opacity-75"></span>
           <span className="relative inline-flex rounded-full h-3 w-3 bg-primary"></span>
         </span>
         <span className="font-medium"> Trxns</span>
-      </button>
+      </Button>
 
       {/* Transactions panel */}
       {isOpen && (
         <div className="mt-2 w-80  bg-forgound  shadow-xl border border-border overflow-hidden">
           <div className="p-3 border-b border-border bg-forground flex justify-between items-center">
             <h3 className="font-medium">Recent Transactions</h3>
-            <button
+            <Button
+              variant={"transparent"}
               onClick={() => setIsOpen(false)}
               className="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200"
             >
               ×
-            </button>
+            </Button>
           </div>
 
           <div className="max-h-96 overflow-y-auto">
-            {pendingTransactions.map((tx: any) => (
+            {pendingTransactions?.map((tx: any) => (
               <div
                 key={tx.id}
                 className="p-3 border-b border-border bg-forground"
@@ -108,13 +111,13 @@ export function PendingTransactions() {
                       <>
                         <span>{formatDigits(tx.meta.tokenAAmount)}</span>
                         <Image
-                          src={`/tokens/${tx.meta?.tokenASymbol?.toLowerCase()}.svg`}
-                          alt={tx.meta.tokenASymbol || "token symbol"}
+                          src={`/tokens/${tx.meta?.token0Symbol?.toLowerCase()}.svg`}
+                          alt={tx.meta.token0Symbol || "token symbol"}
                           className="w-4 h-4 mr-1"
                           width={30}
                           height={30}
                         />
-                        <span>{tx.meta.tokenASymbol}</span>
+                        <span>{tx.meta.token0Symbol}</span>
                       </>
                     )}
                     {tx.meta.aggregate}
@@ -122,13 +125,13 @@ export function PendingTransactions() {
                       <>
                         <span>{formatDigits(tx.meta.tokenBAmount)}</span>
                         <Image
-                          src={`/tokens/${tx.meta?.tokenBSymbol?.toLowerCase()}.svg`}
-                          alt={tx.meta.tokenBSymbol || "token symbol"}
+                          src={`/tokens/${tx.meta?.token1Symbol?.toLowerCase()}.svg`}
+                          alt={tx.meta.token1Symbol || "token symbol"}
                           className="w-4 h-4 mr-1"
                           width={30}
                           height={30}
                         />
-                        <span>{tx.meta.tokenBSymbol}</span>
+                        <span>{tx.meta.token1Symbol}</span>
                       </>
                     )}
                   </div>
@@ -141,7 +144,7 @@ export function PendingTransactions() {
                     rel="noopener noreferrer"
                     className="flex items-center gap-1 text-blue-600 hover:text-blue-800 text-xs"
                   >
-                    {tx.hash.slice(0, 6)}...{tx.hash.slice(-4)}{" "}
+                    {tx?.hash?.slice(0, 6)}...{tx?.hash?.slice(-4)}{" "}
                     <Link2Icon className="w-3 h-3" />
                   </a>
                 </div>

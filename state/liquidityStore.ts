@@ -1,7 +1,7 @@
 /// start new zustand store
 
 import { create } from "zustand";
-import { ethers, formatEther } from "ethers";
+import { ethers, formatEther, getBigInt } from "ethers";
 import { persist } from "zustand/middleware";
 import { formatUnits, parseUnits } from "ethers";
 
@@ -19,10 +19,11 @@ import { fetchTokenBalance } from "@/services/getTokenBalance";
 import { usePriceStore } from "./priceStore";
 import {
   FACTORY_ADDRESS,
-  FactoryAddressChainId,
+  isWETHAddress,
   ROUTER_ADDRESS,
 } from "@/lib/constants";
-import { Provider } from "react";
+import { truncateDecimalsMath } from "@/lib/utils";
+import { getUSDValue } from "@/services/priceFeed";
 
 // // Types
 // export interface Token {
@@ -48,10 +49,11 @@ export interface Pool {
 
 export interface LiquidityState {
   // State variables
+  defaultLiquidityTag: string;
   pools: Pool[];
   selectedPool: Pool | null;
-  selectedTokenA: Token | null;
-  selectedTokenB: Token | null;
+  selectedToken0: Token | null;
+  selectedToken1: Token | null;
   selectedTokenABalance: string;
   selectedTokenBBalance: string;
   tokenAUsdValue: number | null;
@@ -89,8 +91,9 @@ export interface LiquidityState {
 }
 export interface LiquidityActions {
   // Actions
-  setTokenA: (token: Token | null) => void;
-  setTokenB: (token: Token | null) => void;
+  setDefaultLiquidityTag: (defaultLiquidityTag: string) => void;
+  setToken0: (token: Token | null) => void;
+  setToken1: (token: Token | null) => void;
   setTokenAAmount: (amount: string) => void;
   setTokenBAmount: (amount: string) => void;
   setLpTokenAmount: (amount: string) => void;
@@ -158,14 +161,15 @@ export interface LiquidityActions {
 export const useLiquidityStore = create<LiquidityState & LiquidityActions>(
   (set, get) => ({
     // Initial state
+    defaultLiquidityTag: "Add",
     pools: [],
     transactionButtonText: "Add Liquidity",
     transactionTokenAButtonText: "",
     deadline: 20,
     transactionTokenBButtonText: "",
     selectedPool: null,
-    selectedTokenA: null,
-    selectedTokenB: null,
+    selectedToken0: null,
+    selectedToken1: null,
     selectedTokenABalance: "",
     selectedTokenBBalance: "",
     slippage: 5,
@@ -198,17 +202,17 @@ export const useLiquidityStore = create<LiquidityState & LiquidityActions>(
     isRemovingLiquidity: false,
 
     // Token selection
-    setTokenA: (token) => {
+    setToken0: (token) => {
       set({
-        selectedTokenA: token,
+        selectedToken0: token,
         tokenAAmount: "",
         tokenBAmount: "",
       });
     },
 
-    setTokenB: (token) => {
+    setToken1: (token) => {
       set({
-        selectedTokenB: token,
+        selectedToken1: token,
         tokenAAmount: "",
         tokenBAmount: "",
       });
@@ -217,6 +221,8 @@ export const useLiquidityStore = create<LiquidityState & LiquidityActions>(
     // Input handling
     // setNeedsApproval: (needsApproval: boolean) => set({ needsApproval }),
     // setIsApproving: (isApproving: boolean) => set({ isApproving }),
+    setDefaultLiquidityTag: (defaultLiquidityTag: string) =>
+      set({ defaultLiquidityTag }),
     setIsLpApproving: (isLpApproving: boolean) => set({ isLpApproving }),
     setDeadline: (value: number) => set({ deadline: value }),
     setIsRemovingLiquidity: (isRemovingLiquidity: boolean) =>
@@ -278,7 +284,7 @@ export const useLiquidityStore = create<LiquidityState & LiquidityActions>(
       const chainId = useAccountStore.getState().chainId;
       try {
         set({ isLoadingPools: true, error: null });
-        if (!provider) return;
+        if (!provider || !chainId) return;
 
         const factoryContract = new ethers.Contract(
           FACTORY_ADDRESS(chainId),
@@ -289,39 +295,47 @@ export const useLiquidityStore = create<LiquidityState & LiquidityActions>(
         // Get all pairs created by the factory
         const pairCount = await factoryContract.allPairsLength();
         const poolsPromises = [];
+        if (pairCount !== BigInt(0)) {
+          for (let i = 0; i < Number(pairCount); i++) {
+            poolsPromises.push(
+              (async () => {
+                try {
+                  const pairAddress = await factoryContract.allPairs(i);
+                  const poolDetails = await get().fetchPoolDetails(
+                    provider,
+                    pairAddress,
+                    chainId
+                  );
+                  return poolDetails;
+                } catch (err) {
+                  console.error(`Error fetching pool at index ${i}:`, err);
+                  return null;
+                }
+              })()
+            );
+          }
 
-        for (let i = 0; i < Number(pairCount); i++) {
-          poolsPromises.push(
-            (async () => {
-              try {
-                const pairAddress = await factoryContract.allPairs(i);
-                const poolDetails = await get().fetchPoolDetails(
-                  provider,
-                  pairAddress,
-                  chainId
-                );
-                return poolDetails;
-              } catch (err) {
-                console.error(`Error fetching pool at index ${i}:`, err);
-                return null;
-              }
-            })()
+          const pools = (await Promise.all(poolsPromises)).filter(
+            (pool): pool is Pool => pool !== null
           );
+
+          const poolTotalTVl = pools?.reduce((acc: number, item: Pool) => {
+            return acc + item.tvl;
+          }, 0);
+          set({
+            totalPool: pairCount,
+            totalTvl: poolTotalTVl,
+            pools,
+            isLoadingPools: false,
+          });
+        } else {
+          set({
+            totalPool: pairCount,
+            totalTvl: 0,
+            pools: [],
+            isLoadingPools: false,
+          });
         }
-
-        const pools = (await Promise.all(poolsPromises)).filter(
-          (pool): pool is Pool => pool !== null
-        );
-
-        const poolTotalTVl = pools?.reduce((acc: number, item: Pool) => {
-          return acc + item.tvl;
-        }, 0);
-        set({
-          totalPool: pairCount,
-          totalTvl: poolTotalTVl,
-          pools,
-          isLoadingPools: false,
-        });
       } catch (error) {
         console.error("Error fetching pools:", error);
         set({
@@ -380,6 +394,9 @@ export const useLiquidityStore = create<LiquidityState & LiquidityActions>(
           pairContract.totalSupply(),
         ]);
 
+        const token0IsWeth = isWETHAddress(token0Address, chainId);
+        const token1IsWeth = isWETHAddress(token1Address, chainId);
+
         // Get user's LP balance
         let userLpBalance;
         let formatedUserLpBalance;
@@ -392,18 +409,20 @@ export const useLiquidityStore = create<LiquidityState & LiquidityActions>(
         // Create token objects
         const token0: Token = {
           address: token0Address,
-          symbol: token0Symbol,
-          name: token0Name,
+          symbol: token0IsWeth ? "ETH" : token0Symbol,
+          name: token0IsWeth ? "Ethereum" : token0Name,
           decimals: token0Decimals,
           chainId: chainId,
+          isNative: token0IsWeth,
         };
 
         const token1: Token = {
           address: token1Address,
-          symbol: token1Symbol,
-          name: token1Name,
+          symbol: token1IsWeth ? "ETH" : token1Symbol,
+          name: token1IsWeth ? "Ethereum" : token1Name,
           decimals: token1Decimals,
           chainId,
+          isNative: token1IsWeth,
         };
         let reserve0 = reserves[0];
         let reserve1 = reserves[1];
@@ -445,18 +464,21 @@ export const useLiquidityStore = create<LiquidityState & LiquidityActions>(
           token0Price,
           token1Price,
           tvl,
+          isEthPair: token0.isNative || token1.isNative,
         };
       } catch (error) {
         console.error("Error fetching pool details:", error);
         return null;
       }
     },
+
     getUserBalances: async (userAddress: string) => {
       try {
-        const { selectedTokenA, selectedTokenB } = get();
-        let provider = useAccountStore.getState().provider;
+        const { selectedToken0, selectedToken1 } = get();
+
+        let { provider, chainId } = useAccountStore.getState();
         if (!provider) return;
-        if (!userAddress || !selectedTokenA || !selectedTokenB) return;
+        if (!userAddress || !selectedToken0 || !selectedToken1) return;
 
         let tokens;
         tokens = useSwapStore.getState().tokens;
@@ -466,38 +488,50 @@ export const useLiquidityStore = create<LiquidityState & LiquidityActions>(
         // ✅ Fetch from the other store if tokens are not loaded
         if (!tokens || tokens.length === 0) {
           const fetchAllTokens = useSwapStore.getState().fetchAllTokens;
-          tokens = await fetchAllTokens(userAddress, provider);
+          tokens = fetchAllTokens(userAddress, provider);
 
           // 🔁 Update local copy after external fetch
         }
         if (!tokens) return;
 
-        let balanceA = tokens.find(
-          (t: Token) =>
-            t.symbol.toLowerCase() === selectedTokenA.symbol.toLowerCase()
-        );
-        let balanceB = tokens.find(
-          (t: Token) =>
-            t.symbol.toLowerCase() === selectedTokenB.symbol.toLowerCase()
-        );
+        let balanceA = tokens.find((t: Token) => {
+          if (isWETHAddress(t?.address, chainId)) {
+            return t.symbol.toLowerCase() === "ETH";
+          } else {
+            return (
+              t.symbol.toLowerCase() === selectedToken0.symbol.toLowerCase()
+            );
+          }
+        });
+        let balanceB = tokens.find((t: Token) => {
+          if (isWETHAddress(t?.address, chainId)) {
+            return t.symbol.toLowerCase() === "ETH";
+          } else {
+            return (
+              t.symbol.toLowerCase() === selectedToken1.symbol.toLowerCase()
+            );
+          }
+        });
 
         // 🔄 Fetch balances if not available
-        if (balanceA && balanceA.balance === undefined) {
+        if (balanceA && balanceA?.balance === undefined) {
           const bal = await fetchTokenBalance(
             balanceA.address,
             userAddress,
             provider,
-            balanceA.decimals
+            balanceA.decimals,
+            chainId
           );
           balanceA = { ...balanceA, balance: bal };
         }
 
-        if (balanceB && balanceB.balance === undefined) {
+        if (balanceB && balanceB?.balance === undefined) {
           const bal = await fetchTokenBalance(
             balanceB.address,
             userAddress,
             provider,
-            balanceB.decimals
+            balanceB.decimals,
+            chainId
           );
           balanceB = { ...balanceB, balance: bal };
         }
@@ -519,6 +553,113 @@ export const useLiquidityStore = create<LiquidityState & LiquidityActions>(
     },
 
     // Set pair from token addresses
+    // setPairFromAddresses: async (
+    //   provider,
+    //   tokenAAddress,
+    //   tokenBAddress,
+    //   chainId
+    // ) => {
+    //   try {
+    //     set({ isLoading: true, error: null });
+
+    //     // Load token details
+    //     const token0Contract = new ethers.Contract(
+    //       tokenAAddress,
+    //       ERC20_ABI,
+    //       provider
+    //     );
+    //     const token1Contract = new ethers.Contract(
+    //       tokenBAddress,
+    //       ERC20_ABI,
+    //       provider
+    //     );
+
+    //     const [
+    //       token0Symbol,
+    //       token0Name,
+    //       token0Decimals,
+    //       token1Symbol,
+    //       token1Name,
+    //       token1Decimals,
+    //     ] = await Promise.all([
+    //       token0Contract.symbol(),
+    //       token0Contract.name(),
+    //       token0Contract.decimals(),
+    //       token1Contract.symbol(),
+    //       token1Contract.name(),
+    //       token1Contract.decimals(),
+    //     ]);
+    //     const token0IsWeth = isWETHAddress(tokenAAddress, chainId);
+    //     const token1IsWeth = isWETHAddress(tokenBAddress, chainId);
+
+    //     let token0: Token = {
+    //       address: tokenAAddress,
+    //       symbol: token0IsWeth ? "ETH" : token0Symbol,
+    //       name: token0IsWeth ? "Ethereum" : token0Name,
+    //       decimals: token0Decimals,
+    //       chainId,
+    //       isNative: token0IsWeth,
+    //     };
+
+    //     let token1: Token = {
+    //       address: tokenBAddress,
+    //       symbol: token1IsWeth ? "ETH" : token1Symbol,
+    //       name: token1IsWeth ? "Ethereum" : token1Name,
+    //       chainId,
+    //       decimals: token1Decimals,
+    //       isNative: token1IsWeth,
+    //     };
+
+    //     // Get pair address
+    //     const factoryContract = new ethers.Contract(
+    //       FACTORY_ADDRESS(chainId),
+    //       FACTORY_ABI,
+    //       provider
+    //     );
+
+    //     const pairAddress = await factoryContract.getPair(
+    //       tokenAAddress,
+    //       tokenBAddress
+    //     );
+
+    //     if (pairAddress !== "0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE") {
+    //       // Existing pair
+    //       const poolDetails = await get().fetchPoolDetails(
+    //         provider,
+    //         pairAddress,
+    //         chainId
+    //       );
+    //       if (poolDetails) {
+    //         set({
+    //           selectedPool: poolDetails,
+    //           selectedToken0: token0,
+    //           selectedToken1: token1,
+    //           isLoading: false,
+    //         });
+    //       } else {
+    //         set({
+    //           error: "Failed to load pool details",
+    //           isLoading: false,
+    //         });
+    //       }
+    //     } else {
+    //       // New pair
+    //       set({
+    //         selectedPool: null,
+    //         selectedToken0: token0,
+    //         selectedToken1: token1,
+    //         isLoading: false,
+    //       });
+    //     }
+    //   } catch (error) {
+    //     console.error("Error setting pair from addresses:", error);
+    //     set({
+    //       error:
+    //         "Failed to load token pair. Please check the addresses and try again.",
+    //       isLoading: false,
+    //     });
+    //   }
+    // },
     setPairFromAddresses: async (
       provider,
       tokenAAddress,
@@ -526,56 +667,82 @@ export const useLiquidityStore = create<LiquidityState & LiquidityActions>(
       chainId
     ) => {
       try {
-        const tokens = useSwapStore.getState().tokens;
-        const chaindId = useAccountStore.getState().chainId;
-        const userAddress = useAccountStore.getState().address;
         set({ isLoading: true, error: null });
+        // Check if tokens are WETH (to display as ETH)
+        const token0IsWeth = isWETHAddress(tokenAAddress, chainId);
+        const token1IsWeth = isWETHAddress(tokenBAddress, chainId);
 
-        // Load token details
-        const tokenAContract = new ethers.Contract(
-          tokenAAddress,
-          ERC20_ABI,
-          provider
-        );
-        const tokenBContract = new ethers.Contract(
-          tokenBAddress,
-          ERC20_ABI,
-          provider
-        );
+        let token0, token1;
 
-        const [
-          tokenASymbol,
-          tokenAName,
-          tokenADecimals,
-          tokenBSymbol,
-          tokenBName,
-          tokenBDecimals,
-        ] = await Promise.all([
-          tokenAContract.symbol(),
-          tokenAContract.name(),
-          tokenAContract.decimals(),
-          tokenBContract.symbol(),
-          tokenBContract.name(),
-          tokenBContract.decimals(),
-        ]);
+        if (token0IsWeth) {
+          // Handle WETH as ETH
+          token0 = {
+            address: tokenAAddress, // Keep WETH address for contract calls
+            symbol: "ETH",
+            name: "Ethereum",
+            decimals: 18,
+            chainId,
+            isNative: true,
+          };
+        } else {
+          // Load regular token details
+          const token0Contract = new ethers.Contract(
+            tokenAAddress,
+            ERC20_ABI,
+            provider
+          );
 
-        let tokenA: Token = {
-          address: tokenAAddress,
-          symbol: tokenASymbol,
-          name: tokenAName,
-          decimals: tokenADecimals,
-          chainId,
-        };
+          const [token0Symbol, token0Name, token0Decimals] = await Promise.all([
+            token0Contract.symbol(),
+            token0Contract.name(),
+            token0Contract.decimals(),
+          ]);
 
-        let tokenB: Token = {
-          address: tokenBAddress,
-          symbol: tokenBSymbol,
-          name: tokenBName,
-          chainId,
-          decimals: tokenBDecimals,
-        };
+          token0 = {
+            address: tokenAAddress,
+            symbol: token0Symbol,
+            name: token0Name,
+            decimals: token0Decimals,
+            chainId,
+            isNative: false,
+          };
+        }
 
-        // Get pair address
+        if (token1IsWeth) {
+          // Handle WETH as ETH
+          token1 = {
+            address: tokenBAddress, // Keep WETH address for contract calls
+            symbol: "ETH",
+            name: "Ethereum",
+            decimals: 18,
+            chainId,
+            isNative: true,
+          };
+        } else {
+          // Load regular token details
+          const token1Contract = new ethers.Contract(
+            tokenBAddress,
+            ERC20_ABI,
+            provider
+          );
+
+          const [token1Symbol, token1Name, token1Decimals] = await Promise.all([
+            token1Contract.symbol(),
+            token1Contract.name(),
+            token1Contract.decimals(),
+          ]);
+
+          token1 = {
+            address: tokenBAddress,
+            symbol: token1Symbol,
+            name: token1Name,
+            decimals: token1Decimals,
+            chainId,
+            isNative: false,
+          };
+        }
+
+        // Get pair address using the actual contract addresses (WETH addresses)
         const factoryContract = new ethers.Contract(
           FACTORY_ADDRESS(chainId),
           FACTORY_ABI,
@@ -583,22 +750,26 @@ export const useLiquidityStore = create<LiquidityState & LiquidityActions>(
         );
 
         const pairAddress = await factoryContract.getPair(
-          tokenAAddress,
+          tokenAAddress, // Use actual addresses for pair lookup
           tokenBAddress
         );
 
-        if (pairAddress !== ethers.ZeroAddress) {
+        // Check if pair exists (getPair returns zero address if doesn't exist)
+        const zeroAddress = "0x0000000000000000000000000000000000000000";
+
+        if (pairAddress !== zeroAddress) {
           // Existing pair
           const poolDetails = await get().fetchPoolDetails(
             provider,
             pairAddress,
             chainId
           );
+
           if (poolDetails) {
             set({
               selectedPool: poolDetails,
-              selectedTokenA: tokenA,
-              selectedTokenB: tokenB,
+              selectedToken0: token0,
+              selectedToken1: token1,
               isLoading: false,
             });
           } else {
@@ -608,11 +779,11 @@ export const useLiquidityStore = create<LiquidityState & LiquidityActions>(
             });
           }
         } else {
-          // New pair
+          // New pair - no existing liquidity pool
           set({
             selectedPool: null,
-            selectedTokenA: tokenA,
-            selectedTokenB: tokenB,
+            selectedToken0: token0,
+            selectedToken1: token1,
             isLoading: false,
           });
         }
@@ -625,18 +796,119 @@ export const useLiquidityStore = create<LiquidityState & LiquidityActions>(
         });
       }
     },
-
     // Calculate token B amount based on token A input
-    calculateTokenBAmount: async (provider, tokenAAmount) => {
-      const { selectedTokenA, selectedTokenB, selectedPool, setTokenBLoading } =
-        get();
+    // calculateTokenBAmount: async (provider, tokenAAmount) => {
+    //   const { selectedToken0, selectedToken1, selectedPool, setTokenBLoading } =
+    //     get();
 
-      let prices = usePriceStore.getState().prices;
-      const updatePrices = usePriceStore.getState().updatePrices;
+    //   let prices = usePriceStore.getState().prices;
+    //   const updatePrices = usePriceStore.getState().updatePrices;
+    //   if (!prices) {
+    //     prices = await updatePrices();
+    //   }
+    //   if (!selectedToken0 || !tokenAAmount || parseFloat(tokenAAmount) === 0) {
+    //     set({ tokenAAmount: "" });
+    //     return;
+    //   }
+
+    //   try {
+    //     set({ tokenBLoading: true, error: null });
+
+    //     // If we have an existing pool, use the price ratio from reserves
+    //     if (selectedPool) {
+    //       const { reserves0, reserves1, token0, token1 } = selectedPool;
+
+    //       let tokenBValue;
+    //       if (selectedToken0.address === token0.address) {
+    //         // Token A is token0
+    //         const reserve0 = parseFloat(reserves0);
+    //         const reserve1 = parseFloat(reserves1);
+    //         if (reserve0 > 0) {
+    //           tokenBValue = (parseFloat(tokenAAmount) * reserve1) / reserve0;
+    //           // tokenBValue = formatUnits(tokenBValue, token1.decimals);
+    //         } else {
+    //           // New pool or empty reserves - need to use oracle price
+    //           tokenBValue = await calculateFromOracle(tokenAAmount);
+    //           // tokenBValue = formatUnits(tokenBValue, token1.decimals);
+    //         }
+    //       } else {
+    //         // Token A is token1
+    //         const reserve0 = parseFloat(reserves0);
+    //         const reserve1 = parseFloat(reserves1);
+    //         if (reserve1 > 0) {
+    //           tokenBValue = (parseFloat(tokenAAmount) * reserve0) / reserve1;
+    //           // tokenBValue = formatUnits(tokenBValue, token1.decimals);
+    //         } else {
+    //           // New pool or empty reserves - need to use oracle price
+    //           tokenBValue = await calculateFromOracle(tokenAAmount);
+    //           // tokenBValue = formatUnits(tokenBValue, token1.decimals);
+    //         }
+    //       }
+
+    //       // set({
+    //       //   tokenBAmount: String(tokenBValue),
+    //       //   tokenAAmount,
+    //       //   tokenBLoading: false,
+    //       // });
+    //       return { tokenAAmount, tokenBValue };
+    //     } else {
+    //       // No existing pool - use oracle prices
+    //       const tokenBValue = await calculateFromOracle(tokenAAmount);
+    //       set({
+    //         tokenBAmount: tokenBValue.toFixed(6),
+    //         tokenAAmount: tokenAAmount,
+    //         tokenBLoading: false,
+    //       });
+    //       return { tokenAAmount, tokenBValue };
+    //     }
+    //   } catch (error) {
+    //     console.error("Error calculating token B amount:", error);
+    //     set({
+    //       error: "Failed to calculate equivalent token amount",
+    //       isLoading: false,
+    //     });
+    //   }
+
+    //   // Internal function to calculate based on oracle prices
+    //   async function calculateFromOracle(amountA: string): Promise<number> {
+    //     // This would integrate with your price oracle system
+    //     // For now, we'll use a placeholder implementation
+
+    //     // Access your price state for both tokens
+    //     // This assumes you have token prices in USD in a state like:
+    //     // prices[`${tokenSymbol}_USD`] = priceInUsd
+
+    //     // This should be integrated with your actual price store
+    //     const priceStore = (window as any).getPriceStore?.() || {
+    //       prices: {},
+    //     };
+
+    //     const tokenAPrice =
+    //       priceStore.prices[`${selectedToken0?.symbol}_USD`] || 1;
+    //     const tokenBPrice =
+    //       priceStore.prices[`${selectedToken1?.symbol}_USD`] || 1;
+
+    //     // Calculate equivalent value
+    //     const valueInUsd = parseFloat(amountA) * tokenAPrice;
+    //     return valueInUsd / tokenBPrice;
+    //   }
+    // },
+
+    calculateTokenBAmount: async (provider, tokenAAmountRaw) => {
+      const { selectedToken0, selectedToken1, selectedPool, setTokenBLoading } =
+        get();
+      if (!selectedToken0 || !selectedToken1) return;
+      let { prices, updatePrices, getUSDValue } = usePriceStore.getState();
+
       if (!prices) {
         prices = await updatePrices();
       }
-      if (!selectedTokenA || !tokenAAmount || parseFloat(tokenAAmount) === 0) {
+
+      if (
+        !selectedToken0 ||
+        !tokenAAmountRaw ||
+        parseFloat(tokenAAmountRaw) === 0
+      ) {
         set({ tokenAAmount: "" });
         return;
       }
@@ -644,52 +916,73 @@ export const useLiquidityStore = create<LiquidityState & LiquidityActions>(
       try {
         set({ tokenBLoading: true, error: null });
 
-        // If we have an existing pool, use the price ratio from reserves
         if (selectedPool) {
           const { reserves0, reserves1, token0, token1 } = selectedPool;
 
-          let tokenBValue;
-          if (selectedTokenA.address === token0.address) {
-            // Token A is token0
-            const reserve0 = parseFloat(reserves0);
-            const reserve1 = parseFloat(reserves1);
+          const decimals0 = token0.decimals;
+          const decimals1 = token1.decimals;
+
+          const reserve0 = getBigInt(parseUnits(reserves0, decimals0));
+          const reserve1 = getBigInt(parseUnits(reserves1, decimals1));
+
+          const tokenAAmount = getBigInt(
+            parseUnits(tokenAAmountRaw, selectedToken0.decimals)
+          );
+
+          let tokenBValue: bigint;
+
+          if (selectedToken0.address === token0.address) {
+            // A is token0 → B = token1
             if (reserve0 > 0) {
-              tokenBValue = (parseFloat(tokenAAmount) * reserve1) / reserve0;
-              // tokenBValue = formatUnits(tokenBValue, token1.decimals);
+              tokenBValue = (tokenAAmount * reserve1) / reserve0;
             } else {
-              // New pool or empty reserves - need to use oracle price
-              tokenBValue = await calculateFromOracle(tokenAAmount);
-              // tokenBValue = formatUnits(tokenBValue, token1.decimals);
+              const oracleVal = await calculateFromOracle(tokenAAmountRaw);
+              tokenBValue = getBigInt(
+                parseUnits(oracleVal.toString(), token1.decimals)
+              );
             }
           } else {
-            // Token A is token1
-            const reserve0 = parseFloat(reserves0);
-            const reserve1 = parseFloat(reserves1);
+            // A is token1 → B = token0
             if (reserve1 > 0) {
-              tokenBValue = (parseFloat(tokenAAmount) * reserve0) / reserve1;
-              // tokenBValue = formatUnits(tokenBValue, token1.decimals);
+              tokenBValue = (tokenAAmount * reserve0) / reserve1;
             } else {
-              // New pool or empty reserves - need to use oracle price
-              tokenBValue = await calculateFromOracle(tokenAAmount);
-              // tokenBValue = formatUnits(tokenBValue, token1.decimals);
+              const oracleVal = await calculateFromOracle(tokenAAmountRaw);
+              tokenBValue = getBigInt(
+                parseUnits(oracleVal.toString(), token0.decimals)
+              );
             }
           }
 
-          // set({
-          //   tokenBAmount: String(tokenBValue),
-          //   tokenAAmount,
-          //   tokenBLoading: false,
-          // });
-          return { tokenAAmount, tokenBValue };
+          const formattedTokenBValue = formatUnits(
+            tokenBValue,
+            selectedToken1.decimals
+          );
+          // const formattedTokenAValue = formatUnits(
+          //   tokenAAmountRaw,
+          //   selectedToken0.decimals
+          // );
+          // const tokenBUsdValue = await getUSDValue(
+          //   formattedTokenBValue,
+          //   selectedToken1.address
+          // );
+          // const tokenAUsdValue = await getUSDValue(
+          //   formattedTokenAValue,
+          //   selectedToken0.address
+          // );
+          // set({ tokenAUsdValue, tokenBUsdValue });
+          return {
+            tokenAAmount: tokenAAmountRaw,
+            tokenBValue: formattedTokenBValue,
+          };
         } else {
-          // No existing pool - use oracle prices
-          const tokenBValue = await calculateFromOracle(tokenAAmount);
+          // No pool, fallback to oracle
+          const tokenBValue = await calculateFromOracle(tokenAAmountRaw);
           set({
             tokenBAmount: tokenBValue.toFixed(6),
-            tokenAAmount: tokenAAmount,
+            tokenAAmount: tokenAAmountRaw,
             tokenBLoading: false,
           });
-          return { tokenAAmount, tokenBValue };
+          return { tokenAAmount: tokenAAmountRaw, tokenBValue };
         }
       } catch (error) {
         console.error("Error calculating token B amount:", error);
@@ -699,7 +992,6 @@ export const useLiquidityStore = create<LiquidityState & LiquidityActions>(
         });
       }
 
-      // Internal function to calculate based on oracle prices
       async function calculateFromOracle(amountA: string): Promise<number> {
         // This would integrate with your price oracle system
         // For now, we'll use a placeholder implementation
@@ -714,9 +1006,9 @@ export const useLiquidityStore = create<LiquidityState & LiquidityActions>(
         };
 
         const tokenAPrice =
-          priceStore.prices[`${selectedTokenA?.symbol}_USD`] || 1;
+          priceStore.prices[`${selectedToken0?.symbol}_USD`] || 1;
         const tokenBPrice =
-          priceStore.prices[`${selectedTokenB?.symbol}_USD`] || 1;
+          priceStore.prices[`${selectedToken1?.symbol}_USD`] || 1;
 
         // Calculate equivalent value
         const valueInUsd = parseFloat(amountA) * tokenAPrice;
@@ -726,16 +1018,16 @@ export const useLiquidityStore = create<LiquidityState & LiquidityActions>(
 
     // Calculate token A amount based on token B input
     calculateTokenAAmount: async (provider, tokenBAmount) => {
-      const { selectedTokenA, selectedTokenB, selectedPool } = get();
+      const { selectedToken0, selectedToken1, selectedPool } = get();
       let prices = usePriceStore.getState().prices;
-
+      if (!selectedToken0 || !selectedToken1) return;
       const updatePrices = usePriceStore.getState().updatePrices;
       if (!prices) {
         prices = await updatePrices();
       }
       if (
-        !selectedTokenB ||
-        !selectedTokenB ||
+        !selectedToken1 ||
+        !selectedToken1 ||
         !tokenBAmount ||
         parseFloat(tokenBAmount) === 0
       ) {
@@ -751,7 +1043,7 @@ export const useLiquidityStore = create<LiquidityState & LiquidityActions>(
           const { reserves0, reserves1, token1, token0 } = selectedPool;
 
           let tokenAValue;
-          if (selectedTokenB.address === token1.address) {
+          if (selectedToken1.address === token1.address) {
             // Token B is token0
             const reserve0 = parseFloat(reserves0);
             const reserve1 = parseFloat(reserves1);
@@ -781,6 +1073,23 @@ export const useLiquidityStore = create<LiquidityState & LiquidityActions>(
           //   tokenBAmount: tokenBAmount,
           //   tokenALoading: false,
           // });
+          // const formattedTokenAValue = formatUnits(
+          //   tokenAValue,
+          //   selectedToken0.decimals
+          // );
+          // const formattedTokenBValue = formatUnits(
+          //   tokenBAmount,
+          //   selectedToken1.decimals
+          // );
+          // const tokenBUsdValue = await getUSDValue(
+          //   formattedTokenBValue,
+          //   selectedToken1.address
+          // );
+          // const tokenAUsdValue = await getUSDValue(
+          //   formattedTokenAValue,
+          //   selectedToken0.address
+          // );
+          // set({ tokenAUsdValue, tokenBUsdValue });
           return { tokenAValue, tokenBAmount };
         } else {
           // No existing pool - use oracle prices
@@ -815,9 +1124,9 @@ export const useLiquidityStore = create<LiquidityState & LiquidityActions>(
         };
 
         const tokenAPrice =
-          priceStore.prices[`${selectedTokenA?.symbol}_USD`] || 1;
+          priceStore.prices[`${selectedToken0?.symbol}_USD`] || 1;
         const tokenBPrice =
-          priceStore.prices[`${selectedTokenB?.symbol}_USD`] || 1;
+          priceStore.prices[`${selectedToken1?.symbol}_USD`] || 1;
 
         // Calculate equivalent value
         const valueInUsd = parseFloat(amountB) * tokenBPrice;
@@ -829,16 +1138,16 @@ export const useLiquidityStore = create<LiquidityState & LiquidityActions>(
     calculateExpectedLpTokens: async (provider) => {
       const {
         selectedPool,
-        selectedTokenA,
-        selectedTokenB,
+        selectedToken0,
+        selectedToken1,
         tokenAAmount,
         tokenBAmount,
       } = get();
 
       if (
         !selectedPool ||
-        !selectedTokenA ||
-        !selectedTokenB ||
+        !selectedToken0 ||
+        !selectedToken1 ||
         !tokenAAmount ||
         !tokenBAmount
       ) {
@@ -858,9 +1167,9 @@ export const useLiquidityStore = create<LiquidityState & LiquidityActions>(
         const totalSupplyBN = BigInt(parseUnits(totalSupply, 18));
 
         // Convert input amounts to BigNumber
+        // let amountABN, amountBBN;
+        let tokenAIsToken0 = selectedToken0.address === token0.address;
         let amountABN, amountBBN;
-        let tokenAIsToken0 = selectedTokenA.address === token0.address;
-
         if (tokenAIsToken0) {
           amountABN = BigInt(ethers.parseUnits(tokenAAmount, token0.decimals));
           amountBBN = BigInt(ethers.parseUnits(tokenBAmount, token1.decimals));
@@ -920,8 +1229,8 @@ export const useLiqudityState = () =>
     useShallow((state: LiquidityState) => ({
       pools: state.pools,
       selectedPool: state.selectedPool,
-      selectedTokenA: state.selectedTokenA,
-      selectedTokenB: state.selectedTokenB,
+      selectedToken0: state.selectedToken0,
+      selectedToken1: state.selectedToken1,
       tokenAAmount: state.tokenAAmount,
       tokenBAmount: state.tokenBAmount,
       lpTokenAmount: state.lpTokenAmount,
@@ -953,6 +1262,7 @@ export const useLiqudityState = () =>
       slippage: state.slippage,
       isLpApproving: state.isLpApproving,
       transactionRemoveLiquidityText: state.transactionRemoveLiquidityText,
+      defaultLiquidityTag: state.defaultLiquidityTag,
     }))
   );
 
@@ -960,12 +1270,12 @@ export const useLiqudityState = () =>
 export const useLiquidityActions = () =>
   useLiquidityStore(
     useShallow((state: LiquidityActions) => ({
-      setTokenA: state.setTokenA,
-      setTokenB: state.setTokenB,
+      setToken0: state.setToken0,
+      setToken1: state.setToken1,
       setTransactionButtonText: state.setTransactionButtonText,
       setTransactionTokenAButtonText: state.setTransactionTokenAButtonText,
       setTransactionTokenBButtonText: state.setTransactionTokenBButtonText,
-
+      setDefaultLiquidityTag: state.setDefaultLiquidityTag,
       setTokenAAmount: state.setTokenAAmount,
       setTokenBAmount: state.setTokenBAmount,
       setLpTokenAmount: state.setLpTokenAmount,

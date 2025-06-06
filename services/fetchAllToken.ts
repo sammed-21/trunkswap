@@ -1,4 +1,5 @@
 import { ERC20_ABI } from "@/abi/ERC20ABI";
+import { isWETHAddress } from "@/lib/constants";
 import { ethers } from "ethers";
 // standard ERC20 ABI
 
@@ -6,10 +7,14 @@ export async function fetchTokenBalance(
   tokenAddress: string,
   userAddress: string,
   provider: any,
-  decimals: number
+  decimals: number,
+  chainId: number
 ): Promise<string> {
   try {
-    if (tokenAddress === ethers.ZeroAddress) {
+    if (
+      tokenAddress === "0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE" ||
+      isWETHAddress(tokenAddress, chainId!)
+    ) {
       // Native token (ETH, etc.)
       const balance = await provider.getBalance(userAddress);
       return ethers.formatUnits(balance, decimals);

@@ -12,37 +12,47 @@ import {
   DEFAULT_BUY_TOKEN,
   DEFAULT_SELL_TOKEN,
   defaultChainId,
+  isWETHAddress,
   MAINNET_TOKENS,
-  MAINNET_TOKENS_BY_SYMBOL,
+  TOKENS_BY_CHAIN_AND_SYMBOL,
 } from "@/lib/constants";
 import { fetchTokenBalance } from "@/services/getTokenBalance";
-import { formatDigits } from "@/lib/utils";
-import {
-  getTokenUSDPrice,
-  getUSDValue,
-  getUSDValueSync,
-  updatePrices,
-} from "@/services/priceFeed";
+import { fetchETHBalance, formatDigits } from "@/lib/utils";
+// import {
+//   getTokenUSDPrice,
+//   getUSDValue,
+//   getUSDValueSync,
+//   updatePrices,
+// } from "@/services/priceFeed";
 import { usePriceState, usePriceStore } from "./priceStore";
 import { useAccountStore } from "./accountStore";
-import { Provider } from "ethers";
-
+import { formatUnits, Provider } from "ethers";
+import { addressess } from "@/address";
+import { getChainContractAddress } from "viem";
+import { getNetworkNameUsingChainId } from "@/services/getNetworkNameUsingChainId";
 // Unified Zustand Store
+
 export const useSwapStore = create<SwapState & SwapActions>((set, get) => ({
   tokens: MAINNET_TOKENS,
   // Initial State
-  TokenB: DEFAULT_BUY_TOKEN(defaultChainId)?.toUpperCase(),
-  TokenA: DEFAULT_SELL_TOKEN(defaultChainId)?.toUpperCase(),
+  token1: DEFAULT_BUY_TOKEN(defaultChainId)?.toUpperCase(),
+  token0: DEFAULT_SELL_TOKEN(defaultChainId)?.toUpperCase(),
   chartActiveToken: DEFAULT_SELL_TOKEN(defaultChainId)?.toUpperCase(),
   tokensWithBalances: [],
   TokenBAmount: "",
   tradeDirection: "sell",
   TokenAAmount: "",
   slippage: 0.5,
+
   currentSellAsset:
-    MAINNET_TOKENS_BY_SYMBOL[DEFAULT_SELL_TOKEN(defaultChainId)?.toLowerCase()],
+    TOKENS_BY_CHAIN_AND_SYMBOL[defaultChainId]?.[
+      DEFAULT_SELL_TOKEN(defaultChainId)?.toLowerCase()
+    ],
   currentBuyAsset:
-    MAINNET_TOKENS_BY_SYMBOL[DEFAULT_BUY_TOKEN(defaultChainId)?.toLowerCase()],
+    TOKENS_BY_CHAIN_AND_SYMBOL[defaultChainId]?.[
+      DEFAULT_BUY_TOKEN(defaultChainId)?.toLowerCase()
+    ],
+
   selectorOpen: false,
   isWalletConnected: false,
   tokenABalance: "0",
@@ -71,20 +81,20 @@ export const useSwapStore = create<SwapState & SwapActions>((set, get) => ({
   TokenAUsdPrice: null,
   TokenBUsdPrice: null,
   prices: {},
-  chartFlag: false,
+  chartFlag: true,
 
   // Actions
-  setTokenB: (token) =>
+  setToken1: (token) =>
     set((state) => ({
-      TokenB: token,
-      TokenA: state.TokenA === token ? "" : state.TokenA,
+      token1: token,
+      token0: state.token0 === token ? "" : state.token0,
       TokenBUsdPrice: null,
       TokenBUsdValue: null,
     })),
-  setTokenA: (token) =>
+  setToken0: (token) =>
     set((state) => ({
-      TokenA: token,
-      TokenB: state.TokenB === token ? "" : state.TokenB,
+      token0: token,
+      token1: state.token1 === token ? "" : state.token1,
       TokenAUsdPrice: null,
       TokenAUsdValue: null,
     })),
@@ -93,13 +103,13 @@ export const useSwapStore = create<SwapState & SwapActions>((set, get) => ({
 
   setTokenBAmount: (amount) => {
     const state = get();
-    const token = state.TokenB;
+    const token = state.token1;
     const pricesStores = usePriceStore.getState();
     const usdValue = amount
       ? pricesStores.getUSDValueSync(amount, token)
       : null;
     set({
-      TokenBAmount: formatDigits(amount),
+      TokenBAmount: amount,
       TokenBUsdValue: usdValue,
     });
 
@@ -116,7 +126,7 @@ export const useSwapStore = create<SwapState & SwapActions>((set, get) => ({
             set({ TokenBUsdValue: freshUsdValue });
           }
         } catch (error) {
-          console.error("Error updating TokenB USD value:", error);
+          console.error("Error updating token1 USD value:", error);
         }
       }
     })();
@@ -124,14 +134,14 @@ export const useSwapStore = create<SwapState & SwapActions>((set, get) => ({
     // Also update quote if needed
     if (state.tradeDirection === "sell") {
       // Here you'd typically call your quote service
-      // updateQuote(state.TokenB, state.TokenA, state.TokenBAmount);
+      // updateQuote(state.token1, state.token0, state.TokenBAmount);
     }
   },
 
   setTokenAAmount: (amount) => {
     // Immediate update with sync method
     const state = get();
-    const token = state.TokenA;
+    const token = state.token0;
     const pricesStores = usePriceStore.getState();
     const usdValue = amount
       ? pricesStores.getUSDValueSync(amount, token)
@@ -145,7 +155,7 @@ export const useSwapStore = create<SwapState & SwapActions>((set, get) => ({
     }
     // Update state with current value
     set({
-      TokenAAmount: formatDigits(amount),
+      TokenAAmount: amount,
       TokenAUsdValue: usdValue,
     });
 
@@ -165,7 +175,7 @@ export const useSwapStore = create<SwapState & SwapActions>((set, get) => ({
             set({ TokenAUsdValue: freshUsdValue });
           }
         } catch (error) {
-          console.error("Error updating TokenA USD value:", error);
+          console.error("Error updating token0 USD value:", error);
         }
       }
     })();
@@ -173,7 +183,7 @@ export const useSwapStore = create<SwapState & SwapActions>((set, get) => ({
     // Also update quote if needed
     if (state.tradeDirection === "buy") {
       // Here you'd typically call your quote service
-      // updateQuote(state.TokenA, state.TokenB, state.TokenAAmount);
+      // updateQuote(state.token0, state.token1, state.TokenAAmount);
     }
   },
   setChartFlag: (chartFlag: boolean) => set({ chartFlag }),
@@ -258,7 +268,8 @@ export const useSwapStore = create<SwapState & SwapActions>((set, get) => ({
     set({
       TokenBAmount: "",
       TokenAAmount: "",
-
+      TokenAUsdValue: 0,
+      TokenBUsdValue: 0,
       selectorOpen: false,
       transactionButtonText: "Swap",
       isSwapping: false,
@@ -269,6 +280,7 @@ export const useSwapStore = create<SwapState & SwapActions>((set, get) => ({
         raw: null,
         formatted: null,
       },
+
       quoteAmount: null,
       estimatedFees: {
         estimatedFee: null,
@@ -279,23 +291,149 @@ export const useSwapStore = create<SwapState & SwapActions>((set, get) => ({
       fee: null,
       // Don't reset tokens, balances, slippage, etc.
     }),
+  // getAvailableTokens: (context: "swap" | "liquidity"): Token[] => {
+  //   const chainId = useAccountStore.getState().chainId;
+  //   const tokens = useSwapStore.getState().tokens;
+
+  //   const wethToken = tokens.find(
+  //     (t) =>
+  //       t.address ===
+  //       addressess[getNetworkNameUsingChainId(chainId)].WETH_ADDRESS
+  //   );
+
+  //   const ethToken: Token = {
+  //     symbol: "ETH",
+  //     name: "Ethereum",
+  //     address: "0x0000000000000000000000000000000000000000", // or "native"
+  //     chainId,
+  //     decimals: 18,
+  //     isNative: true,
+  //   };
+
+  //   if (context === "swap") {
+  //     // If ETH token already included (unlikely), don't duplicate
+  //     if (tokens.some((t) => t.isNative)) return tokens;
+  //     return [...tokens, ethToken];
+  //   }
+
+  //   if (context === "liquidity") {
+  //     const withoutWETH = tokens.filter(
+  //       (t) => t.address !== wethToken?.address
+  //     );
+  //     return [...withoutWETH, ethToken];
+  //   }
+
+  //   return tokens;
+  // },
+  // fetchAllTokens: async (walletAddress: string, provider: Provider) => {
+  //   const { tokens } = get();
+  //   const chainId = useAccountStore.getState().chainId;
+  //   if (!chainId || !walletAddress || !provider) return [];
+
+  //   await updatePrices();
+
+  //   // Fetch updated balances for all tokens
+  //   const updatedTokens = await Promise.all(
+  //     tokens.map(async (token) => {
+  //       if (token.chainId !== chainId) return token;
+
+  //       let balance;
+  //       if (isWETHAddress(token.address, token.chainId)) {
+  //         // For WETH token, fetch native ETH balance instead
+  //         balance = await provider.getBalance(walletAddress);
+  //       } else {
+  //         balance = await fetchTokenBalance(
+  //           token.address,
+  //           walletAddress,
+  //           provider,
+  //           token.decimals,
+  //           chainId
+  //         );
+  //       }
+
+  //       // Format balance from BigNumber to string with decimals
+  //       const formattedBalance = formatUnits(balance, token.decimals);
+
+  //       const usdValue = await getUSDValue(formattedBalance, token.symbol);
+  //       return { ...token, balance: formattedBalance, usdValue };
+  //     })
+  //   );
+
+  //   // Fetch native ETH balance separately and create ETH token object
+  //   const ethBalanceRaw = await provider.getBalance(walletAddress);
+  //   const ethBalance = formatUnits(ethBalanceRaw, 18);
+
+  //   const ethToken: Token = {
+  //     symbol: "ETH",
+  //     name: "Ethereum",
+  //     address: "0x0000000000000000000000000000000000000000",
+  //     chainId,
+  //     decimals: 18,
+  //     isNative: true,
+  //     balance: ethBalance,
+  //     usdValue: await getUSDValue(ethBalance, "ETH"),
+  //   };
+
+  //   // Combine ETH token with updated tokens, removing duplicates of ETH symbol
+  //   const tokensWithETH = [
+  //     ethToken,
+  //     ...updatedTokens.filter((t) => t.symbol.toLowerCase() !== "eth"),
+  //   ];
+
+  //   set({ tokens: tokensWithETH });
+
+  //   return tokensWithETH;
+  // },
+
+  // fetchTokenBalanceFor: async (
+  //   token: Token,
+  //   walletAddress: string,
+  //   provider: Provider,
+  //   chainId: number
+  // ): Promise<Token> => {
+  //   if (!token || !walletAddress || !provider || !chainId) return token;
+
+  //   let balance;
+  //   if (token.isNative || isWETHAddress(token.address, chainId)) {
+  //     balance = await provider.getBalance(walletAddress);
+  //   } else {
+  //     balance = await fetchTokenBalance(
+  //       token.address,
+  //       walletAddress,
+  //       provider,
+  //       token.decimals,
+  //       chainId
+  //     );
+  //   }
+
+  //   const formattedBalance = formatUnits(balance.toString(), token.decimals);
+  //   const usdValue = await getUSDValue(formattedBalance, token.symbol);
+
+  //   return { ...token, balance: formattedBalance, usdValue };
+  // },
 
   fetchAllTokens: async (walletAddress: string, provider: Provider) => {
     const { tokens } = get();
+    const { updatePrices, getUSDValue } = usePriceStore.getState();
     const chainId = useAccountStore.getState().chainId;
     await updatePrices();
     const updatedTokens = await Promise.all(
       tokens.map(async (token) => {
+        let balance;
         if (token.chainId !== chainId) return token;
-
-        const balance = await fetchTokenBalance(
+        // if (isWETHAddress(token.address, token.chainId)) {
+        //   balance = await fetchETHBalance(walletAddress, chainId);
+        // } else {
+        balance = await fetchTokenBalance(
           token.address,
           walletAddress,
           provider,
-          token.decimals
+          token.decimals,
+          chainId
         );
+        // }
 
-        const usdValue = await getUSDValue(balance, token.symbol);
+        const usdValue = await getUSDValue(balance!, token.symbol);
         return { ...token, balance, usdValue };
       })
     );
@@ -306,13 +444,16 @@ export const useSwapStore = create<SwapState & SwapActions>((set, get) => ({
   fetchTokenBalanceFor: async (
     token: Token,
     walletAddress: string,
-    provider: Provider
+    provider: Provider,
+    chainId: number
   ) => {
+    const { getUSDValue } = usePriceStore.getState();
     const balance = await fetchTokenBalance(
       token.address,
       walletAddress,
       provider,
       token.decimals
+      // chainId
     );
     const usdValue = await getUSDValue(balance, token.symbol);
     return { ...token, balance, usdValue };
@@ -323,74 +464,32 @@ export const useSwapStore = create<SwapState & SwapActions>((set, get) => ({
       (token) => token.symbol.toLowerCase() === symbol.toLowerCase()
     ),
 
-  // Function to update balances when tokens change
-  // updateTokenBalances: async (address: string, provider: any) => {
-  //   const { fetchTokenBalances } = get();
-  //   // Only fetch balances if wallet is connected
-  //   if (address) {
-  //     if (address && provider) {
-  //       await fetchTokenBalances(address, provider);
-  //     }
-  //   }
-  // },
-  fetchTokenBalances: async (walletAddress: string, provider: Provider) => {
-    const {
-      currentSellAsset,
-      currentBuyAsset,
-      setTokenABalance,
-      setTokenBBalance,
-      setLoadingBalances,
-    } = get();
-
-    if (!walletAddress || !provider) return;
-
-    try {
-      setLoadingBalances(true);
-
-      const [tokenABalance, tokenBBalance] = await Promise.all([
-        fetchTokenBalance(
-          currentSellAsset?.address,
-          walletAddress,
-          provider,
-          currentSellAsset?.decimals
-        ),
-        fetchTokenBalance(
-          currentBuyAsset?.address,
-          walletAddress,
-          provider,
-          currentBuyAsset?.decimals
-        ),
-      ]);
-
-      setTokenABalance(tokenABalance);
-      setTokenBBalance(tokenBBalance);
-    } catch (error) {
-      console.error("Error fetching token balances:", error);
-    } finally {
-      setLoadingBalances(false);
-    }
-  },
-
   updateTokenBalances: async (walletAddress: string, provider: any) => {
     const { currentSellAsset, currentBuyAsset, fetchTokenBalanceFor } = get();
-
-    if (!walletAddress || !provider || !currentSellAsset || !currentBuyAsset)
+    const chainId = useAccountStore.getState().chainId;
+    if (
+      !walletAddress ||
+      !provider ||
+      !currentSellAsset ||
+      !currentBuyAsset ||
+      !chainId
+    )
       return;
-
     try {
       set({ loadingBalances: true });
 
       const updatedTokenA = await fetchTokenBalanceFor(
         currentSellAsset,
         walletAddress,
-        provider
+        provider,
+        chainId
       );
       const updatedTokenB = await fetchTokenBalanceFor(
         currentBuyAsset,
         walletAddress,
-        provider
+        provider,
+        chainId
       );
-
       set({
         tokenABalance: updatedTokenA.balance,
         tokenBBalance: updatedTokenB.balance,
@@ -416,31 +515,33 @@ export const useSwapStore = create<SwapState & SwapActions>((set, get) => ({
   },
   updateUsdValues: async () => {
     const state = get();
+    const { getUSDValue, updatePrices, getTokenUSDPrice } =
+      usePriceStore.getState();
 
     // Force update the prices first
     await updatePrices();
 
-    // Calculate and update TokenA USD value if there's an amount
-    if (state.TokenA && state.TokenAAmount) {
+    // Calculate and update token0 USD value if there's an amount
+    if (state.token0 && state.TokenAAmount) {
       const tokenAUsdValue = await getUSDValue(
         state.TokenAAmount,
-        state.TokenA
+        state.token0
       );
       set({ TokenAUsdValue: tokenAUsdValue });
     }
 
-    // Calculate and update TokenB USD value if there's an amount
-    if (state.TokenB && state.TokenBAmount) {
+    // Calculate and update token1 USD value if there's an amount
+    if (state.token1 && state.TokenBAmount) {
       const tokenBUsdValue = await getUSDValue(
         state.TokenBAmount,
-        state.TokenB
+        state.token1
       );
       set({ TokenBUsdValue: tokenBUsdValue });
     }
 
     // Also update token prices
-    const tokenAPrice = state.TokenA ? getTokenUSDPrice(state.TokenA) : null;
-    const tokenBPrice = state.TokenB ? getTokenUSDPrice(state.TokenB) : null;
+    const tokenAPrice = state.token0 ? getTokenUSDPrice(state.token0) : null;
+    const tokenBPrice = state.token1 ? getTokenUSDPrice(state.token1) : null;
 
     set({
       TokenAUsdPrice: tokenAPrice,
@@ -464,8 +565,8 @@ export const useSwapStore = create<SwapState & SwapActions>((set, get) => ({
 export const useSwapState = () =>
   useSwapStore(
     useShallow((state: SwapState) => ({
-      TokenB: state.TokenB,
-      TokenA: state.TokenA,
+      token1: state.token1,
+      token0: state.token0,
       tokens: state.tokens,
       TokenBAmount: state.TokenBAmount,
       tradeDirection: state.tradeDirection,
@@ -505,8 +606,8 @@ export const useSwapState = () =>
 export const useSwapActions = () =>
   useSwapStore(
     useShallow((state: SwapActions) => ({
-      setTokenB: state.setTokenB,
-      setTokenA: state.setTokenA,
+      setToken1: state.setToken1,
+      setToken0: state.setToken0,
       setTokens: state.setTokens,
       setTokenBAmount: state.setTokenBAmount,
       setTokenAAmount: state.setTokenAAmount,

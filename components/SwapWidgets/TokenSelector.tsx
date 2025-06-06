@@ -4,6 +4,8 @@ import { useSwapState } from "@/state/swapStore";
 import { useAccountState } from "@/state/accountStore";
 import Image from "next/image";
 import { Token } from "@/lib/types";
+import { formatDigits } from "@/lib/utils";
+import { Button } from "../ui/Button";
 
 interface TokenSelectorProps {
   onSelect: (token: Token) => void;
@@ -69,12 +71,13 @@ const TokenSelector: React.FC<TokenSelectorProps> = ({
       >
         <div className="border-b-[1px] mb-5 -mx-3 py-3 px-3 border-secondary flex justify-between items-center">
           <span className="text-title font-medium text-xl">Select Token</span>
-          <button
+          <Button
+            variant={"transparent"}
             onClick={closeModal}
             className="text-title bg-accent  rounded-lg p-2"
           >
             ESC
-          </button>
+          </Button>
         </div>
         {/* Search Input */}
         <div className="mb-4">
@@ -103,7 +106,11 @@ const TokenSelector: React.FC<TokenSelectorProps> = ({
                 >
                   <div className="flex  items-center">
                     <Image
-                      src={token.logoURI!}
+                      src={
+                        token.logoURI
+                          ? token.logoURI
+                          : `/tokens/${token.symbol.toLowerCase()}.svg`
+                      }
                       alt={token.name}
                       width={20}
                       height={20}
@@ -117,9 +124,9 @@ const TokenSelector: React.FC<TokenSelectorProps> = ({
                         <div className="flex flex-col items-end text-xs ">
                           <span>
                             {token.balance
-                              ? `${parseFloat(token.balance).toFixed(2)} ${
-                                  token.symbol
-                                }`
+                              ? `${formatDigits(
+                                  parseFloat(token.balance).toFixed(4)
+                                )} ${token.symbol}`
                               : "--"}{" "}
                             {/* {token.usdValue ? `${token.usdValue}` : "--"}{" "} */}
                           </span>

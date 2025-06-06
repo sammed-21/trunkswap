@@ -63,13 +63,6 @@ export function useTxToast() {
   const { addTransaction, updateTransaction, removeTransaction } =
     useTransactionStore();
 
-  /**
-   * Show transaction toast with pending, success, and error states
-   * @param txPromise - Promise that resolves to a transaction response
-   * @param type - Type of transaction (swap, addLiquidity, etc.)
-   * @param options - Configuration options
-   * @param customTitle - Optional custom title to override the default
-   */
   const showTxToast = async (
     txPromise: Promise<TransactionResponse>,
     type: TransactionType = "other",
@@ -84,7 +77,7 @@ export function useTxToast() {
       onError,
       onSuccess,
       toastDuration = 20000,
-      trackTransaction = true, // Default to tracking transactions
+      trackTransaction = true,
     } = options || {};
 
     const title = getTxTitle(type, customTitle);
@@ -93,11 +86,11 @@ export function useTxToast() {
     const toastId = toast.loading(`${title} submitted`, {
       description: "Waiting for confirmation...",
       icon: <LoaderIcon className="animate-spin" />,
-      duration: toastDuration, // 1 minute timeout by default
+      duration: toastDuration,
     });
 
     try {
-      // Wait for transaction to be mined
+      // Wait for transaction to be submitted
       const tx = await txPromise;
 
       // Add to pending transactions if tracking is enabled
@@ -120,7 +113,7 @@ export function useTxToast() {
         id: toastId,
         description: "Transaction is being processed on-chain",
         icon: <LoaderIcon className="animate-spin" />,
-        duration: toastDuration, // 1 minute timeout
+        duration: toastDuration,
       });
 
       // If tracking is enabled, update the transaction status
@@ -130,9 +123,22 @@ export function useTxToast() {
 
       // Wait for confirmation (1 block)
       const receipt = await tx.wait(1);
+
+      // **CRITICAL FIX**: Check if transaction actually succeeded
+      if (receipt && receipt.status === 0) {
+        // Transaction was mined but failed (reverted)
+        throw new Error("Transaction execution reverted", {
+          cause: {
+            code: "TRANSACTION_REVERTED",
+            hash: tx.hash,
+            receipt: receipt,
+          },
+        });
+      }
+
       const explorer = getExplorerUrl(chainId, tx.hash);
 
-      // Show success toast
+      // Show success toast (only if status === 1)
       toast.success(`${title} successful`, {
         id: toastId,
         description: (
@@ -141,25 +147,25 @@ export function useTxToast() {
               <div className="flex items-center">
                 {meta?.tokenAAmount && meta?.tokenBAmount && (
                   <>
-                    {meta.tokenASymbol && (
+                    {meta.token0Symbol && (
                       <Image
-                        src={`/tokens/${meta.tokenASymbol}`}
+                        src={`/tokens/${meta.token0Symbol}`}
                         alt={meta.symbol || "symbol"}
                         className="inline-block w-4 h-4 mr-2"
                       />
                     )}
                     <span>{meta?.tokenAAmount}</span>
-                    <span>{meta?.tokenASymbol}</span>
+                    <span>{meta?.token0Symbol}</span>
                     <span>{meta?.aggregate || "+"}</span>
-                    {meta.tokenBSymbol && (
+                    {meta.token1Symbol && (
                       <Image
-                        src={`/tokens/${meta.tokenBSymbol}`}
+                        src={`/tokens/${meta.token1Symbol}`}
                         alt={meta.symbol || "symbol"}
                         className="inline-block w-4 h-4 mr-2"
                       />
                     )}
                     <span>{meta?.tokenBAmount}</span>
-                    <span>{meta?.tokenBSymbol}</span>
+                    <span>{meta?.token1Symbol}</span>
                   </>
                 )}
               </div>
@@ -179,35 +185,31 @@ export function useTxToast() {
             ? { label: actionLabel, onClick: onActionClick }
             : undefined,
         icon: <CheckCircleIcon className="text-green-500" />,
-        duration: toastDuration, // 5 seconds for success
+        duration: toastDuration,
       });
 
       if (trackTransaction) {
         updateTransaction(tx.hash, { status: "success" });
 
-        // Remove the success toast after the specified duration
         setTimeout(() => {
           toast.dismiss(toastId);
-        }, toastDuration + 2500); // Add small buffer to ensure toast is fully displayed
+        }, toastDuration + 2500);
 
-        // Clean up the transaction store after a delay
         setTimeout(() => {
           updateTransaction(tx.hash, { status: "success" });
         }, toastDuration + 1000);
       }
-      // Call success callback if provided
+
       if (onSuccess) {
         onSuccess(receipt!);
       }
-      setTimeout(() => {
-        // Clear any remaining toasts related to this transaction
-        toast.dismiss(toastId);
 
-        // Reset transaction state if needed
+      setTimeout(() => {
+        toast.dismiss(toastId);
         if (trackTransaction) {
-          removeTransaction(receipt?.hash!); // Add this method to your transaction store
+          removeTransaction(receipt?.hash!);
         }
-      }, toastDuration + 2000); // Give enough time for the success toast to be seen
+      }, toastDuration + 2000);
 
       return receipt;
     } catch (error: any) {
@@ -215,7 +217,10 @@ export function useTxToast() {
 
       // Handle different types of errors
       let errorMsg = "Transaction failed";
-      let txHash = error?.transactionHash || error?.receipt?.transactionHash;
+      let txHash =
+        error?.transactionHash ||
+        error?.receipt?.transactionHash ||
+        error?.cause?.hash;
 
       // If we have a transaction hash from the error but not explicitly defined
       if (!txHash && error?.transaction?.hash) {
@@ -223,8 +228,9 @@ export function useTxToast() {
       }
 
       // Handle specific error types
-      if (error?.code) {
-        switch (error.code) {
+      if (error?.code || error?.cause?.code) {
+        const errorCode = error?.code || error?.cause?.code;
+        switch (errorCode) {
           case "ACTION_REJECTED":
             errorMsg = "Transaction rejected by user";
             break;
@@ -243,9 +249,17 @@ export function useTxToast() {
           case "NETWORK_ERROR":
             errorMsg = "Network connection error";
             break;
+          case "TRANSACTION_REVERTED":
+            errorMsg = "Transaction reverted - check contract conditions";
+            break;
           default:
             errorMsg = error?.reason || error?.message || "Transaction failed";
         }
+      }
+
+      // **ENHANCED ERROR HANDLING**: Better detection of transaction hash
+      if (!txHash && error?.receipt?.hash) {
+        txHash = error.receipt.hash;
       }
 
       // Show error toast
@@ -267,7 +281,7 @@ export function useTxToast() {
           </div>
         ),
         icon: <XCircleIcon className="text-red-500" />,
-        duration: 7000, // 7 seconds for errors
+        duration: 7000,
       });
 
       // If tracking is enabled and we have a transaction hash, update to failed status
@@ -280,7 +294,7 @@ export function useTxToast() {
         onError(error);
       }
 
-      throw error; // Re-throw to allow the calling code to handle it if needed
+      throw error;
     }
   };
 

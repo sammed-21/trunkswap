@@ -1,6 +1,6 @@
 import { PAIR_ABI } from "@/abi/PAIR_ABI";
 import { ROUTER_ABI } from "@/abi/ROUTER_ABI";
-import { ROUTER_ADDRESS } from "@/lib/constants";
+import { isETH, isWETHAddress, ROUTER_ADDRESS } from "@/lib/constants";
 import { deadlineFormatted } from "@/lib/utils";
 import { useAccountStore } from "@/state/accountStore";
 import { useLiqudityState, useLiquidityActions } from "@/state/liquidityStore";
@@ -127,7 +127,7 @@ export function useRemoveLiquidityLogic() {
       //       chainId: chainId,
       //       meta: {
       //         tokenAAmount: formatUnits(lpToRemove, 18),
-      //         tokenASymbol: "lp",
+      //         token0Symbol: "lp",
       //       },
       //     }
       //   );
@@ -170,16 +170,45 @@ export function useRemoveLiquidityLogic() {
       const receipt = await withToast(
         async () => {
           // This function returns the transaction promise
-          return routerContract.removeLiquidity(
+          // This function returns the transaction promise
+          const isToken0ETH = isWETHAddress(
             selectedPool.token0.address,
-            selectedPool.token1.address,
-            lpToRemove,
-            amount0Min,
-            amount1Min,
-            userAddress,
-            deadlineTimestamp,
-            txParams
+            chainId
           );
+          const isToken1ETH = isWETHAddress(
+            selectedPool.token1.address,
+            chainId
+          );
+          if (isToken0ETH || isToken1ETH) {
+            // One of the tokens is ETH, use removeLiquidityETH
+            const tokenAddress = isToken0ETH
+              ? selectedPool.token1.address
+              : selectedPool.token0.address;
+            const tokenMin = isToken0ETH ? amount1Min : amount0Min;
+            const ethMin = isToken0ETH ? amount0Min : amount1Min;
+
+            return routerContract.removeLiquidityETH(
+              tokenAddress, // address of the ERC20 token
+              lpToRemove, // liquidity amount to remove
+              tokenMin, // minimum amount of token to receive
+              ethMin, // minimum amount of ETH to receive
+              userAddress, // recipient address
+              deadlineTimestamp, // deadline
+              txParams
+            );
+          } else {
+            // Both tokens are ERC20, use regular removeLiquidity
+            return routerContract.removeLiquidity(
+              selectedPool.token0.address,
+              selectedPool.token1.address,
+              lpToRemove,
+              amount0Min,
+              amount1Min,
+              userAddress,
+              deadlineTimestamp,
+              txParams
+            );
+          }
         },
         "removeLiquidity", // Transaction type
         {
@@ -187,9 +216,9 @@ export function useRemoveLiquidityLogic() {
           chainId: chainId, // Replace with your network's chain ID
           meta: {
             tokenAAmount: formatUnits(lpToRemove, 18),
-            tokenASymbol: `LP`,
+            token0Symbol: `LP`,
             // tokenBAmount: tokenBAmount,
-            // tokenBSymbol: `${selectedTokenB.symbol}`,
+            // token1Symbol: `${selectedToken1.symbol}`,
             // aggregate: "+",
           },
           // Optional callbacks
@@ -299,7 +328,7 @@ export function useRemoveLiquidityLogic() {
             chainId: chainId,
             meta: {
               tokenAAmount: formatUnits(lpToRemove, 18),
-              tokenASymbol: "LP",
+              token0Symbol: "LP",
             },
             onSuccess: () => {
               setIsLpApproving(false);
