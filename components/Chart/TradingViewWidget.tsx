@@ -69,7 +69,7 @@ export const TradingViewWidget = (props: props) => {
       symbol: fullSymbol,
       interval: "D",
       timezone: "Etc/UTC",
-      theme: theme,
+      theme: theme ? theme : "dark",
 
       style: "1",
       locale: "en",
