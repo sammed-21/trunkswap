@@ -22,7 +22,16 @@ export const NetworkComponent = () => {
 
   if (!chains || !activeChain) return null;
 
-  const sortedChains = [activeChain, ...chains.filter((c) => c.id !== chainId)];
+  const sortedChains = [
+    activeChain,
+    ...chains.filter((c) => {
+      // Exclude localhost (Hardhat) in production
+      if (process.env.NODE_ENV !== "development" && c.id === 31337)
+        return false;
+      // Avoid duplicate of the active chain
+      return c.id !== activeChain.id;
+    }),
+  ];
 
   return (
     <DropdownMenu>
