@@ -24,9 +24,10 @@ export const DEFAULT_SELL_TOKEN = (chainId: number): string => {
 };
 
 export const isETH = (token: any) =>
-  !token?.address ||
   token?.isNative ||
-  token.address === "0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE"; // standard ETH pseudo-address
+  token.address === "0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE"
+    ? true
+    : false;
 
 export const fallbackUrls: Record<number, string> = {
   421614: "https://arbitrum-sepolia-rpc.publicnode.com",
