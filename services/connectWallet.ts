@@ -1,4 +1,4 @@
-import { ERC20Abi } from "@/abi/ERC20ABI";
+import { ERC20_ABI } from "@/abi/ERC20ABI";
 import { ethers } from "ethers";
 
 export async function connectWallet() {
@@ -26,7 +26,11 @@ export async function getTokenBalance(
   provider: ethers.Provider
 ) {
   try {
-    const tokenContract = new ethers.Contract(tokenAddress, ERC20Abi, provider);
+    const tokenContract = new ethers.Contract(
+      tokenAddress,
+      ERC20_ABI,
+      provider
+    );
     const balance = await tokenContract.balanceOf(accountAddress);
     return balance.toString();
   } catch (error) {
