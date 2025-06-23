@@ -122,7 +122,7 @@ const AmountInput: React.FC<AmountInputProps> = ({
                 onChange={handleAmountChange}
               />
             )}
-            <span className="text-xl text-textpriamry font-medium">
+            <span className="text-xl text-textprimary font-medium">
               {exceedsBalanceError && isConnected ? (
                 <h1 className="text-error-primary">Exceeds Balance</h1>
               ) : (

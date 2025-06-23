@@ -22,7 +22,7 @@ const config: Config = {
         "error-secondary": "var(--error-secondary)",
         title: "var(--title)",
         subtitle: "var(--subtitle)",
-        textpriamry: "var(--textprimary)",
+        textprimary: "var(--textprimary)",
         background: "var(--background)",
         forground: "var(--foreground)",
         lightgray: "#202C2A",

@@ -33,7 +33,7 @@ export const PoolRow = ({
       >
         <div className="flex col-span-1  lg:col-span-2 items-center gap-5">
           <div className="flex    flex-col text-start">
-            <span className="text-base flex flex-wrap space-x-3 items-center text-textpriamry  max-lg:justify-start">
+            <span className="text-base flex flex-wrap space-x-3 items-center text-textprimary  max-lg:justify-start">
               <Image
                 src={`/tokens/${pool.token0.symbol.toLowerCase()}.svg`}
                 className="relative mr-4 !m-0 h-10 w-10 z-0 rounded-full   object-cover object-top !p-0 transition duration-500 group-hover:z-30 group-hover:scale-105"
