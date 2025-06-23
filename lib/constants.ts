@@ -9,10 +9,11 @@ import WETH from "@/public/tokens/weth.svg";
 import { Token } from "./types";
 import { ethers } from "ethers";
 
-const TEST_NET = process.env.NEXT_PUBLIC_TESTNET;
-const TEST_CHAINID = process.env.NEXT_PUBLIC_TEST_CHAINID;
+export const TEST_NET = process.env.NEXT_PUBLIC_TESTNET;
+export const TEST_CHAINID = process.env.NEXT_PUBLIC_TEST_CHAINID;
 
 export const defaultChainId: number = 421614;
+export const localChainId: number = 31337;
 
 export const DEFAULT_BUY_TOKEN = (chainId: number): string => {
   return "weth"; // return lowercase
@@ -23,9 +24,10 @@ export const DEFAULT_SELL_TOKEN = (chainId: number): string => {
 };
 
 export const isETH = (token: any) =>
-  !token?.address ||
   token?.isNative ||
-  token.address === "0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE"; // standard ETH pseudo-address
+  token.address === "0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE"
+    ? true
+    : false;
 
 export const fallbackUrls: Record<number, string> = {
   421614: "https://arbitrum-sepolia-rpc.publicnode.com",

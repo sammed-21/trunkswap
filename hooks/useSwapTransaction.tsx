@@ -300,12 +300,11 @@ export function useSwapTransactions() {
         <div
           style={{
             background: "var(--foreground)",
-            color: "white",
             padding: "10px",
             borderRadius: "5px",
             transition: "all 0.3s ease-in-out",
           }}
-          className="flex flex-col gap-3"
+          className="flex flex-col gap-3 text-black dark:text-white"
         >
           <div className="flex gap-3 items-center">
             <IoMdCloseCircle className="text-red-500" size={20} />
