@@ -40,18 +40,27 @@ export const Navbar = () => {
         >
           <Image
             src={logo}
-            width={30}
-            height={30}
-            className=" object-cover w-fit "
+            width={10}
+            height={10}
+            className=" object-cover w-5 h-5  "
             alt="logo"
           />
-          <h1>TrunkSwap</h1>
+          <h3 className="text-primary">Trunkswap</h3>
         </Link>
         <div className="">
-          <div className="flex max-lg:hidden gap-10 items-center justify-start">
-            <Link href="/swap">Swap</Link>
-            <Link href="/pool">Pool</Link>
-            <Link href="/Faucet">Faucet</Link>
+          <div className="flex max-lg:hidden gap-10 font-medium  items-center justify-start">
+            <Link href="/swap" className="text-subtitle hover:text-textprimary">
+              Swap
+            </Link>
+            <Link href="/pool" className="text-subtitle hover:text-textprimary">
+              Pool
+            </Link>
+            <Link
+              href="/Faucet"
+              className="text-subtitle hover:text-textprimary"
+            >
+              Faucet
+            </Link>
           </div>
         </div>
       </div>

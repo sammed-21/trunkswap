@@ -104,39 +104,6 @@ export const MAINNET_TOKENS: Token[] = [
     address: "0x980B62Da83eFf3D4576C647993b0c1D7faf17c73",
     logoURI: WETH,
   },
-  // -------------------- Localhost (31337) Tokens --------------------
-  {
-    chainId: 31337,
-    name: "DAI Stablecoin",
-    symbol: "DAI",
-    decimals: 18,
-    address: "0x4ed7c70F96B99c776995fB64377f0d4aB3B0e1C1",
-    logoURI: "tokens/dai.svg", // You must import or define this logo
-  },
-  {
-    chainId: 31337,
-    name: "USDT Token",
-    symbol: "USDT",
-    decimals: 6,
-    address: "0xa85233C63b9Ee964Add6F2cffe00Fd84eb32338f",
-    logoURI: USDT, // You must import or define this logo
-  },
-  {
-    chainId: 31337,
-    name: "USDC Coin",
-    symbol: "USDC",
-    decimals: 6,
-    address: "0x322813Fd9A801c5507c9de605d63CEA4f2CE6c44",
-    logoURI: USDC, // You can reuse the same USDC logo
-  },
-  {
-    chainId: 31337,
-    name: "Wrapped ETH",
-    symbol: "WETH",
-    decimals: 18,
-    address: "0x4A679253410272dd5232B3Ff7cF5dbB88f295319",
-    logoURI: WETH, // You can reuse the same WETH logo
-  },
 ];
 
 export const TOKENS_BY_CHAIN_AND_SYMBOL: Record<
@@ -218,44 +185,5 @@ export const TOKENS_BY_CHAIN_AND_SYMBOL: Record<
       address: "0x4A679253410272dd5232B3Ff7cF5dbB88f295319",
       logoURI: WETH,
     },
-  },
-};
-
-export const MAINNET_TOKENS_BY_ADDRESS: Record<string, Token> = {
-  "0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2": {
-    chainId: 1,
-    name: "Wrapped Ether",
-    symbol: "WETH",
-    decimals: 18,
-    address: "0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2",
-    logoURI:
-      "https://raw.githubusercontent.com/maticnetwork/polygon-token-assets/main/assets/tokenAssets/weth.svg",
-  },
-  "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48": {
-    chainId: 1,
-    name: "USD Coin",
-    symbol: "USDC",
-    decimals: 6,
-    address: "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48",
-    logoURI:
-      "https://raw.githubusercontent.com/maticnetwork/polygon-token-assets/main/assets/tokenAssets/usdc.svg",
-  },
-  "0x6b175474e89094c44da98b954eedeac495271d0f": {
-    chainId: 1,
-    name: "Dai - PoS",
-    symbol: "DAI",
-    decimals: 18,
-    address: "0x6b175474e89094c44da98b954eedeac495271d0f",
-    logoURI:
-      "https://raw.githubusercontent.com/maticnetwork/polygon-token-assets/main/assets/tokenAssets/dai.svg",
-  },
-  "0xcf0c122c6b73ff809c693db761e7baebe62b6a2e": {
-    chainId: 1,
-    name: "FLOKI",
-    symbol: "FLOKI",
-    decimals: 9,
-    address: "0xcf0c122c6b73ff809c693db761e7baebe62b6a2e",
-    logoURI:
-      "https://raw.githubusercontent.com/trustwallet/assets/c37119334a24f9933f373c6cc028a5bdbad2ecb4/blockchains/ethereum/assets/0xcf0C122c6b73ff809C693DB761e7BaeBe62b6a2E/logo.png",
   },
 };
