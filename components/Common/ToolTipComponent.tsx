@@ -32,7 +32,7 @@ export const ToolTipComponent = ({ title, subTitle, content }: Props) => {
             </div>
 
             <div className="space-y-2">
-              <p className="text-sm text-textpriamry">{content}</p>
+              <p className="text-sm text-textprimary">{content}</p>
             </div>
 
             <div className="absolute -bottom-1.5 left-1/2 -translate-x-1/2 w-3 h-3 bg-gradient-to-br from-background/95 to-forground/95 rotate-45 border-r border-b border-white/10"></div>
