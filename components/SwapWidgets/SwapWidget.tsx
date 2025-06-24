@@ -15,13 +15,17 @@ import TokenConversion from "@/services/TokenConversion";
 import { usePriceState } from "@/state/priceStore";
 import { Skeleton } from "../ui/skeleton";
 import { FaChartLine } from "react-icons/fa6";
-import { useRouter, useSearchParams } from "next/navigation";
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { Token } from "@/lib/types";
+import { debounce, updateMetaTags } from "@/services/seoFunctions";
 
 type Props = {};
 
+// Utility function to update meta tags for SEO
+
 export const SwapWidget = (props: Props) => {
   const router = useRouter();
+  const pathname = usePathname();
   const searchParams = useSearchParams();
 
   const {
@@ -114,16 +118,55 @@ export const SwapWidget = (props: Props) => {
     //   scroll: false,
     // });
   };
+
+  const updateSwapURL = useCallback(
+    debounce((tokenInAddress?: string, tokenOutAddress?: string) => {
+      const params = new URLSearchParams(searchParams.toString());
+
+      if (tokenInAddress) params.set("currencyIn", tokenInAddress);
+      if (tokenOutAddress) params.set("currencyOut", tokenOutAddress);
+
+      router.replace(`${pathname}?${params.toString()}`, { scroll: false });
+    }, 300),
+    [pathname, router, searchParams]
+  );
+
   const findTokenByAddress = (address: string) => {
     if (!address) return;
     // Convert address to lowercase for case-insensitive comparison
     const normalizedAddress = address.toLowerCase();
     return tokens.find(
-      (token) => token.address.toLowerCase() === normalizedAddress
+      (token) => token.symbol.toLowerCase() === normalizedAddress
     );
   };
 
-  // Handle URL parameters on component mount
+  const handleSellTokenSelect = (selectedToken: Token) => {
+    setToken0(selectedToken.symbol);
+    setCurrentSellAsset(selectedToken);
+    setTokenABalance(selectedToken.balance || "0");
+    setChartActiveToken(selectedToken.symbol.toUpperCase());
+
+    // Update URL
+    updateSwapURL(selectedToken.symbol, undefined);
+
+    // Update meta tags
+    const currentBuySymbol = token1 || "Token";
+    updateMetaTags(selectedToken.symbol, currentBuySymbol);
+  };
+
+  const handleBuyTokenSelect = (selectedToken: Token) => {
+    setToken1(selectedToken.symbol);
+    setCurrentBuyAsset(selectedToken);
+    setTokenBBalance(selectedToken.balance || "0");
+
+    // Update URL
+    updateSwapURL(undefined, selectedToken.symbol);
+
+    // Update meta tags
+    const currentSellSymbol = token0 || "Token";
+    updateMetaTags(currentSellSymbol, selectedToken.symbol);
+  };
+
   useEffect(() => {
     const tokenIn =
       searchParams?.get("currencyIn") || searchParams?.get("tokenIn");
@@ -135,31 +178,39 @@ export const SwapWidget = (props: Props) => {
       if (tokenIn) {
         const foundToken = findTokenByAddress(tokenIn);
         if (foundToken) {
-          setToken0(foundToken?.symbol);
+          setToken0(foundToken.symbol);
           setCurrentSellAsset(foundToken);
-          setChartActiveToken(foundToken?.symbol?.toUpperCase());
+          setChartActiveToken(foundToken.symbol.toUpperCase());
           if (foundToken.balance) {
-            setTokenABalance(foundToken?.balance);
+            setTokenABalance(foundToken.balance);
           }
         }
       }
 
       if (tokenOut) {
         const foundToken = findTokenByAddress(tokenOut);
-
         if (foundToken) {
           setToken1(foundToken.symbol);
           setCurrentBuyAsset(foundToken);
-
           if (foundToken.balance) {
-            setTokenBBalance(foundToken?.balance);
+            setTokenBBalance(foundToken.balance);
           }
         }
       }
+
+      // Update meta tags after loading from URL
+      const sellSymbol = token0 || "ETH";
+      const buySymbol = token1 || "STX";
+      updateMetaTags(sellSymbol, buySymbol);
     }
-    // Only run once on component mount
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [searchParams]);
+  }, [searchParams, tokens]);
+
+  useEffect(() => {
+    if (token0 && token1) {
+      updateMetaTags(token0, token1);
+    }
+  }, [token0, token1]);
 
   const getButtonProps = () => {
     if (!isConnected) {
@@ -233,7 +284,7 @@ export const SwapWidget = (props: Props) => {
             title="You're Selling"
             loadingBalances={loadingBalances}
             walletBalanceAsset={tokenABalance} // Replace with actual balance
-            setCurrentTokenDetal={setCurrentSellAsset}
+            setCurrentTokenDetal={handleSellTokenSelect}
             token={token0}
             currentTokenAsset={currentSellAsset}
             Amount={TokenAAmount}
@@ -271,7 +322,7 @@ export const SwapWidget = (props: Props) => {
             Amount={TokenBAmount}
             currentTokenAsset={currentBuyAsset}
             tokenUsdValue={TokenBUsdValue}
-            setCurrentTokenDetal={setCurrentBuyAsset}
+            setCurrentTokenDetal={handleBuyTokenSelect}
             isLoading={quoteLoading}
             readOnly={true}
             setTokenBalance={setTokenBBalance}

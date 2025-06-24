@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { Dispatch, SetStateAction, useEffect, useState } from "react";
 
 import { useSwapState } from "@/state/swapStore";
 import { useAccountState } from "@/state/accountStore";
@@ -8,7 +8,7 @@ import { formatDigits } from "@/lib/utils";
 import { Button } from "../ui/Button";
 
 interface TokenSelectorProps {
-  onSelect: (token: Token) => void;
+  onSelect: (token: Token) => void | Dispatch<SetStateAction<string>>;
   closeModal: () => void;
 }
 

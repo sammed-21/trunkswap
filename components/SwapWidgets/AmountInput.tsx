@@ -60,11 +60,16 @@ const AmountInput: React.FC<AmountInputProps> = ({
     setAmount(value);
   };
 
+  // const handleTokenSelect = (selectedToken: any) => {
+  //   setToken(selectedToken.symbol);
+  //   setSelectorOpen(false);
+  //   setTokenBalance(selectedToken.balance);
+  //   setCurrentTokenDetal(selectedToken);
+  // };
+
   const handleTokenSelect = (selectedToken: any) => {
-    setToken(selectedToken.symbol);
     setSelectorOpen(false);
-    setTokenBalance(selectedToken.balance);
-    setCurrentTokenDetal(selectedToken);
+    setCurrentTokenDetal(selectedToken); // This triggers logic in the parent
   };
 
   return (

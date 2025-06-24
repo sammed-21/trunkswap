@@ -86,7 +86,7 @@ export const PoolRow = ({
             onClick={(e) => {
               e.stopPropagation();
               router.push(
-                `/swap?currencyIn=${pool.token0.address}&currencyOut=${pool.token1.address}`
+                `/swap?currencyIn=${pool.token0.symbol}&currencyOut=${pool.token1.symbol}`
               );
             }}
             variant={"primary"}
