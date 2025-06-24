@@ -421,6 +421,7 @@ export const useSwapStore = create<SwapState & SwapActions>((set, get) => ({
       tokens.map(async (token) => {
         let balance;
         if (token.chainId !== chainId) return token;
+        console.log(tokens);
         // if (isWETHAddress(token.address, token.chainId)) {
         //   balance = await fetchETHBalance(walletAddress, chainId);
         // } else {
