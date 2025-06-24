@@ -1,5 +1,3 @@
-import { useState } from "react";
-import { FormatUsd } from "../Common/FormatUsd";
 import { useAccountState } from "@/state/accountStore";
 import { Skeleton } from "../ui/skeleton";
 import Image from "next/image";
