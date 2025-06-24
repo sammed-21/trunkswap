@@ -10,8 +10,9 @@ export async function fetchTokenBalance(
 ): Promise<string> {
   // For native ETH
   if (
-    tokenAddress === "0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE" ||
-    isWETHAddress(tokenAddress, chainId!)
+    tokenAddress === "0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE"
+    // ||
+    // isWETHAddress(tokenAddress, chainId!)
   ) {
     const balance = await provider.getBalance(walletAddress);
     const formattedBalance = formatEther(balance);
