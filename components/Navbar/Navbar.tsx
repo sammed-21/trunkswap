@@ -58,8 +58,8 @@ export const Navbar = () => {
               Pool
             </Link>
             <Link
-              href="/faucet"
-              className={`${path == "/faucet" && "text-textprimary"} text-subtitle hover:text-textprimary`}
+              href="/faucets"
+              className={`${path == "/faucets" && "text-textprimary"} text-subtitle hover:text-textprimary`}
             >
               Faucet
             </Link>
