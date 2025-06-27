@@ -10,7 +10,6 @@ import { FormatUsd } from "../Common/FormatUsd";
 import { useAccountState } from "@/state/accountStore";
 import { Button } from "../ui/Button";
 import { cn } from "@/lib/utils";
-// import { TokenSelectorModal } from "./TokenSelectorModal";
 import { useSwapActions } from "@/state/swapStore";
 interface AmountInputProps {
   title: string;
@@ -167,7 +166,6 @@ const AmountInput: React.FC<AmountInputProps> = ({
             </Button>
         </div>
       </div>
-      {/* <TokenSelectorModal handleTokenSelect={handleTokenSelect}  /> */}
 
       {selectorOpen && (
         <TokenSelector
