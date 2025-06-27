@@ -59,7 +59,7 @@ export default function RootLayout({
                 {children}
               </div>
 
-              {/* <div className="absolute right-0 top-0  bg-[#0d0dbb] light:bg-[#0d0dbb]/20 rounded-lg blur-[300px] w-[22rem] h-[32rem] -z-10"></div> */}
+              <div className="absolute right-0 top-0  bg-primary light:bg-primary/20 rounded-lg blur-[300px] w-full h-[10%] -z-10"></div>
               <NextTopLoader
                 color="#2299DD"
                 initialPosition={0.08}

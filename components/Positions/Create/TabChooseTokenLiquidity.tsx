@@ -15,10 +15,10 @@ export const TabChooseTokenLiquidity = () => {
   const [selectorOpen, setSelectorOpen] = useState<string>("");
   const [token1, setToken1] = useState<string>("");
   return (
-    <div className="w-full h-full flex flex-row justify-between relative">
+    <div className="w-full h-full flex px-1flex-row justify-between relative">
       <Tabs defaultValue="token-pair" className="flex w-full  gap-10  ">
-        <TabsList className="flex flex-col h-fit  items-start border-[1px]  border-border rounded-2xl p-3  w-full space-y-6">
-          <TabsTrigger value="token-pair" className="group p-0">
+        <TabsList className="flex max-md:hidden flex-col h-fit  items-start border-[1px]  border-border bg-forground rounded-2xl p-3  w-full space-y-4">
+          <TabsTrigger value="token-pair" className="group data-[state=active]:bg-transparent p-0 ">
             <TabItemText stepNumber={1} description="Select token and pair" />
           </TabsTrigger>
 
@@ -27,11 +27,11 @@ export const TabChooseTokenLiquidity = () => {
             <div className="w-[2px] h-full bg-muted" />
           </div>
 
-          <TabsTrigger value="deposit-amount" className="group p-0">
+          <TabsTrigger value="deposit-amount" className="group p-0 data-[state=active]:bg-transparent">
             <TabItemText stepNumber={2} description="Enter deposit amount" />
           </TabsTrigger>
         </TabsList>
-        <div className=" w-full  min-h-[500px] flex items-center justify-center border-[1px] border-border rounded-xl h-full min-w-[500px] bg-primary-dark ">
+        <div className=" w-full  min-h-[500px] flex items-center justify-center border-[1px] border-border rounded-xl h-full w-full md:min-w-[500px] bg-primary-dark ">
           <LoadingScreen title="...Coming soon" />;
         </div>
         {/* <div className=" w-full h-full min-w-[500px] ">

@@ -16,22 +16,7 @@ import { Button } from "../ui/Button";
 // import { getExplorerUrl } from "@/lib/hooks/useTxToast";
 
 export function PendingTransactions() {
-  // const transactionToastData = {
-  //   id: "0xdfea6088ea4bbd0d02b6d76365a27c04df18f0c2d9c06ad8d0eeac0bb27c5d50-1747383179382",
-  //   hash: "0xdfea6088ea4bbd0d02b6d76365a27c04df18f0c2d9c06ad8d0eeac0bb27c5d50",
-  //   chainId: 421614,
-  //   type: "swap",
-  //   title: "Swap RSTX for STX",
-  //   status: "success",
-  //   timestamp: 1747383179382,
-  //   meta: {
-  //     tokenAAmount: "1",
-  //     token0Symbol: "RSTX",
-  //     tokenBAmount: "1.3291",
-  //     token1Symbol: "STX",
-  //     aggregate: "→",
-  //   },
-  // };
+
 
   const { pendingTransactions } = useTransactionStore();
   // const [pendingTransactions, setPendingTransactions] = useState<any>([
@@ -50,12 +35,12 @@ export function PendingTransactions() {
   if (pendingCount === 0) return null;
 
   return (
-    <div className="fixed bottom-4 right-4 z-50">
+    <div className="fixed bottom-4   flex items-end flex-col  justify-end right-4 z-50">
       {/* Transaction indicator button */}
       <Button
         variant={"transparent"}
         onClick={() => setIsOpen(!isOpen)}
-        className="flex items-center gap-2 bg-forground px-4 py-2  shadow-lg border border-gray-200 dark:border-gray-700"
+        className="flex items-center gap-2 bg-forground px-4 py-2  justify-end shadow-lg border border-gray-200 dark:border-gray-700"
       >
         <span className="relative flex mr-3 h-3 w-3">
           <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-blue-400 opacity-75"></span>
@@ -66,13 +51,13 @@ export function PendingTransactions() {
 
       {/* Transactions panel */}
       {isOpen && (
-        <div className="mt-2 w-80  bg-forgound  shadow-xl border border-border overflow-hidden">
+        <div className="mt-2 w-80  bg-forgound rounded-xl shadow-xl border border-border overflow-hidden">
           <div className="p-3 border-b border-border bg-forground flex justify-between items-center">
             <h3 className="font-medium">Recent Transactions</h3>
             <Button
               variant={"transparent"}
               onClick={() => setIsOpen(false)}
-              className="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200"
+              className="text-gray-500 hover:text-gray-700 h-2 rounded-full dark:text-gray-400 dark:hover:text-gray-200"
             >
               ×
             </Button>

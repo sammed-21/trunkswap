@@ -2,7 +2,8 @@ import { useAccountState } from "@/state/accountStore";
 import { Skeleton } from "../ui/skeleton";
 import Image from "next/image";
 import { Button } from "../ui/Button";
-import { formatDigits } from "@/lib/utils";
+import { cn, formatDigits } from "@/lib/utils";
+import { useAccount } from "wagmi";
 
 interface TokenInputProps {
   label: string;
@@ -14,6 +15,7 @@ interface TokenInputProps {
   isLoading: boolean;
   tokenBalnce: string;
   isBalanceLoading: boolean;
+  className?:string;
 }
 
 export default function TokenInput({
@@ -26,11 +28,22 @@ export default function TokenInput({
   disabled = false,
   tokenBalnce,
   isBalanceLoading,
+  className
 }: TokenInputProps) {
-  const { address } = useAccountState();
+  const { address ,isConnected} = useAccount();
 
   return (
-    <div className="bg-forground border-[1px] border-primary hover:border-accent hover:bg-background  p-4 rounded-lg">
+    <div 
+    // className="bg-forground border-[1px] border-primary hover:border-accent hover:bg-background  p-4 rounded-lg"
+    className={cn(
+      `p-4 border-[1px]   border-l-0 border-r-0 border-t-0 shadow-md w-full 
+       ${Number(value)>Number(tokenBalnce) && isConnected 
+          ? "bg-error-secondary border-error-primary" 
+          : "border-b-primary bg-forground focus-within:bg-highlighter"
+       }`,
+      className
+    )}
+    >
       <div className="flex  items-start space-x-3">
         <div className="flex-0 flex flex-col gap-3 w-full items-start text-start">
           <input

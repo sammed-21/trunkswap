@@ -1,5 +1,6 @@
 import { LoadingScreen } from "@/components/Common/LoadingScreen";
 import { SwapComponent } from "@/components/SwapWidgets/SwapComponent";
+import { TokenSelectorModal } from "@/components/SwapWidgets/TokenSelectorModal";
 import { Suspense } from "react";
 export default function Home() {
   return (
@@ -11,8 +12,10 @@ export default function Home() {
       }
     >
       <div className="w-full px-4 relative h-full mx-auto py-10  gap-4 flex flex-col md:flex-row  items-start justify-center">
+    
         <SwapComponent />
       </div>
+
     </Suspense>
   );
 }

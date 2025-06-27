@@ -296,8 +296,9 @@ export function useSwapTransactions() {
         formatedEstimatedFee,
       });
     } catch (error) {
-      toast.custom(
+      toast.custom((t) => (
         <div
+        key={t.id}
           style={{
             background: "var(--foreground)",
             padding: "10px",
@@ -306,20 +307,25 @@ export function useSwapTransactions() {
           }}
           className="flex flex-col gap-3 text-black dark:text-white"
         >
-          <div className="flex gap-3 items-center">
-            <IoMdCloseCircle className="text-red-500" size={20} />
-            {`pair does not exist ${currentSellAsset.symbol} -> ${currentBuyAsset.symbol}`}
+          <div className="flex justify-between items-center gap-3">
+            <div onClick={() => toast.dismiss(t.id)} className="flex items-center gap-2">
+              <IoMdCloseCircle className="text-red-500" size={20} />
+              {`pair does not exist ${currentSellAsset.symbol} -> ${currentBuyAsset.symbol}`}
+            </div>
+            {/* Working close button */}
+          
           </div>
-          <div className="flex flex-col items-center justify-center">
-            <span>Please select USDC , ETH , WETH tokens</span>
-            OR
-            <span>Please select STX, RSTX </span>
+          <div className="flex flex-col items-center justify-center text-sm">
+            <span>Please select USDC, ETH, or WETH tokens</span>
+            <span>OR</span>
+            <span>Please select STX, RSTX</span>
           </div>
-        </div>,
-        {
-          duration: 5000, // duration in milliseconds
-        }
-      );
+        </div>
+      ), {
+        duration: 4000,
+      });
+      
+      
       setQuoteAmount(null);
       setTokenBAmount("");
       // setEstimatedFee(null)
