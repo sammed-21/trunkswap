@@ -250,6 +250,7 @@ export const SwapWidget = (props: Props) => {
       <div className="text-3xl px-4 font-semibold w-full justify-start items-center ">
         Trade
         <TokenConversion
+        className="bg-transparent"
           prices={prices}
           isLoading={isLoading}
           from={token0}

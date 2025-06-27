@@ -185,7 +185,7 @@ const TokenConversion: React.FC<TokenConversionProps> = memo(
 
     return (
       <div
-        className={cn(`flex items-center gap-2 h-8 bg-forground `, className)}
+        className={cn(`flex min-w-sm items-center gap-2 h-8 bg-forground `, className)}
       >
         {children}
         <ConversionRateDisplay
