@@ -1,6 +1,5 @@
 import { LoadingScreen } from "@/components/Common/LoadingScreen";
 import { SwapComponent } from "@/components/SwapWidgets/SwapComponent";
-import { TokenSelectorModal } from "@/components/SwapWidgets/TokenSelectorModal";
 import { Suspense } from "react";
 export default function Home() {
   return (
