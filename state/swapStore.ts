@@ -38,6 +38,7 @@ export const useSwapStore = create<SwapState & SwapActions>((set, get) => ({
   token1: DEFAULT_BUY_TOKEN(defaultChainId)?.toUpperCase(),
   token0: DEFAULT_SELL_TOKEN(defaultChainId)?.toUpperCase(),
   chartActiveToken: DEFAULT_SELL_TOKEN(defaultChainId)?.toUpperCase(),
+  tokenSelectorModalFlag:false,
   tokensWithBalances: [],
   TokenBAmount: "",
   tradeDirection: "sell",
@@ -81,9 +82,10 @@ export const useSwapStore = create<SwapState & SwapActions>((set, get) => ({
   TokenAUsdPrice: null,
   TokenBUsdPrice: null,
   prices: {},
-  chartFlag: true,
+  chartFlag: false,
 
   // Actions
+  setTokenSelectorModalFlag:(tokenSelectorModalFlag:boolean) => set( {tokenSelectorModalFlag }),
   setToken1: (token) =>
     set((state) => ({
       token1: token,
@@ -421,7 +423,6 @@ export const useSwapStore = create<SwapState & SwapActions>((set, get) => ({
       tokens.map(async (token) => {
         let balance;
         if (token.chainId !== chainId) return token;
-        console.log(tokens);
         // if (isWETHAddress(token.address, token.chainId)) {
         //   balance = await fetchETHBalance(walletAddress, chainId);
         // } else {
@@ -600,6 +601,7 @@ export const useSwapState = () =>
       chartFlag: state.chartFlag,
       chartActiveToken: state.chartActiveToken,
       tokensWithBalances: state.tokensWithBalances,
+      tokenSelectorModalFlag:state.tokenSelectorModalFlag
     }))
   );
 
@@ -639,6 +641,7 @@ export const useSwapActions = () =>
       setTokenAUsdPrice: state.setTokenAUsdPrice,
       setTokenBUsdPrice: state.setTokenBUsdPrice,
       setPrices: state.setPrices,
+      setTokenSelectorModalFlag:state.setTokenSelectorModalFlag,
       setExceedsBalanceError: state.setExceedsBalanceError,
       setChartFlag: state.setChartFlag,
       setChartActiveToken: state.setChartActiveToken,

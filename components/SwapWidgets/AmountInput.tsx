@@ -10,6 +10,8 @@ import { FormatUsd } from "../Common/FormatUsd";
 import { useAccountState } from "@/state/accountStore";
 import { Button } from "../ui/Button";
 import { cn } from "@/lib/utils";
+// import { TokenSelectorModal } from "./TokenSelectorModal";
+import { useSwapActions } from "@/state/swapStore";
 interface AmountInputProps {
   title: string;
   token: string;
@@ -19,7 +21,7 @@ interface AmountInputProps {
   setAmount: (amount: string) => void;
   setToken: (token: string) => void;
   loadingBalances: boolean;
-  setCurrentTokenDetal: (token: Token) => void;
+  setCurrentTokenDetail: (token: Token) => void;
   isLoading?: boolean;
   readOnly?: boolean;
   tokenUsdValue: any;
@@ -38,7 +40,7 @@ const AmountInput: React.FC<AmountInputProps> = ({
   loadingBalances,
   walletBalanceAsset,
   currentTokenAsset,
-  setCurrentTokenDetal,
+  setCurrentTokenDetail,
   tokenUsdValue,
   readOnly = false,
   isLoading = false,
@@ -48,7 +50,7 @@ const AmountInput: React.FC<AmountInputProps> = ({
   className,
 }) => {
   const [selectorOpen, setSelectorOpen] = useState<boolean>(false);
-  //   const { setSelectorOpen } = useSwapActions();
+  // const { setSelectorOpen } = useSwapActions();
   const { address } = useAccount();
   const { provider } = useAccountState();
 
@@ -68,21 +70,24 @@ const AmountInput: React.FC<AmountInputProps> = ({
   // };
 
   const handleTokenSelect = (selectedToken: any) => {
-    setSelectorOpen(false);
-    setCurrentTokenDetal(selectedToken); // This triggers logic in the parent
+     
+    setCurrentTokenDetail(selectedToken); // This triggers logic in the parent
   };
 
+  const {setTokenSelectorModalFlag}= useSwapActions();
+ 
   return (
     <div
-      className={cn(
-        `p-4 ${
-          exceedsBalanceError && isConnected
-            ? "bg-error-secondary border-error-primary"
-            : "border-primary bg-forground hover:border-accent"
-        }  border-[1px]  hover:bg-background hover:border-accent shadow-md  w-full rounded-lg max-w-md relative`,
-        className
-      )}
-    >
+    className={cn(
+      `p-4 border-[1px]   border-l-0 border-r-0 border-t-0 shadow-md w-full max-w-md
+       ${exceedsBalanceError && isConnected 
+          ? "bg-error-secondary border-error-primary" 
+          : "border-b-primary bg-forground focus-within:bg-highlighter"
+       }`,
+      className
+    )}
+  >
+  
       <div className="mb-4   ">
         <div className="flex justify-between items-center">
           <label className="block text-sm font-medium text-subtitle">
@@ -110,8 +115,8 @@ const AmountInput: React.FC<AmountInputProps> = ({
             </>
           )}
         </div>
-        <div className="relative   w-full justify-between flex items-center gap-3">
-          <div className="w-ful  max-w-[70%]">
+        <div className="relative  w-full justify-between flex items-center gap-3">
+          <div className="w-ful max-w-[70%]">
             {isLoading ? (
               <Skeleton className="w-[100px] h-10 bg-primary" />
             ) : (
@@ -135,10 +140,9 @@ const AmountInput: React.FC<AmountInputProps> = ({
               )}
             </span>
           </div>
-          <div className="w-full max-w-[30%] pr-2 pl-2 flex justify-end">
             <Button
               variant={"transparent"}
-              className=" justify-between gap-1 px-2   w-full relative flex py-2 bg-background dark:text-title text-title items-center "
+              className=" justify-between max-w-[100px] w-full  px-1 border-none  gap-2  relative flex py-2  dark:text-title text-title items-center "
               onClick={() => setSelectorOpen(true)}
             >
               <Image
@@ -149,6 +153,7 @@ const AmountInput: React.FC<AmountInputProps> = ({
                 }
                 width={20}
                 height={20}
+                className="space-x-2"
                 alt={"image"}
               />{" "}
               {currentTokenAsset?.symbol || "Select Token"}
@@ -160,9 +165,9 @@ const AmountInput: React.FC<AmountInputProps> = ({
                 alt={"image"}
               />{" "}
             </Button>
-          </div>
         </div>
       </div>
+      {/* <TokenSelectorModal handleTokenSelect={handleTokenSelect}  /> */}
 
       {selectorOpen && (
         <TokenSelector

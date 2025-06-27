@@ -39,7 +39,7 @@ export const SwapComponent = (props: Props) => {
         >
           <TradingViewWidget />
         </div>
-        <div className="w-full max-w-[400px] ">
+        <div className="w-full max-w-[478px] ">
           <SwapWidget />
         </div>
       </div>
@@ -49,7 +49,7 @@ export const SwapComponent = (props: Props) => {
             <TradingViewWidget />
           </div>
         ) : (
-          <div className="w-full max-w-[400px]">
+          <div className="w-full max-w-[478px]">
             <SwapWidget />
           </div>
         )}

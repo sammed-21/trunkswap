@@ -50,6 +50,7 @@ export interface SwapState {
   chartActiveToken: string;
   isWalletConnected: any;
   token1: string;
+  tokenSelectorModalFlag:boolean;
   token0: string;
   TokenBAmount: string;
   tradeDirection: "sell" | "buy";
@@ -98,6 +99,7 @@ export interface Token {
   isNative?: boolean;
 }
 export interface SwapActions {
+  setTokenSelectorModalFlag:(tokenSelectorModalFlag:boolean)=>void;
   setChartFlag: (chartFlag: boolean) => void;
   setTokens: (tokens: Token[]) => void;
   setToken1: (token: string) => void;

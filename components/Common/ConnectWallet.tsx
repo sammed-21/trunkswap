@@ -23,7 +23,7 @@ const ConnectWallet = (props: Props) => {
           className="w-full  font-semibold  "
           onClick={openConnectModal}
         >
-          Connect Wallet
+          Connect  
         </Button>
       )}
     </div>

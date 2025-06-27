@@ -26,10 +26,12 @@ import {
   DropdownMenuItem,
 } from "@/components/ui/dropdown-menu"; // adjust path if needed
 import { DropdownMenuDemo } from "./NavbarDropDown";
+import { usePathname } from "next/navigation";
 
 export const Navbar = () => {
   usePriceFeed();
   useInitialLoad();
+  const path = usePathname()
 
   return (
     <nav className="h-20 border-b-[1px] text-title bg-background  backdrop-filter backdrop-blur-lg bg-opacity-30 border-border px-4  rounded-lg  justify-between flex items-center  w-full font-semibold ">
@@ -48,16 +50,16 @@ export const Navbar = () => {
           <h3 className="text-primary">Trunkswap</h3>
         </Link>
         <div className="">
-          <div className="flex max-lg:hidden gap-10 font-medium  items-center justify-start">
-            <Link href="/swap" className="text-subtitle hover:text-textprimary">
+          <div className="flex max-lg:hidden gap-10 font-semibold  items-center justify-start">
+            <Link href="/swap" className={`${path == "/swap" && "text-textprimary"} text-subtitle hover:text-textprimary`}>
               Swap
             </Link>
-            <Link href="/pool" className="text-subtitle hover:text-textprimary">
+            <Link href="/pool" className={`${path == "/pool" && "text-textprimary"} text-subtitle hover:text-textprimary`}>
               Pool
             </Link>
             <Link
-              href="/Faucet"
-              className="text-subtitle hover:text-textprimary"
+              href="/faucet"
+              className={`${path == "/faucet" && "text-textprimary"} text-subtitle hover:text-textprimary`}
             >
               Faucet
             </Link>

@@ -99,7 +99,7 @@ const ConversionRateDisplay = memo<{
   }
 
   return (
-    <div className="flex items-center gap-2 text-sm">
+    <div className="flex items-center gap-2  text-sm">
       {showSwapButton && (
         <Button
           variant={"transparent"}
@@ -185,7 +185,7 @@ const TokenConversion: React.FC<TokenConversionProps> = memo(
 
     return (
       <div
-        className={cn(`flex items-center gap-2 h-8 bg-background `, className)}
+        className={cn(`flex items-center gap-2 h-8 bg-forground `, className)}
       >
         {children}
         <ConversionRateDisplay

@@ -3,7 +3,7 @@ import { useSwapActions, useSwapState } from "@/state/swapStore";
 import React, { useCallback, useEffect, useState } from "react";
 import { Button } from "../ui/Button";
 import AmountInput from "./AmountInput";
-import { useAccount, useCall } from "wagmi";
+import { useAccount } from "wagmi";
 import { useConnectModal } from "@rainbow-me/rainbowkit";
 import { SlippageModal } from "../Slippage/SlippageModal";
 import { useAccountState } from "@/state/accountStore";
@@ -13,8 +13,7 @@ import { useSwapTransactions } from "@/hooks/useSwapTransaction";
 import { QuoteDetails } from "./QuoteDetails";
 import TokenConversion from "@/services/TokenConversion";
 import { usePriceState } from "@/state/priceStore";
-import { Skeleton } from "../ui/skeleton";
-import { FaChartLine } from "react-icons/fa6";
+import { FaChartSimple } from "react-icons/fa6";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { Token } from "@/lib/types";
 import { debounce, updateMetaTags } from "@/services/seoFunctions";
@@ -247,8 +246,8 @@ export const SwapWidget = (props: Props) => {
   };
   const buttonProps = getButtonProps();
   return (
-    <div className=" flex flex-col  gap-3 items-center justify-center  w-full">
-      <div className="text-3xl font-semibold w-full justify-start items-center ">
+    <div className=" flex flex-col border-[1px] py-4 rounded-lg border-border bg-background gap-3 items-center justify-center  relative  w-full">
+      <div className="text-3xl px-4 font-semibold w-full justify-start items-center ">
         Trade
         <TokenConversion
           prices={prices}
@@ -257,12 +256,12 @@ export const SwapWidget = (props: Props) => {
           to={token1}
         />
       </div>
-      <div className="flex w-full  justify-between">
-        <h2 className="text-lg font-bold text-white bg-primary w-fit px-2 py-1 rounded-lg ">
+      <div className="flex w-full px-4 justify-between">
+        <h2 className="text-lg  font-bold text-white bg-primary w-fit px-2 py-1 rounded-lg ">
           Swap
         </h2>
         <div className="flex flex-row gap-2 items-center">
-          <FaChartLine
+          <FaChartSimple
             onClick={() => setChartFlag(!chartFlag)}
             color={`${chartFlag ? "#fff" : "#0caaff "}`}
             className={` w-6 h-6 ${
@@ -279,12 +278,12 @@ export const SwapWidget = (props: Props) => {
         </div>
       </div>
       <div className="  col-span-2 max-w-[448px] w-full  ">
-        <div className="flex   w-full gap-3 flex-col relative">
+        <div className="flex   w-full gap-6 flex-col relative ">
           <AmountInput
             title="You're Selling"
             loadingBalances={loadingBalances}
             walletBalanceAsset={tokenABalance} // Replace with actual balance
-            setCurrentTokenDetal={handleSellTokenSelect}
+            setCurrentTokenDetail={handleSellTokenSelect}
             token={token0}
             currentTokenAsset={currentSellAsset}
             Amount={TokenAAmount}
@@ -296,9 +295,10 @@ export const SwapWidget = (props: Props) => {
             setTokenBalance={setTokenABalance}
             className=""
           />
+
           <div
             onClick={handleToggleTradeDirection}
-            className="absolute top-1/2  cursor-pointer border-border left-[45%] bg-primary -translate-y-1/2  z-[1] bg- p-1 border"
+            className="absolute top-1/2  cursor-pointer border-border  left-[15%] bg-primary -translate-y-[50%]  z-[1] bg- p-1 border"
           >
             <Image
               src={rotateImage}
@@ -311,10 +311,13 @@ export const SwapWidget = (props: Props) => {
             />
           </div>
 
+          <hr className="-mx-3 border-t border-border" />
+
+
           <AmountInput
             title="You're Buying"
             loadingBalances={loadingBalances}
-            className="bg-background border-border"
+            className="bg-forground border-border"
             setAmount={setTokenBAmount}
             setToken={setToken1}
             walletBalanceAsset={tokenBBalance} // Replace with actual balance
@@ -322,7 +325,7 @@ export const SwapWidget = (props: Props) => {
             Amount={TokenBAmount}
             currentTokenAsset={currentBuyAsset}
             tokenUsdValue={TokenBUsdValue}
-            setCurrentTokenDetal={handleBuyTokenSelect}
+            setCurrentTokenDetail={handleBuyTokenSelect}
             isLoading={quoteLoading}
             readOnly={true}
             setTokenBalance={setTokenBBalance}

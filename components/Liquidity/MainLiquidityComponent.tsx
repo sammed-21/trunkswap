@@ -118,13 +118,13 @@ export const MainLiquidityComponent = ({ pool }: Props) => {
       </TabsList>
       {selectedToken0 && selectedToken1 && (
         <>
-          <div className=" border-[1px] h-fit p-3 rounded-md border-border my-2">
+          <div className=" border-[1px] h-fit p-3 bg-forground rounded-md border-border my-2">
             <TokenConversion
               prices={prices}
               from={selectedToken0?.symbol}
               to={selectedToken1?.symbol}
               isLoading={false}
-              className="flex flex-col    h-fit justify-start rounded-md items-start"
+              className="flex flex-col h-fit justify-start rounded-md items-start"
             >
               {selectedToken0.symbol}/{selectedToken1.symbol}
             </TokenConversion>

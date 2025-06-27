@@ -20,6 +20,7 @@ const config: Config = {
         accent: "var(--accent)",
         "error-primary": "var(--error-primary)",
         "error-secondary": "var(--error-secondary)",
+        highlighter:"var(--highlighter)",
         title: "var(--title)",
         subtitle: "var(--subtitle)",
         textprimary: "var(--textprimary)",

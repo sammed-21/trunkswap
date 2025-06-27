@@ -27,7 +27,7 @@ export function WalletDropdown() {
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
-        <Button variant={"secondary"} className="flex gap-3 space-x-2">
+        <Button variant={"secondary"} className="flex px-2">
           <FaWallet />
           <span className="hidden px-3 lg:block">
             {shortenAddress(address!)}
